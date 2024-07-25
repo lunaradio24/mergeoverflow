@@ -9,21 +9,24 @@ import {
 } from 'typeorm';
 import { NotificationType } from '../types/notification-type.type';
 import { User } from '../../users/entities/user.entity';
-import { IsBoolean, IsEnum, IsInt, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsString } from 'class-validator';
 
 @Entity({ name: 'notifications' })
 export class Notification {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @IsNotEmpty()
   @IsInt()
   @Column({ type: 'int' })
   userId: number;
 
+  @IsNotEmpty()
   @IsEnum(NotificationType)
   @Column({ type: 'enum', enum: NotificationType })
   type: NotificationType;
 
+  @IsNotEmpty()
   @IsString()
   @Column({ type: 'varchar' })
   message: string;
