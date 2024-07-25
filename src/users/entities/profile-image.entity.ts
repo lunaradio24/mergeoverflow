@@ -9,17 +9,19 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
-import { IsInt, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString } from 'class-validator';
 
 @Entity({ name: 'profile_images' })
 export class ProfileImage {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @IsNotEmpty()
   @IsInt()
   @Column({ type: 'int' })
   userId: number;
 
+  @IsNotEmpty()
   @IsString()
   @Column({ type: 'varchar' })
   image: string;
