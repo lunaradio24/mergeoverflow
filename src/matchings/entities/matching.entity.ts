@@ -11,7 +11,7 @@ import {
 import { InteractionType } from '../types/interaction-type.type';
 import { IsEnum, IsInt, IsNotEmpty, IsOptional } from 'class-validator';
 
-@Entity({ name: 'matching' })
+@Entity({ name: 'matchings' })
 export class Matching {
   @PrimaryGeneratedColumn()
   id: number;
