@@ -1,8 +1,9 @@
-import { JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { JoinColumn, ManyToOne, PrimaryColumn, Entity } from 'typeorm';
 import { Tech } from './tech.entity';
 import { User } from './user.entity';
 import { IsInt, IsNotEmpty } from 'class-validator';
 
+@Entity({ name: 'user_to_techs' })
 export class UserToTech {
   @IsNotEmpty()
   @IsInt()

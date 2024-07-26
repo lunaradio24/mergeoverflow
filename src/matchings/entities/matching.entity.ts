@@ -1,8 +1,17 @@
 import { User } from '../../users/entities/user.entity';
-import { Column, CreateDateColumn, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  Entity,
+} from 'typeorm';
 import { InteractionType } from '../types/interaction-type.type';
 import { IsEnum, IsInt, IsNotEmpty, IsOptional } from 'class-validator';
 
+@Entity({ name: 'matchings' })
 export class Matching {
   @PrimaryGeneratedColumn()
   id: number;

@@ -1,7 +1,16 @@
 import { IsInt, IsNotEmpty } from 'class-validator';
 import { User } from '../../users/entities/user.entity';
-import { Column, CreateDateColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  Entity,
+  JoinColumn,
+} from 'typeorm';
 
+@Entity({ name: 'hearts' })
 export class Heart {
   @PrimaryGeneratedColumn()
   id: number;
@@ -22,5 +31,6 @@ export class Heart {
   updatedAt: Date;
 
   @OneToOne(() => User, (user) => user.hearts)
+  @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: User;
 }
