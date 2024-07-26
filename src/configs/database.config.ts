@@ -13,6 +13,7 @@ export const typeOrmModuleOptions = {
     database: configService.get('DB_NAME'),
     entities: [__dirname + '/**/*.entity{.ts,.js}'],
     synchronize: configService.get('DB_SYNC'),
+    autoLoadEntities: true,
     logging: true,
   }),
   inject: [ConfigService],

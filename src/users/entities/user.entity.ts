@@ -109,10 +109,6 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToMany(() => Interest)
-  @JoinTable()
-  Interests: Interest[];
-
   @OneToMany(() => UserToInterest, (userToInterest) => userToInterest.user)
   userToInterests: UserToInterest[];
 

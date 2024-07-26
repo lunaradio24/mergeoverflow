@@ -13,6 +13,7 @@ import { Heart } from '../matchings/entities/heart.entity';
 import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
 import { ChatMessage } from '../chat-rooms/entities/chat-message.entity';
 import { Account } from '../auth/entities/account.entity';
+import { Notification } from '../notifications/entities/notification.entity';
 
 @Module({
   imports: [
