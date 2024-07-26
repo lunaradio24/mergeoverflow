@@ -12,7 +12,7 @@ import {
 import { ChatMessage } from './chat-message.entity';
 import { IsInt, IsNotEmpty } from 'class-validator';
 
-Entity({ name: 'chat_rooms' });
+@Entity({ name: 'chat_rooms' })
 export class ChatRoom {
   @PrimaryGeneratedColumn()
   id: number;
