@@ -1,4 +1,48 @@
 import { PartialType } from '@nestjs/swagger';
 import { CreateUserDto } from './create-user.dto';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Frequency } from '../types/frequency.type';
+import { Column } from 'typeorm';
+import { Religion } from '../types/religion.type';
+import { Mbti } from '../types/mbti.type';
+import { BodyShape } from '../types/bodyshape.type';
+import { Pet } from '../types/pet.type';
+import { Region } from '../types/region.type';
 
-export class UpdateUserDto extends PartialType(CreateUserDto) {}
+export class UpdateProfileDto {
+  @IsOptional()
+  @IsEnum(Frequency)
+  smokingFreq?: Frequency;
+
+  @IsOptional()
+  @IsEnum(Frequency)
+  drinkingFreq?: Frequency;
+
+  @IsOptional()
+  @IsEnum(Religion)
+  religion?: Religion;
+
+  @IsOptional()
+  @IsEnum(Mbti)
+  mbti?: Mbti;
+
+  @IsOptional()
+  @IsNumber()
+  height?: number;
+
+  @IsOptional()
+  @IsEnum(BodyShape)
+  bodyShape?: BodyShape;
+
+  @IsOptional()
+  @IsEnum(Pet)
+  pet?: Pet;
+
+  @IsOptional()
+  @IsEnum(Region)
+  region?: Region;
+
+  @IsOptional()
+  @IsString()
+  bio?: string;
+}

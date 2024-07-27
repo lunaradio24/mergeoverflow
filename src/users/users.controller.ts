@@ -1,57 +1,64 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, HttpStatus } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateDetailUserDto } from './dto/create-detail.dto';
 
+@UseGuards() // <- Jwt 토큰 필요
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // 회원가입 변경 불가 정보
-  @Post('me')
-  async create(@Body() createUserDto: CreateUserDto) {
-    const data = await this.usersService.create(createUserDto);
+  // 내 정보 조회 , 프로필 조회,
+  // 아무 것도 안 쓰는 것은 AccessToken을 통해서 누구인지 자동으로 인지
+  // req.user는 Jwt 토큰에서 추출 할 것
+  // @Request() req 를 왜 사용하느냐? req.user를 사용하기 위해서 사용한다. @Request() req를 안 쓰면 req.user를 못 사용함.
+  @Get('me')
+  async find(@Request() req) {
+    const data = await this.usersService.find(req.user);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: '프로필 조회에 성공했습니다.',
+      data,
+    };
+  }
+
+  // 프로필 수정
+  // Dto는 생성때와 변경 가능한 것들 만 수정 가능
+  @Patch('me')
+  async updateProfile(@Request() req, @Body() createDetailUserDto: CreateDetailUserDto) {
+    const data = await this.usersService.updateUserProfile(req.user, createDetailUserDto);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: '프로필 수정에 성공했습니다.',
+      data,
+    };
+  }
+
+  @Post('me/interests')
+  async createDetailUser(@Body() createDetailUserDto: CreateDetailUserDto) {
+    const data = await this.usersService.createDetailUser(createDetailUserDto);
 
     return data;
   }
 
-  /**
-   * 프로필 상세 작성
-   * @param createDetailUserDto
-   * @returns
-   */
-  // @Post('me/detail')
-  // async createInterest(@Body() createDetailUserDto: CreateDetailUserDto) {
-  //   const data = await this.usersService.createDetailUser(createDetailUserDto);
-
-  //   return data;
+  // @Get()
+  // findAll() {
+  //   return this.usersService.findAll();
   // }
 
-  // @Post('me/interests')
-  // async createDetailUser(@Body() createDetailUserDto: CreateDetailUserDto) {
-  //   const data = await this.usersService.createDetailUser(createDetailUserDto);
-
-  //   return data;
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.usersService.findOne(+id);
   // }
 
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  //   return this.usersService.update(+id, updateUserDto);
+  // }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.usersService.remove(+id);
+  // }
 }
