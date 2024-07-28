@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { AdminInterestDto } from './dto/adminInterest.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Interest } from './entities/Interest.entity';
@@ -37,17 +37,43 @@ export class InterestService {
     }
   }
 
-  findAll() {
-    return `This action returns all interest`;
+  async findAll(): Promise<Interest[]> {
+    const findInterest = await this.adminInterestRepository.find({
+      order: {
+        id: 'ASC',
+      },
+    });
+
+    return findInterest;
   }
 
   findOne(id: number) {
     return `This action returns a #${id} interest`;
   }
 
-  // update(id: number, updateInterestDto: UpdateInterestDto) {
-  //   return `This action updates a #${id} interest`;
-  // }
+  async update(id: number, adminInterestDto: AdminInterestDto) {
+    const findInterestId = await this.adminInterestRepository.findOne({
+      where: { id: id },
+    });
+
+    if (!findInterestId) {
+      throw new BadRequestException('존재하지 않는 Id입니다.');
+    }
+
+    await this.adminInterestRepository.update({ id }, { interestName: adminInterestDto.interestName });
+
+    const updateInterest = await this.adminInterestRepository.findOne({
+      where: { id },
+    });
+
+    if (!updateInterest) {
+      throw new NotFoundException('업데이트 후 데이터를 찾을 수 없습니다.');
+    }
+
+    updateInterest.id = undefined;
+
+    return updateInterest;
+  }
 
   remove(id: number) {
     return `This action removes a #${id} interest`;
