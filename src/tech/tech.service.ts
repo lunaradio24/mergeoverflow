@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CreateTechDto } from './dto/create-tech.dto';
-import { UpdateTechDto } from './dto/update-tech.dto';
+import { AdminTechDto } from './dto/adminTechDto';
+import { UserToTechDto } from './dto/userToTechDto';
 
 @Injectable()
 export class TechService {
-  create(createTechDto: CreateTechDto) {
+  create(adminTechDto: AdminTechDto) {
     return 'This action adds a new tech';
   }
 
@@ -16,11 +16,11 @@ export class TechService {
     return `This action returns a #${id} tech`;
   }
 
-  update(id: number, updateTechDto: UpdateTechDto) {
-    return `This action updates a #${id} tech`;
-  }
+  // update(id: number, updateTechDto: UpdateTechDto) {
+  //   return `This action updates a #${id} tech`;
+  // }
 
-  remove(id: number) {
-    return `This action removes a #${id} tech`;
-  }
+  // remove(id: number) {
+  //   return `This action removes a #${id} tech`;
+  // }
 }
