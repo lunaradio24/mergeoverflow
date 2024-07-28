@@ -6,9 +6,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { Interest } from './entities/interest.entity';
-import { CreateInterestDto } from './dto/interest.dto';
 import { CreateTechDto } from './dto/tech.dto';
 import { Tech } from './entities/tech.entity';
+import { UserToInterestDto } from '../interest/dto/userToInterest.dto';
+import { UserToInterest } from './entities/user-to-interest.entity';
 
 @Injectable()
 export class UsersService {
@@ -17,6 +18,8 @@ export class UsersService {
   private readonly userRepository: Repository<User>;
   @InjectRepository(Interest)
   private readonly interestRepository: Repository<Interest>;
+  @InjectRepository(UserToInterest)
+  private readonly userToInterestRepository: Repository<UserToInterest>;
   @InjectRepository(Tech)
   private readonly techRepository: Repository<Tech>;
 
@@ -55,7 +58,7 @@ export class UsersService {
       // 3-1. update를 하는데 나라는 특정 id를 먼저 찾아야함.(update 메서드의 필수사항)
       { id: userId },
       {
-        // 사용자가 넣은 값이 즉 updateProfileDto.smokingFreq가 !== undefined 즉 선택을 했다면 && 옆에 있는 것으로 업데이트 한다.
+        // 사용자가 넣은 값 즉 updateProfileDto.smokingFreq가 !== undefined 즉 "선택"을 했다면 && 옆에 있는 것으로 업데이트 한다.
         // { smokingFreq: updateProfileDto.smokingFreq } 즉 사용자가 새롭게 선택한 updateProfileDto.smokingFreq를 smokingFreq라고 한다.
         // 바로 위의 {} 속에서 smokingFreq는 DB속의 컬럼의 이름이 되시겠다.
         // &&의 의미 왼쪽이 참이라면 즉 "사용자가 선택을 했다면!" === undefined가 아니라면 === true라면 왼쪽을 실행시켜라
@@ -79,6 +82,43 @@ export class UsersService {
     return updateProfile;
   }
 
+  // // 회원 관심사 저장
+  // async createUserInterest(user: any, interestDto: UserToInterestDto) {
+  //   // 1. 지금 행동하는 사람이 내가 맞는지 확인
+  //   const userId = user.id;
+
+  //   const data = await this.userRepository.findOne({
+  //     where: { id: userId },
+  //     relations: ['userToInterests'], //typeOrm에 의해서 문자열로 받고 나중에 확장성을 위해서 []로 받는다.
+  //   });
+
+  //   // 2. 아니라면 에러를 발생 시켜서 내보내기
+  //   if (!data) {
+  //     throw new NotFoundException('허용되지 않는 사용자입니다.');
+  //   }
+
+  //   // 기존의 회원의 관심사 삭제 및 초기화
+  //   await this.userToInterestRepository.delete({ userId });
+
+  //   // 새로운 관심사 저장
+  //   const userInterests = interestDto.interestIds.map((interestId) => {
+  //     const userToInterest = new UserToInterest();
+  //     userToInterest.userId = userId;
+  //     userToInterest.interestId = interestId;
+  //     return userToInterest;
+  //   });
+
+  //   await this.userToInterestRepository.save(userInterests);
+
+  //   // 업데이트된 사용자 데이터를 반환합니다.
+  //   const updatedUser = await this.userRepository.findOne({
+  //     where: { id: userId },
+  //     relations: ['userToInterests', 'userToInterests.interest'], // 새롭게 저장된 관심사와 함께 사용자 데이터를 로드합니다.
+  //   });
+
+  //   return updatedUser;
+  // }
+
   // findOne(id: number) {
   //   return `This action returns a #${id} user`;
   // }
@@ -96,15 +136,6 @@ export class UsersService {
     const data = { ...createDetailUserDto };
 
     await this.userRepository.save(data);
-
-    return data;
-  }
-
-  // 회원 관심사 저장
-  async createUserInterest(createInterestDto: CreateInterestDto) {
-    const data = { ...createInterestDto };
-
-    await this.interestRepository.save(data);
 
     return data;
   }
