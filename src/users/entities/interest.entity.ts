@@ -1,17 +1,25 @@
 import { Column, OneToMany, PrimaryGeneratedColumn, Entity } from 'typeorm';
 import { UserToInterest } from './user-to-interest.entity';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty } from 'class-validator';
 
+// 회원가입할때 사용/ // 유저가 수정할 때 사용
 @Entity({ name: 'interests' })
 export class Interest {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @IsNotEmpty()
-  @IsString()
-  @Column({ type: 'varchar' })
-  interestName: string;
+  @IsNotEmpty({ message: '관심사를 선택해주세요.' })
+  @IsInt()
+  @Column({ unique: true })
+  interest: number;
 
   @OneToMany(() => UserToInterest, (userToInterest) => userToInterest.interest)
   userToInterests: UserToInterest[];
 }
+
+// // 1번이 맞을 지?
+
+// @IsNotEmpty()
+// @IsString()
+// @Column({ type: 'varchar' })
+// interestName: string;
