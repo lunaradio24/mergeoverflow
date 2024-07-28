@@ -37,6 +37,7 @@ export class InterestService {
     }
   }
 
+  // 관심사 DB조회 관리자 x
   async findAll(): Promise<Interest[]> {
     const findInterest = await this.adminInterestRepository.find({
       order: {
@@ -47,11 +48,21 @@ export class InterestService {
     return findInterest;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} interest`;
-  }
-
+  // 관심사 업데이트
   async update(id: number, adminInterestDto: AdminInterestDto) {
+    // user: any,
+    // // 1. 내가 관리자인지 확인
+    // const userId = user.id;
+
+    // // 2. 관리자가 아니라면 권한 없음으로 에러 발생
+    // const checkedAdmin = await this.interestRepository.findOne({
+    //   where: { id: userId },
+    // });
+
+    // if (!checkedAdmin) {
+    //   throw new NotFoundException('허가 받지 않은 사용자입니다.');
+    // }
+
     const findInterestId = await this.adminInterestRepository.findOne({
       where: { id: id },
     });
@@ -75,7 +86,31 @@ export class InterestService {
     return updateInterest;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} interest`;
+  // 관심사 삭제
+  async remove(id: number) {
+    // user: any,
+    // // 1. 내가 관리자인지 확인
+    // const userId = user.id;
+
+    // // 2. 관리자가 아니라면 권한 없음으로 에러 발생
+    // const checkedAdmin = await this.interestRepository.findOne({
+    //   where: { id: userId },
+    // });
+
+    // if (!checkedAdmin) {
+    //   throw new NotFoundException('허가 받지 않은 사용자입니다.');
+    // }
+
+    const findInterestId = await this.adminInterestRepository.findOne({
+      where: { id },
+    });
+
+    if (!findInterestId) {
+      throw new BadRequestException('존재하지 않는 Id입니다.');
+    }
+
+    const deleteInterestId = await this.adminInterestRepository.delete(id);
+
+    return deleteInterestId;
   }
 }

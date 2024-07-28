@@ -43,8 +43,10 @@ export class InterestController {
     };
   }
 
+  @UseGuards() // 관리자만
   @Patch(':id')
   async update(@Param('id', ParseIntPipe) id: number, @Body() adminInterestDto: AdminInterestDto) {
+    // @Req() req: any,
     const data = await this.interestService.update(id, adminInterestDto);
     return {
       statusCode: HttpStatus.OK,
@@ -53,13 +55,15 @@ export class InterestController {
     };
   }
 
+  @UseGuards() // 관리자만
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
-    const data = await this.interestService.remove(id);
+    // @Req() req: any,
+    await this.interestService.remove(id);
+
     return {
       statusCode: HttpStatus.OK,
       message: '관심사 삭제에 성공했습니다.',
-      data,
     };
   }
 }
