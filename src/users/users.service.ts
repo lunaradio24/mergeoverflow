@@ -14,6 +14,8 @@ import { UpdatePassWordDto } from './dto/updatePassWord.dto';
 import { Account } from 'src/auth/entities/account.entity';
 import { CheckNickNameDto } from './dto/checkNickName.dto';
 
+import { compare, hash } from 'bcrypt';
+
 @Injectable()
 export class UsersService {
   // Repository 주입
@@ -156,7 +158,6 @@ export class UsersService {
     const findUser = await this.accountRepository.findOne({
       where: {
         id: id,
-        password: updatePassWordDto.password,
       },
     });
 
@@ -164,8 +165,19 @@ export class UsersService {
       throw new NotFoundException('존재하지 않는 유저입니다.');
     }
 
+    // 비밀번호 비교
+
+    const existingPassWord = await compare(updatePassWordDto.password, findUser.password);
+
+    if (!existingPassWord) {
+      throw new BadRequestException('비밀번호가 일치하지 않습니다.');
+    }
+
+    // 새로운 비밀번호 해싱 // 10을 content에다가 넣을까?
+    const hashedNewPassword = await hash(updatePassWordDto.newPassword, 10);
+
     // 비밀번호는 회원정보(auth)니까 authRepository가 되나?
-    await this.accountRepository.update({ id }, { password: updatePassWordDto.newPassword });
+    await this.accountRepository.update({ id }, { password: hashedNewPassword });
 
     const updatePassWord = await this.accountRepository.findOne({
       where: { id },
