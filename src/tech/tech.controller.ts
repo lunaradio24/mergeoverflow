@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { TechService } from './tech.service';
 import { AdminTechDto } from './dto/adminTechDto';
 
@@ -10,8 +22,7 @@ export class TechController {
   @Post()
   async create(@Body() adminTechDto: AdminTechDto) {
     // @Req() req: any,
-    const data = await this.techService.create(adminTechDto);
-    // req.user
+    const data = await this.techService.create(adminTechDto); // req.user
     return {
       statusCode: HttpStatus.CREATED,
       message: '기술 생성에 성공했습니다.',
@@ -30,15 +41,18 @@ export class TechController {
     };
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.techService.findOne(+id);
-  }
+  @UseGuards() // 관리자만 가능
+  @Patch(':id')
+  // @Req() req: any,
+  async update(@Param('id', ParseIntPipe) id: number, @Body() adminTechDto: AdminTechDto) {
+    const data = await this.techService.update(id, adminTechDto); // req.user
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateTechDto: UpdateTechDto) {
-  //   return this.techService.update(+id, updateTechDto);
-  // }
+    return {
+      statusCode: HttpStatus.OK,
+      message: '기술 수정이 완료되었습니다.',
+      data,
+    };
+  }
 
   // @Delete(':id')
   // remove(@Param('id') id: string) {
