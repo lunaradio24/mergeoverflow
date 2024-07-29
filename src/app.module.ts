@@ -36,6 +36,7 @@ import { SmsModule } from './auth/sms/sms.module';
     }),
     InterestModule,
     TechModule,
+    SmsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
