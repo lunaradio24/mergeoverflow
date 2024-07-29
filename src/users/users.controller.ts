@@ -17,6 +17,7 @@ import { CreateDetailUserDto } from './dto/create-detail.dto';
 import { UserToInterestDto } from '../interest/dto/userToInterest.dto';
 import { UpdatePassWordDto } from './dto/updatePassWord.dto';
 import { CheckNickNameDto } from './dto/checkNickName.dto';
+import { UpdateProfileDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -27,9 +28,11 @@ export class UsersController {
   // req.user는 Jwt 토큰에서 추출 할 것
   // @Request() req 를 왜 사용하느냐? req.user를 사용하기 위해서 사용한다. @Request() req를 안 쓰면 req.user를 못 사용함.
   @UseGuards()
-  @Get('me')
-  async find(@Request() req: any) {
-    const data = await this.usersService.find(req.user);
+  // @Get('me')
+  // async find(@Request() req: any) {
+  @Get(':id')
+  async find(@Param('id', ParseIntPipe) id: number) {
+    const data = await this.usersService.find(id);
 
     return {
       statusCode: HttpStatus.OK,
@@ -41,9 +44,12 @@ export class UsersController {
   // 프로필 수정
   // Dto는 생성때와 변경 가능한 것들 만 수정 가능
   @UseGuards()
-  @Patch('me')
-  async updateProfile(@Req() req: any, @Body() createDetailUserDto: CreateDetailUserDto) {
-    const data = await this.usersService.updateUserProfile(req.user, createDetailUserDto);
+  // @Patch('me')
+  // async updateProfile(@Req() req: any, @Body() createDetailUserDto: CreateDetailUserDto) {
+  //   const data = await this.usersService.updateUserProfile(req.user, createDetailUserDto);
+  @Patch('me/:id')
+  async updateProfile(@Param('id', ParseIntPipe) id: number, @Body() updateProfileDto: UpdateProfileDto) {
+    const data = await this.usersService.updateUserProfile(id, updateProfileDto);
 
     return {
       statusCode: HttpStatus.OK,
@@ -74,7 +80,7 @@ export class UsersController {
   }
 
   // 닉네임 중복 확인(이거 아마 auth에서 쓸거 같은데 왜 여기서??)
-  @Post()
+  @Post('checkNickName')
   async checkNickName(@Body() checkNickNameDto: CheckNickNameDto) {
     const data = await this.usersService.checkName(checkNickNameDto);
 

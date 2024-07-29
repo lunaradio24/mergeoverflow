@@ -14,6 +14,8 @@ import { UpdatePassWordDto } from './dto/updatePassWord.dto';
 import { Account } from 'src/auth/entities/account.entity';
 import { CheckNickNameDto } from './dto/checkNickName.dto';
 
+import { compare, hash } from 'bcrypt';
+
 @Injectable()
 export class UsersService {
   // Repository 주입
@@ -34,13 +36,13 @@ export class UsersService {
    * @returns
    */
   // 토큰에서 사용자 정보 추출
-  async find(user: any) {
+  async find(id: number) {
     // JWT 토큰에서 사용자의 ID를 추출해
-    const userId = user.id;
+    // const userId = user.id;
 
     // ID로 사용자를 찾아
     const data = await this.userRepository.findOne({
-      where: { id: userId },
+      where: { id: id }, //       where: { id: userId },
     });
 
     // 사용자의 정보를 반환해
@@ -53,9 +55,10 @@ export class UsersService {
    * @param updateProfileDto
    * @returns
    */
-  async updateUserProfile(user: any, updateProfileDto: UpdateProfileDto) {
+  async updateUserProfile(id: number, updateProfileDto: UpdateProfileDto) {
+    // user: any,
     // 1. 지금 행동하는 사람이 내가 맞는지 확인
-    const userId = user.id;
+    const userId = id; //    const userId = user.id;
 
     const data = await this.userRepository.findOne({
       where: { id: userId },
@@ -151,9 +154,10 @@ export class UsersService {
    * @returns
    */
   async updatePassWord(id: number, updatePassWordDto: UpdatePassWordDto) {
-    const findUser = await this.userRepository.findOne({
+    // 기존의 패스워드를 입력해서 존재하는 유저인지 확인
+    const findUser = await this.accountRepository.findOne({
       where: {
-        id,
+        id: id,
       },
     });
 
@@ -161,8 +165,19 @@ export class UsersService {
       throw new NotFoundException('존재하지 않는 유저입니다.');
     }
 
+    // 비밀번호 비교
+
+    const existingPassWord = await compare(updatePassWordDto.password, findUser.password);
+
+    if (!existingPassWord) {
+      throw new BadRequestException('비밀번호가 일치하지 않습니다.');
+    }
+
+    // 새로운 비밀번호 해싱 // 10을 content에다가 넣을까?
+    const hashedNewPassword = await hash(updatePassWordDto.newPassword, 10);
+
     // 비밀번호는 회원정보(auth)니까 authRepository가 되나?
-    await this.accountRepository.update({ id }, updatePassWordDto);
+    await this.accountRepository.update({ id }, { password: hashedNewPassword });
 
     const updatePassWord = await this.accountRepository.findOne({
       where: { id },
