@@ -31,7 +31,8 @@ export class UsersController {
   // @Get('me')
   // async find(@Request() req: any) {
   @Get(':id')
-  async find(@Param('id', ParseIntPipe) id: number) {
+  async find(@Param('id') id: number) {
+    console.log('findId', id);
     const data = await this.usersService.find(id);
 
     return {
@@ -48,7 +49,7 @@ export class UsersController {
   // async updateProfile(@Req() req: any, @Body() createDetailUserDto: CreateDetailUserDto) {
   //   const data = await this.usersService.updateUserProfile(req.user, createDetailUserDto);
   @Patch('me/:id')
-  async updateProfile(@Param('id', ParseIntPipe) id: number, @Body() updateProfileDto: UpdateProfileDto) {
+  async updateProfile(@Param('id') id: number, @Body() updateProfileDto: UpdateProfileDto) {
     const data = await this.usersService.updateUserProfile(id, updateProfileDto);
 
     return {
@@ -69,13 +70,14 @@ export class UsersController {
 
   //비밀번호 수정
   @UseGuards() // 로그인한 사람만 가능하게
-  @Patch(':id')
-  async updatePassWord(@Param('id', ParseIntPipe) id: number, @Body() updatePassWordDto: UpdatePassWordDto) {
-    this.usersService.updatePassWord(id, updatePassWordDto);
+  @Patch('password/:id')
+  async updatePassWord(@Param('id') id: number, @Body() updatePassWordDto: UpdatePassWordDto) {
+    const data = await this.usersService.updatePassWord(id, updatePassWordDto);
 
     return {
       statusCode: HttpStatus.OK,
       message: '비밀번호 수정이 완료되었습니다.',
+      data,
     };
   }
 

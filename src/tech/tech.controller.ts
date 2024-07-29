@@ -44,7 +44,7 @@ export class TechController {
   @UseGuards() // 관리자만 가능
   @Patch(':id')
   // @Req() req: any,
-  async update(@Param('id', ParseIntPipe) id: number, @Body() adminTechDto: AdminTechDto) {
+  async update(@Param('id') id: number, @Body() adminTechDto: AdminTechDto) {
     const data = await this.techService.update(id, adminTechDto); // req.user
 
     return {
@@ -56,7 +56,7 @@ export class TechController {
 
   @UseGuards() // 관리자만 가능
   @Delete(':id')
-  async remove(@Param('id', ParseIntPipe) id: number) {
+  async remove(@Param('id') id: number) {
     await this.techService.remove(id);
 
     return {
