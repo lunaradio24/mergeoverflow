@@ -34,13 +34,13 @@ export class UsersService {
    * @returns
    */
   // 토큰에서 사용자 정보 추출
-  async find(user: any) {
+  async find(id: number) {
     // JWT 토큰에서 사용자의 ID를 추출해
-    const userId = user.id;
+    // const userId = user.id;
 
     // ID로 사용자를 찾아
     const data = await this.userRepository.findOne({
-      where: { id: userId },
+      where: { id: id }, //       where: { id: userId },
     });
 
     // 사용자의 정보를 반환해
@@ -53,9 +53,10 @@ export class UsersService {
    * @param updateProfileDto
    * @returns
    */
-  async updateUserProfile(user: any, updateProfileDto: UpdateProfileDto) {
+  async updateUserProfile(id: number, updateProfileDto: UpdateProfileDto) {
+    // user: any,
     // 1. 지금 행동하는 사람이 내가 맞는지 확인
-    const userId = user.id;
+    const userId = id; //    const userId = user.id;
 
     const data = await this.userRepository.findOne({
       where: { id: userId },
