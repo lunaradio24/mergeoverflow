@@ -10,6 +10,9 @@ import { CreateTechDto } from './dto/tech.dto';
 import { Tech } from './entities/tech.entity';
 import { UserToInterestDto } from '../interest/dto/userToInterest.dto';
 import { UserToInterest } from './entities/user-to-interest.entity';
+import { UpdatePassWordDto } from './dto/updatePassWord.dto';
+import { Account } from 'src/auth/entities/account.entity';
+import { CheckNickNameDto } from './dto/checkNickName.dto';
 
 @Injectable()
 export class UsersService {
@@ -22,9 +25,14 @@ export class UsersService {
   private readonly userToInterestRepository: Repository<UserToInterest>;
   @InjectRepository(Tech)
   private readonly techRepository: Repository<Tech>;
+  @InjectRepository(Account)
+  private readonly accountRepository: Repository<Account>;
 
-  // 내 정보 조회(프로필 조회)
-
+  /**
+   * 내 정보 조회, 프로필 조회
+   * @param user
+   * @returns
+   */
   // 토큰에서 사용자 정보 추출
   async find(user: any) {
     // JWT 토큰에서 사용자의 ID를 추출해
@@ -39,7 +47,12 @@ export class UsersService {
     return data;
   }
 
-  // 프로필 수정
+  /**
+   * 프로필 수정
+   * @param user
+   * @param updateProfileDto
+   * @returns
+   */
   async updateUserProfile(user: any, updateProfileDto: UpdateProfileDto) {
     // 1. 지금 행동하는 사람이 내가 맞는지 확인
     const userId = user.id;
@@ -131,6 +144,48 @@ export class UsersService {
   //   return `This action removes a #${id} user`;
   // }
 
+  /**
+   * 비밀번호 수정
+   * @param id
+   * @param updatePassWordDto
+   * @returns
+   */
+  async updatePassWord(id: number, updatePassWordDto: UpdatePassWordDto) {
+    const findUser = await this.userRepository.findOne({
+      where: {
+        id,
+      },
+    });
+
+    if (!findUser) {
+      throw new NotFoundException('존재하지 않는 유저입니다.');
+    }
+
+    // 비밀번호는 회원정보(auth)니까 authRepository가 되나?
+    await this.accountRepository.update({ id }, updatePassWordDto);
+
+    const updatePassWord = await this.accountRepository.findOne({
+      where: { id },
+    });
+
+    return updatePassWord;
+  }
+
+  async checkName(checkNickNameDto: CheckNickNameDto) {
+    // 1.userRepository에 같은 닉네임이 있는지 확인
+    const checkName = await this.userRepository.findOne({
+      where: { nickname: checkNickNameDto.nickname },
+    });
+
+    // 2, 있다면 에러를 발생
+    if (checkName) {
+      throw new BadRequestException('이미 존재하는 닉네임입니다.');
+    }
+
+    // 없다면 반환
+    return;
+  }
+
   // 회원 변경 가능한 정보 데이터에 저장 // 영진님 쓰세요.
   async createDetailUser(createDetailUserDto: CreateDetailUserDto) {
     const data = { ...createDetailUserDto };
@@ -140,7 +195,7 @@ export class UsersService {
     return data;
   }
 
-  // 회원 기술사 저장
+  // 회원 기술사 저장 // 영진님 쓰세요.
   async createUserTech(createTechDto: CreateTechDto) {
     const data = { ...createTechDto };
 
