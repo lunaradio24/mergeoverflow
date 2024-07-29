@@ -151,9 +151,11 @@ export class UsersService {
    * @returns
    */
   async updatePassWord(id: number, updatePassWordDto: UpdatePassWordDto) {
-    const findUser = await this.userRepository.findOne({
+    // 기존의 패스워드를 입력해서 존재하는 유저인지 확인
+    const findUser = await this.accountRepository.findOne({
       where: {
-        id,
+        id: id,
+        password: updatePassWordDto.password,
       },
     });
 
@@ -162,7 +164,7 @@ export class UsersService {
     }
 
     // 비밀번호는 회원정보(auth)니까 authRepository가 되나?
-    await this.accountRepository.update({ id }, updatePassWordDto);
+    await this.accountRepository.update({ id }, { password: updatePassWordDto.newPassword });
 
     const updatePassWord = await this.accountRepository.findOne({
       where: { id },
