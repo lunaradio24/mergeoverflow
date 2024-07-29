@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat</title>
+</head>
+
+<body>
+    <h1>WebSocket Chat</h1>
+    <div>
+        <label for="user1Id">User 1 ID:</label>
+        <input type="number" id="user1Id">
+    </div>
+    <div>
+        <label for="user2Id">User 2 ID:</label>
+        <input type="number" id="user2Id">
+    </div>
+    <button id="createRoomButton">Create Chat Room</button>
+    <br>
+    <div>
+        <label for="roomId">Room ID:</label>
+        <input type="number" id="roomId">
+    </div>
+    <div>
+        <label for="userId">User ID:</label>
+        <input type="number" id="userId">
+    </div>
+    <div>
+        <label for="message">Message:</label>
+        <input type="text" id="message">
+    </div>
+    <button id="sendMessageButton">Send Message</button>
+    <ul id="messages"></ul>
+
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        const socket = io('http://localhost:3001/chat_matchings');
+
+        const createRoomButton = document.getElementById('createRoomButton');
+        const sendMessageButton = document.getElementById('sendMessageButton');
+        const messagesList = document.getElementById('messages');
+
+        createRoomButton.addEventListener('click', () => {
+            const user1Id = document.getElementById('user1Id').value;
+            const user2Id = document.getElementById('user2Id').value;
+            socket.emit('createdChatRoom', { user1Id: Number(user1Id), user2Id: Number(user2Id) });
+        });
+
+        sendMessageButton.addEventListener('click', () => {
+            const roomId = document.getElementById('roomId').value;
+            const userId = document.getElementById('userId').value;
+            const message = document.getElementById('message').value;
+            socket.emit('message', { roomId: Number(roomId), userId: Number(userId), message: message });
+        });
+
+        socket.on('createdChatRoom', (chatRoom) => {
+            const item = document.createElement('li');
+            item.textContent = `Chat room created with ID ${chatRoom.id}`;
+            messagesList.appendChild(item);
+        });
+
+        socket.on('message', (message) => {
+            const item = document.createElement('li');
+            item.textContent = `User ${message.userId}: ${message.message}`;
+            messagesList.appendChild(item);
+        });
+    </script>
+</body>
+
+</html>

@@ -21,6 +21,9 @@ import { mailerModuleOptions } from './configs/mailer.config';
       isGlobal: true, // ConfigModule을 전역 모듈로 설정
       validationSchema: validationSchema,
     }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'static'),
+    }),
     MailerModule.forRootAsync(mailerModuleOptions),
     TypeOrmModule.forRootAsync(typeOrmModuleOptions),
     AuthModule,
