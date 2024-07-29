@@ -1,24 +1,31 @@
-import { Controller, Get, Param, Post, Body, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, ParseIntPipe } from '@nestjs/common';
 import { MatchingService } from '../matchings/matchings.service';
-import { User } from '../users/entities/user.entity';
 
-@Controller('matching')
+@Controller('matchings')
 export class MatchingController {
   constructor(private readonly matchingService: MatchingService) {}
 
-  // 매칭 상대 정보를 10명씩 조회
-  @Get(':userId')
-  async getMatchingUsers(@Param('userId', ParseIntPipe) userId: number): Promise<User[]> {
+  // 매칭 상대 정보를 10명씩 조회 (interactionType이 null인 유저들)
+  @Get()
+  async getMatchingUsers(@Query('userId', ParseIntPipe) userId: number) {
     return this.matchingService.getMatchingUsers(userId);
   }
 
-  // 매칭 결과를 저장
-  @Post()
-  async saveMatchingResult(
+  // 좋아요 처리
+  @Post('like')
+  async likeUser(
     @Body('userId', ParseIntPipe) userId: number,
     @Body('targetUserId', ParseIntPipe) targetUserId: number,
-    @Body('isMatch') isMatch: boolean,
-  ): Promise<void> {
-    await this.matchingService.saveMatchingResult(userId, targetUserId, isMatch);
+  ) {
+    await this.matchingService.likeUser(userId, targetUserId);
+  }
+
+  // 싫어요 처리
+  @Post('dislike')
+  async dislikeUser(
+    @Body('userId', ParseIntPipe) userId: number,
+    @Body('targetUserId', ParseIntPipe) targetUserId: number,
+  ) {
+    await this.matchingService.dislikeUser(userId, targetUserId);
   }
 }

@@ -6,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { UsersModule } from './users/users.module';
-import { MatchingsModule } from './matchings/matchings.module';
+import { MatchingModule } from './matchings/matchings.module';
 import { ChatRoomsModule } from './chat-rooms/chat-rooms.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { validationSchema } from './configs/validation.config';
@@ -27,7 +27,7 @@ import { TechModule } from './tech/tech.module';
     TypeOrmModule.forRootAsync(typeOrmModuleOptions),
     AuthModule,
     UsersModule,
-    MatchingsModule,
+    MatchingModule,
     ChatRoomsModule,
     NotificationsModule,
     ServeStaticModule.forRoot({

@@ -11,4 +11,4 @@ import { Matching } from './entities/matching.entity';
   controllers: [MatchingController],
   providers: [MatchingService],
 })
-export class MatchingsModule {}
+export class MatchingModule {}

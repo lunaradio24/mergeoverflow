@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, Not, IsNull } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { Matching } from './entities/matching.entity';
 import { InteractionType } from './types/interaction-type.type';
+import { bringSomeOne } from '../matchings/constants/constants';
 
 @Injectable()
 export class MatchingService {
@@ -16,35 +17,80 @@ export class MatchingService {
 
   // 매칭된 유저들을 조회
   async getMatchingUsers(userId: number) {
-    // 매칭 엔티티에서 userId와 일치하는 항목을 찾고 targetUserId만 선택
-    const matchings = await this.matchingRepository.find({
-      where: { userId },
-      select: ['targetUserId'],
-    });
-
-    // 찾은 매칭 항목에서 targetUserId 값만 추출하여 배열로 만듦
-    const targetUserIds = matchings.map((matching) => matching.targetUserId);
-
-    // targetUserIds 배열에 있는 모든 유저 조회
-    const users = await this.userRepository.find({
+    // interactionType이 null인 매칭 엔티티를 조회
+    const existingMatchings = await this.matchingRepository.find({
       where: {
-        id: In(targetUserIds), // TypeORM의 In을 사용하여 다수의 ID를 조건으로 설정
+        userId,
+        interactionType: IsNull(),
       },
-      order: { id: 'ASC' }, // ID 오름차순으로 정렬
-      select: ['id', 'nickname'],
     });
 
-    return users;
+    if (existingMatchings.length === 0) {
+      // 새로운 매칭을 위해 무작위로 10명의 유저를 가져옴 (이미 매칭된 유저 제외)
+      const matchedUserIds = (await this.matchingRepository.find({ where: { userId } })).map((m) => m.targetUserId);
+      const newUsers = await this.userRepository.find({
+        where: {
+          id: Not(In([userId, ...matchedUserIds])), // 자신과 이미 매칭된 유저 제외
+        },
+        order: { id: 'ASC' },
+        take: bringSomeOne, // 상수 사용하여 한 번에 가져올 유저 수 설정
+      });
+
+      // 새로운 매칭 엔티티 생성 및 저장
+      const newMatchings = newUsers.map((user) => {
+        const matching = new Matching();
+        matching.userId = userId;
+        matching.targetUserId = user.id;
+        matching.interactionType = null;
+        return matching;
+      });
+
+      await this.matchingRepository.save(newMatchings);
+
+      return newUsers;
+    } else {
+      // 기존 매칭된 유저들 중 interactionType이 null인 유저 조회
+      const targetUserIds = existingMatchings.map((matching) => matching.targetUserId);
+      const users = await this.userRepository.find({
+        where: {
+          id: In(targetUserIds),
+        },
+        relations: ['images'],
+      });
+
+      return users;
+    }
   }
 
   // 매칭 결과를 저장하는 함수
-  async saveMatchingResult(userId: number, targetUserId: number, isMatch: boolean) {
-    // 새로운 Matching 객체 생성
-    const matching = new Matching();
-    matching.userId = userId;
-    matching.targetUserId = targetUserId;
-    matching.interactionType = isMatch ? InteractionType.LIKE : InteractionType.DISLIKE;
-    // 매칭 정보 저장
-    await this.matchingRepository.save(matching);
+  async saveMatchingResult(userId: number, targetUserId: number, interactionType: InteractionType) {
+    // 자기 자신을 좋아요 또는 싫어요 하는지 검증
+    if (userId === targetUserId) {
+      throw new BadRequestException('You cannot like or dislike yourself.');
+    }
+
+    // userId와 targetUserId가 존재하는지 확인
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found.`);
+    }
+
+    const targetUser = await this.userRepository.findOne({ where: { id: targetUserId } });
+    if (!targetUser) {
+      throw new NotFoundException(`User with ID ${targetUserId} not found.`);
+    }
+
+    // 매칭 정보 업데이트
+    await this.matchingRepository.update({ userId, targetUserId }, { interactionType });
+  }
+
+  // 좋아요를 처리하는 함수
+  async likeUser(userId: number, targetUserId: number) {
+    await this.saveMatchingResult(userId, targetUserId, InteractionType.LIKE); // 좋아요 처리
+  }
+
+  // 싫어요를 처리하는 함수
+  async dislikeUser(userId: number, targetUserId: number) {
+    await this.saveMatchingResult(userId, targetUserId, InteractionType.DISLIKE); // 싫어요 처리
   }
 }
