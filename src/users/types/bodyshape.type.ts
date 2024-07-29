@@ -3,4 +3,5 @@ export enum BodyShape {
   NORMAL = 'NORMAL',
   CHUBBY = 'CHUBBY',
   MUSCULAR = 'MUSCULAR',
+  DEVELOPER = 'DEVELOPER',
 }
