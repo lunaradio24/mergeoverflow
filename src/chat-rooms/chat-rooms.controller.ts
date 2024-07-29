@@ -7,28 +7,28 @@ import { UpdateChatRoomDto } from './dto/update-chat-room.dto';
 export class ChatRoomsController {
   constructor(private readonly chatRoomsService: ChatRoomsService) {}
 
-  @Post()
-  create(@Body() createChatRoomDto: CreateChatRoomDto) {
-    return this.chatRoomsService.create(createChatRoomDto);
-  }
+  // @Post()
+  // create(@Body() createChatRoomDto: CreateChatRoomDto) {
+  //   return this.chatRoomsService.create(createChatRoomDto);
+  // }
 
-  @Get()
-  findAll() {
-    return this.chatRoomsService.findAll();
-  }
+  // @Get()
+  // findAll() {
+  //   return this.chatRoomsService.findAll();
+  // }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.chatRoomsService.findOne(+id);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.chatRoomsService.findOne(+id);
+  // }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateChatRoomDto: UpdateChatRoomDto) {
-    return this.chatRoomsService.update(+id, updateChatRoomDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateChatRoomDto: UpdateChatRoomDto) {
+  //   return this.chatRoomsService.update(+id, updateChatRoomDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.chatRoomsService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.chatRoomsService.remove(+id);
+  // }
 }
