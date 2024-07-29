@@ -39,19 +39,16 @@ export class User {
   @Column({ type: 'int' })
   accountId: number;
 
-  // 변경 불가
   @IsNotEmpty({ message: '생년월일을 입력해주세요.' })
   @IsString()
   @Column({ type: 'date' })
   birthDate: string;
 
-  // 변경 불가
   @IsNotEmpty({ message: '성별을 선택해주세요.' })
   @IsEnum(Gender)
   @Column({ type: 'enum', enum: Gender })
   gender: Gender;
 
-  // 변경 불가
   @IsNotEmpty({ message: '닉네임을 입력해주세요.' })
   @IsString()
   @Column({ type: 'varchar' })
