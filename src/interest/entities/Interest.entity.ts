@@ -3,7 +3,7 @@ import { UserToInterest } from '../../users/entities/user-to-interest.entity';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 // 관리자가 생성
-@Entity({ name: 'adminInterests' })
+@Entity({ name: 'admin_Interests' })
 export class Interest {
   @PrimaryGeneratedColumn()
   id: number;
