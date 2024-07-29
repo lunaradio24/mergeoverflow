@@ -1,34 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { MatchingsService } from './matchings.service';
-import { CreateMatchingDto } from './dto/create-matching.dto';
-import { UpdateMatchingDto } from './dto/update-matching.dto';
+import { Controller, Get, Param, Post, Body, ParseIntPipe } from '@nestjs/common';
+import { MatchingService } from '../matchings/matchings.service';
+import { User } from '../users/entities/user.entity';
 
-@Controller('matchings')
-export class MatchingsController {
-  constructor(private readonly matchingsService: MatchingsService) {}
+@Controller('matching')
+export class MatchingController {
+  constructor(private readonly matchingService: MatchingService) {}
 
+  // 매칭 상대 정보를 10명씩 조회
+  @Get(':userId')
+  async getMatchingUsers(@Param('userId', ParseIntPipe) userId: number): Promise<User[]> {
+    return this.matchingService.getMatchingUsers(userId);
+  }
+
+  // 매칭 결과를 저장
   @Post()
-  create(@Body() createMatchingDto: CreateMatchingDto) {
-    return this.matchingsService.create(createMatchingDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.matchingsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.matchingsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMatchingDto: UpdateMatchingDto) {
-    return this.matchingsService.update(+id, updateMatchingDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.matchingsService.remove(+id);
+  async saveMatchingResult(
+    @Body('userId', ParseIntPipe) userId: number,
+    @Body('targetUserId', ParseIntPipe) targetUserId: number,
+    @Body('isMatch') isMatch: boolean,
+  ): Promise<void> {
+    await this.matchingService.saveMatchingResult(userId, targetUserId, isMatch);
   }
 }

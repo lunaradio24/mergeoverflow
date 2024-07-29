@@ -27,7 +27,7 @@ import { Heart } from '../../matchings/entities/heart.entity';
 import { ChatMessage } from '../../chat-rooms/entities/chat-message.entity';
 import { ChatRoom } from '../../chat-rooms/entities/chat-room.entity';
 import { Account } from '../../auth/entities/account.entity';
-import { IsEnum, IsInt, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 @Entity({ name: 'users' })
 export class User {
@@ -98,9 +98,9 @@ export class User {
   @Column({ type: 'enum', enum: Region })
   region: Region;
 
-  @IsNotEmpty({ message: '자기소개를 기깔라게 작성해주세요.' })
+  @IsOptional()
   @IsString()
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   bio: string;
 
   @CreateDateColumn()
