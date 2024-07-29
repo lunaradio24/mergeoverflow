@@ -12,6 +12,7 @@ import { UserToInterestDto } from '../interest/dto/userToInterest.dto';
 import { UserToInterest } from './entities/user-to-interest.entity';
 import { UpdatePassWordDto } from './dto/updatePassWord.dto';
 import { Account } from 'src/auth/entities/account.entity';
+import { CheckNickNameDto } from './dto/checkNickName.dto';
 
 @Injectable()
 export class UsersService {
@@ -168,6 +169,21 @@ export class UsersService {
     });
 
     return updatePassWord;
+  }
+
+  async checkName(checkNickNameDto: CheckNickNameDto) {
+    // 1.userRepository에 같은 닉네임이 있는지 확인
+    const checkName = await this.userRepository.findOne({
+      where: { nickname: checkNickNameDto.nickname },
+    });
+
+    // 2, 있다면 에러를 발생
+    if (checkName) {
+      throw new BadRequestException('이미 존재하는 닉네임입니다.');
+    }
+
+    // 없다면 반환
+    return;
   }
 
   // 회원 변경 가능한 정보 데이터에 저장 // 영진님 쓰세요.
