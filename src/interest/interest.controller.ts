@@ -24,7 +24,7 @@ export class InterestController {
   async create(@Body() adminInterestDto: AdminInterestDto) {
     // @Req() req: any,
     const data = await this.interestService.create(adminInterestDto);
-
+    // req.user
     return {
       statusCode: HttpStatus.CREATED,
       message: '관심사 생성에 성공했습니다.',

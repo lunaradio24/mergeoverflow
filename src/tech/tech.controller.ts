@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
 import { TechService } from './tech.service';
 import { AdminTechDto } from './dto/adminTechDto';
 
@@ -6,14 +6,28 @@ import { AdminTechDto } from './dto/adminTechDto';
 export class TechController {
   constructor(private readonly techService: TechService) {}
 
+  @UseGuards() // 관리자만 가능
   @Post()
-  create(@Body() adminTechDto: AdminTechDto) {
-    return this.techService.create(adminTechDto);
+  async create(@Body() adminTechDto: AdminTechDto) {
+    // @Req() req: any,
+    const data = await this.techService.create(adminTechDto);
+    // req.user
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: '기술 생성에 성공했습니다.',
+      data,
+    };
   }
 
   @Get()
-  findAll() {
-    return this.techService.findAll();
+  async findAll() {
+    const data = await this.techService.findAll();
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: '기술 목록 조회를 성공했습니다.',
+      data,
+    };
   }
 
   @Get(':id')
