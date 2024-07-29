@@ -44,6 +44,26 @@ export default class AccountSeeder implements Seeder {
         password: await hash('test1234!', 10),
         phoneNum: '010-0000-0005',
       },
+      {
+        password: await hash('test1234!', 10),
+        phoneNum: '010-0000-0006',
+      },
+      {
+        password: await hash('test1234!', 10),
+        phoneNum: '010-0000-0007',
+      },
+      {
+        password: await hash('test1234!', 10),
+        phoneNum: '010-0000-0008',
+      },
+      {
+        password: await hash('test1234!', 10),
+        phoneNum: '010-0000-0009',
+      },
+      {
+        password: await hash('test1234!', 10),
+        phoneNum: '010-0000-0010',
+      },
     ]);
   }
 }
