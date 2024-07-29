@@ -74,7 +74,7 @@ export class UsersController {
   }
 
   // 닉네임 중복 확인(이거 아마 auth에서 쓸거 같은데 왜 여기서??)
-  @Post()
+  @Post('checkNickName')
   async checkNickName(@Body() checkNickNameDto: CheckNickNameDto) {
     const data = await this.usersService.checkName(checkNickNameDto);
 
