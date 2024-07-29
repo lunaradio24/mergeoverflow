@@ -12,11 +12,13 @@ export class TechService {
 
   // 기술 목록 생성
   async create(adminTechDto: AdminTechDto) {
+    // user: any,
+
     // // 1. 내가 관리자인지 확인
     // const userId = user.id;
 
     // // 2. 관리자가 아니라면 권한 없음으로 에러 발생
-    // const checkedAdmin = await this.interestRepository.findOne({
+    // const checkedAdmin = await this.techRepository.findOne({
     //   where: { id: userId },
     // });
 
@@ -43,8 +45,15 @@ export class TechService {
 
   // 기술 수정
   async update(id: number, adminTechDto: AdminTechDto) {
+    // user: any,
+
     // 관리자 ID가 맞는지 확인
     // const userId = user.id
+
+    // // 2. 관리자가 아니라면 권한 없음으로 에러 발생
+    // const checkedAdmin = await this.techRepository.findOne({
+    //   where: { id: userId },
+    // });
 
     // 아니라면 배출
     // if(!userId){
@@ -74,7 +83,33 @@ export class TechService {
     return updateTech;
   }
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} tech`;
-  // }
+  // 기술 삭제
+  async remove(id: number) {
+    // user: any,
+
+    // 관리자 ID가 맞는지 확인
+    // const userId = user.id
+
+    // // 2. 관리자가 아니라면 권한 없음으로 에러 발생
+    // const checkedAdmin = await this.techRepository.findOne({
+    //   where: { id: userId },
+    // });
+
+    // 아니라면 배출
+    // if(!userId){
+    //   throw new NotFoundException("허가 받지 않은 사람입니다.")
+    // }
+
+    const findTech = await this.techRepository.findOne({
+      where: { id },
+    });
+
+    if (!findTech) {
+      throw new BadRequestException('존재하지 않는 ID입니다.');
+    }
+
+    const deleteTech = await this.techRepository.delete(id);
+
+    return deleteTech;
+  }
 }

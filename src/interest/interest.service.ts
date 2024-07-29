@@ -12,6 +12,7 @@ export class InterestService {
   // 관심사 DB 등록
   async create(adminInterestDto: AdminInterestDto) {
     // user: any,
+
     // // 1. 내가 관리자인지 확인
     // const userId = user.id;
 
@@ -51,6 +52,7 @@ export class InterestService {
   // 관심사 업데이트
   async update(id: number, adminInterestDto: AdminInterestDto) {
     // user: any,
+
     // // 1. 내가 관리자인지 확인
     // const userId = user.id;
 
@@ -89,6 +91,7 @@ export class InterestService {
   // 관심사 삭제
   async remove(id: number) {
     // user: any,
+
     // // 1. 내가 관리자인지 확인
     // const userId = user.id;
 

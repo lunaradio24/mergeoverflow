@@ -54,8 +54,14 @@ export class TechController {
     };
   }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.techService.remove(+id);
-  // }
+  @UseGuards() // 관리자만 가능
+  @Delete(':id')
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    await this.techService.remove(id);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: '기술 삭제이 완료되었습니다.',
+    };
+  }
 }
