@@ -45,7 +45,7 @@ export class InterestController {
 
   @UseGuards() // 관리자만
   @Patch(':id')
-  async update(@Param('id', ParseIntPipe) id: number, @Body() adminInterestDto: AdminInterestDto) {
+  async update(@Param('id') id: number, @Body() adminInterestDto: AdminInterestDto) {
     // @Req() req: any,
     const data = await this.interestService.update(id, adminInterestDto);
     return {
@@ -57,7 +57,7 @@ export class InterestController {
 
   @UseGuards() // 관리자만
   @Delete(':id')
-  async remove(@Param('id', ParseIntPipe) id: number) {
+  async remove(@Param('id') id: number) {
     // @Req() req: any,
     await this.interestService.remove(id);
 
