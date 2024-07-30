@@ -16,10 +16,3 @@ export class Interest {
   @OneToMany(() => UserToInterest, (userToInterest) => userToInterest.interest)
   userToInterests: UserToInterest[];
 }
-
-// // 1번이 맞을 지?
-
-// @IsNotEmpty()
-// @IsString()
-// @Column({ type: 'varchar' })
-// interestName: string;

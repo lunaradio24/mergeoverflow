@@ -14,9 +14,8 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateDetailUserDto } from './dto/create-detail.dto';
-import { UserToInterestDto } from '../interest/dto/userToInterest.dto';
-import { UpdatePassWordDto } from './dto/updatePassWord.dto';
-import { CheckNickNameDto } from './dto/checkNickName.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
+import { CheckNicknameDto } from './dto/check-nickname.dto';
 import { UpdateProfileDto } from './dto/update-user.dto';
 
 @Controller('users')
@@ -59,20 +58,11 @@ export class UsersController {
     };
   }
 
-  // 영진님 쓰세요.
-  @UseGuards()
-  @Patch(':id')
-  async createDetailUser(@Body() createDetailUserDto: CreateDetailUserDto) {
-    const data = await this.usersService.createDetailUser(createDetailUserDto);
-
-    return data;
-  }
-
   //비밀번호 수정
   @UseGuards() // 로그인한 사람만 가능하게
   @Patch('password/:id')
-  async updatePassWord(@Param('id') id: number, @Body() updatePassWordDto: UpdatePassWordDto) {
-    const data = await this.usersService.updatePassWord(id, updatePassWordDto);
+  async updatePassword(@Param('id') id: number, @Body() UpdatePasswordDto: UpdatePasswordDto) {
+    const data = await this.usersService.updatePassword(id, UpdatePasswordDto);
 
     return {
       statusCode: HttpStatus.OK,
@@ -82,9 +72,9 @@ export class UsersController {
   }
 
   // 닉네임 중복 확인(이거 아마 auth에서 쓸거 같은데 왜 여기서??)
-  @Post('checkNickName')
-  async checkNickName(@Body() checkNickNameDto: CheckNickNameDto) {
-    const data = await this.usersService.checkName(checkNickNameDto);
+  @Post('checkNickname')
+  async checkNickname(@Body() checkNicknameDto: CheckNicknameDto) {
+    const data = await this.usersService.checkName(checkNicknameDto);
 
     return {
       statusCode: HttpStatus.OK,
@@ -92,9 +82,4 @@ export class UsersController {
       data,
     };
   }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.usersService.remove(+id);
-  // }
 }
