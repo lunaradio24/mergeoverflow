@@ -1,5 +1,4 @@
 import { PartialType } from '@nestjs/swagger';
-import { CreateUserDto } from './create-user.dto';
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Frequency } from '../types/frequency.type';
 import { Column } from 'typeorm';

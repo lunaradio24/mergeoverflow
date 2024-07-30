@@ -16,7 +16,7 @@ import { join } from 'path';
 import { mailerModuleOptions } from './configs/mailer.config';
 import { InterestModule } from './interest/interest.module';
 import { TechModule } from './tech/tech.module';
-
+import { SmsModule } from './auth/sms/sms.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -39,6 +39,7 @@ import { TechModule } from './tech/tech.module';
     }),
     InterestModule,
     TechModule,
+    SmsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
