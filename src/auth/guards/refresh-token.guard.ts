@@ -1,5 +1,3 @@
-// src/auth/guards/refresh-token.guard.ts
-
 import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
