@@ -30,7 +30,7 @@ export class ChatMessage {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => ChatRoom, (room) => room.messages)
+  @ManyToOne(() => ChatRoom, (room) => room.messages, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'room_id', referencedColumnName: 'id' })
   room: ChatRoom;
 
