@@ -66,18 +66,37 @@ export class MatchingService {
   async saveMatchingResult(userId: number, targetUserId: number, interactionType: InteractionType) {
     // 자기 자신을 좋아요 또는 싫어요 하는지 검증
     if (userId === targetUserId) {
-      throw new BadRequestException('You cannot like or dislike yourself.');
+      throw new BadRequestException('자기 자신을 좋아요 또는 싫어요 할 수 없습니다.');
     }
 
     // userId와 targetUserId가 존재하는지 확인
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException(`User with ID ${userId} not found.`);
+      throw new NotFoundException(`사용자를 찾을 수 없습니다.`);
     }
 
     const targetUser = await this.userRepository.findOne({ where: { id: targetUserId } });
     if (!targetUser) {
-      throw new NotFoundException(`User with ID ${targetUserId} not found.`);
+      throw new NotFoundException(`대상 사용자를 찾을 수 없습니다.`);
+    }
+
+    // 순차적으로 처리되었는지 확인
+    const existingMatchings = await this.matchingRepository.find({
+      where: {
+        userId,
+        interactionType: IsNull(),
+      },
+      order: { createdAt: 'ASC' },
+    });
+
+    if (existingMatchings.length === 0) {
+      throw new BadRequestException('매칭할 사용자가 없습니다.');
+    }
+
+    const nextTargetUserId = existingMatchings[0].targetUserId;
+
+    if (nextTargetUserId !== targetUserId) {
+      throw new BadRequestException('제공된 순서대로 사용자와 상호작용하세요.');
     }
 
     // 매칭 정보 업데이트
