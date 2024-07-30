@@ -57,7 +57,9 @@ import { accountFactory } from './factories/account.factory';
   await dataSource.initialize();
 
   // Run seeders in order
-  await runSeeders(dataSource, { seeds: [AccountSeeder, UserSeeder] });
+  await runSeeders(dataSource, { seeds: [AccountSeeder] });
+  await runSeeders(dataSource, { seeds: [UserSeeder] });
+
   console.log('Seeding completed');
   await app.close();
   process.exit();
