@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, Not, IsNull } from 'typeorm';
 import { User } from '../users/entities/user.entity';
@@ -14,7 +14,6 @@ export class MatchingService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Matching)
     private readonly matchingRepository: Repository<Matching>,
-    @Inject(forwardRef(() => ChatRoomsService))
     private readonly chatRoomsService: ChatRoomsService,
   ) {}
 
