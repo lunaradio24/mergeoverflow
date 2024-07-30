@@ -33,6 +33,6 @@ import { Notification } from '../notifications/entities/notification.entity';
     ]),
   ],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService, TypeOrmModule],
 })
 export class UsersModule {}

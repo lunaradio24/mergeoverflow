@@ -113,7 +113,8 @@ export class AuthService {
     });
   }
 
-  async validateUser(phoneNum: string, password: string): Promise<any> {
+  async validateUser(signInDto: SignInDto) {
+    const { phoneNum, password } = signInDto;
     const account = await this.accountRepository.findOne({ where: { phoneNum } });
     if (account && (await compare(password, account.password))) {
       return account;
@@ -121,7 +122,7 @@ export class AuthService {
     return null;
   }
 
-  async validateUserById(userId: number): Promise<any> {
+  async validateUserById(userId: number) {
     const account = await this.accountRepository.findOne({ where: { id: userId } });
     if (account) {
       return account;
