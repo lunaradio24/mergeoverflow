@@ -5,7 +5,7 @@ import { RedisService } from '../../redis/redis.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Account } from '../entities/account.entity';
-import { VERIFICATION_CODE_EXPIRATION } from './constants/sms.constants';
+import { VERIFICATION_CODE_EXPIRATION } from '../constants/sms.constants';
 
 @Injectable()
 export class SmsService implements OnModuleInit {
