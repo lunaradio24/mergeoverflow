@@ -7,7 +7,6 @@ import { Repository } from 'typeorm';
 import { Interest } from './entities/interest.entity';
 import { CreateTechDto } from './dto/tech.dto';
 import { Tech } from './entities/tech.entity';
-import { UserToInterestDto } from '../interest/dto/userToInterest.dto';
 import { UserToInterest } from './entities/user-to-interest.entity';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { Account } from 'src/auth/entities/account.entity';
