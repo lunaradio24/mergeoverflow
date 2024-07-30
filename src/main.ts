@@ -16,6 +16,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalFilters(new HttpErrorFilter());
+  app.enableCors();
 
   const document = SwaggerModule.createDocument(app, swaggerBuilder);
   SwaggerModule.setup('api', app, document, swaggerOptions);
