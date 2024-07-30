@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { AdminTechDto } from './dto/adminTechDto';
-import { UserToTechDto } from './dto/userToTechDto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Tech } from './entities/tech.entity';
+
 import { Repository } from 'typeorm';
+import { CreateTechDto } from 'src/users/dto/tech.dto';
+import { Tech } from '../users/entities/tech.entity';
 
 @Injectable()
 export class TechService {
@@ -11,7 +11,7 @@ export class TechService {
   private readonly techRepository: Repository<Tech>;
 
   // 기술 목록 생성
-  async create(adminTechDto: AdminTechDto) {
+  async create(createTechDto: CreateTechDto) {
     // user: any,
 
     // // 1. 내가 관리자인지 확인
@@ -27,7 +27,7 @@ export class TechService {
     // }
 
     // 입력한 tech 저장
-    const saveTech = await this.techRepository.save(adminTechDto);
+    const saveTech = await this.techRepository.save(createTechDto);
 
     return saveTech;
   }
@@ -44,7 +44,7 @@ export class TechService {
   }
 
   // 기술 수정
-  async update(id: number, adminTechDto: AdminTechDto) {
+  async update(id: number, createTechDto: CreateTechDto) {
     // user: any,
 
     // 관리자 ID가 맞는지 확인
@@ -71,7 +71,7 @@ export class TechService {
     }
 
     // 맞으면 새로운 것을 업데이트
-    await this.techRepository.update({ id }, adminTechDto);
+    await this.techRepository.update({ id }, createTechDto);
 
     // 업데이트 한 것들 다시 조회
     const updateTech = await this.techRepository.findOne({

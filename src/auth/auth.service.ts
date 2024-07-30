@@ -19,6 +19,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { compare, hash } from 'bcrypt';
 import { SignInDto } from './dto/sign-in.dto';
+import { MAX_INTERESTS, MAX_TECHS, MIN_INTERESTS, MIN_TECHS } from './constants/auth.constants';
 
 @Injectable()
 export class AuthService {
@@ -81,14 +82,15 @@ export class AuthService {
       const savedAccount = await manager.save(account);
 
       // User 데이터 생성
-      if (interests.length < 1 || interests.length > 5) {
-        throw new BadRequestException('관심사는 최소 1개, 최대 5개 선택해야 합니다.');
+      if (interests.length < MIN_INTERESTS || interests.length > MAX_INTERESTS) {
+        throw new BadRequestException(`관심사는 최소 ${MIN_INTERESTS}개, 최대 ${MAX_INTERESTS}개 선택해야 합니다.`);
       }
 
-      if (techs.length < 1 || techs.length > 5) {
-        throw new BadRequestException('기술 스택은 최소 1개, 최대 5개 선택해야 합니다.');
+      if (techs.length < MIN_TECHS || techs.length > MAX_TECHS) {
+        throw new BadRequestException(`기술 스택은 최소 ${MIN_TECHS}개, 최대 ${MAX_TECHS}개 선택해야 합니다.`);
       }
 
+      //평범한 객체(userData)를 User 클래스의 인스턴스로 변환
       const user = plainToClass(User, userData);
       user.accountId = savedAccount.id;
       const savedUser = await manager.save(user);

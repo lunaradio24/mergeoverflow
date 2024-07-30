@@ -12,7 +12,7 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { InterestService } from './interest.service';
-import { AdminInterestDto } from './dto/adminInterest.dto';
+import { InterestDto } from 'src/users/dto/interest.dto';
 // import { UpdateInterestDto } from './dto/update-interest.dto';
 
 @Controller('interest')
@@ -21,9 +21,9 @@ export class InterestController {
 
   @UseGuards() // 관리자만
   @Post()
-  async create(@Body() adminInterestDto: AdminInterestDto) {
+  async create(@Body() interestDto: InterestDto) {
     // @Req() req: any,
-    const data = await this.interestService.create(adminInterestDto);
+    const data = await this.interestService.create(interestDto);
     // req.user
     return {
       statusCode: HttpStatus.CREATED,
@@ -45,9 +45,9 @@ export class InterestController {
 
   @UseGuards() // 관리자만
   @Patch(':id')
-  async update(@Param('id') id: number, @Body() adminInterestDto: AdminInterestDto) {
+  async update(@Param('id') id: number, @Body() interestDto: InterestDto) {
     // @Req() req: any,
-    const data = await this.interestService.update(id, adminInterestDto);
+    const data = await this.interestService.update(id, interestDto);
     return {
       statusCode: HttpStatus.OK,
       message: '관심사 수정에 성공했습니다.',

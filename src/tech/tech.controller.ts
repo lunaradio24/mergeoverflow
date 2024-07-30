@@ -12,7 +12,7 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { TechService } from './tech.service';
-import { AdminTechDto } from './dto/adminTechDto';
+import { CreateTechDto } from 'src/users/dto/tech.dto';
 
 @Controller('tech')
 export class TechController {
@@ -20,9 +20,9 @@ export class TechController {
 
   @UseGuards() // 관리자만 가능
   @Post()
-  async create(@Body() adminTechDto: AdminTechDto) {
+  async create(@Body() createTechDto: CreateTechDto) {
     // @Req() req: any,
-    const data = await this.techService.create(adminTechDto); // req.user
+    const data = await this.techService.create(createTechDto); // req.user
     return {
       statusCode: HttpStatus.CREATED,
       message: '기술 생성에 성공했습니다.',
@@ -44,8 +44,8 @@ export class TechController {
   @UseGuards() // 관리자만 가능
   @Patch(':id')
   // @Req() req: any,
-  async update(@Param('id') id: number, @Body() adminTechDto: AdminTechDto) {
-    const data = await this.techService.update(id, adminTechDto); // req.user
+  async update(@Param('id') id: number, @Body() createTechDto: CreateTechDto) {
+    const data = await this.techService.update(id, createTechDto); // req.user
 
     return {
       statusCode: HttpStatus.OK,
@@ -61,7 +61,7 @@ export class TechController {
 
     return {
       statusCode: HttpStatus.OK,
-      message: '기술 삭제이 완료되었습니다.',
+      message: '기술 삭제가 완료되었습니다.',
     };
   }
 }
