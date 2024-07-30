@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString, IsStrongPassword } from 'class-validator';
 import { Column } from 'typeorm';
 
-export class UpdatePassWordDto {
+export class UpdatePasswordDto {
   @IsNotEmpty({ message: '비밀번호를 입력해주세요.' })
   @IsString()
   @Column({ select: false })

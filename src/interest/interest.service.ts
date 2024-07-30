@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { AdminInterestDto } from './dto/adminInterest.dto';
+
 import { InjectRepository } from '@nestjs/typeorm';
-import { Interest } from './entities/Interest.entity';
+import { Interest } from '../users/entities/interest.entity';
 import { Repository } from 'typeorm';
+import { InterestDto } from 'src/users/dto/interest.dto';
 
 @Injectable()
 export class InterestService {
@@ -10,7 +11,7 @@ export class InterestService {
   private readonly adminInterestRepository: Repository<Interest>;
 
   // 관심사 DB 등록
-  async create(adminInterestDto: AdminInterestDto) {
+  async create(interestDto: InterestDto) {
     // user: any,
 
     // // 1. 내가 관리자인지 확인
@@ -27,7 +28,7 @@ export class InterestService {
 
     // 3. DTO에서 입력 받은 데이터 입력
     try {
-      const createdInterest = await this.adminInterestRepository.save(adminInterestDto);
+      const createdInterest = await this.adminInterestRepository.save(interestDto);
 
       return createdInterest;
     } catch (error) {
@@ -50,7 +51,7 @@ export class InterestService {
   }
 
   // 관심사 업데이트
-  async update(id: number, adminInterestDto: AdminInterestDto) {
+  async update(id: number, interestDto: InterestDto) {
     // user: any,
 
     // // 1. 내가 관리자인지 확인
@@ -73,7 +74,7 @@ export class InterestService {
       throw new BadRequestException('존재하지 않는 Id입니다.');
     }
 
-    await this.adminInterestRepository.update({ id }, { interestName: adminInterestDto.interestName });
+    await this.adminInterestRepository.update({ id }, { interest: interestDto.interest });
 
     const updateInterest = await this.adminInterestRepository.findOne({
       where: { id },

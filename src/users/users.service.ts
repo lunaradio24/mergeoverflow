@@ -7,11 +7,10 @@ import { Repository } from 'typeorm';
 import { Interest } from './entities/interest.entity';
 import { CreateTechDto } from './dto/tech.dto';
 import { Tech } from './entities/tech.entity';
-import { UserToInterestDto } from '../interest/dto/userToInterest.dto';
 import { UserToInterest } from './entities/user-to-interest.entity';
-import { UpdatePassWordDto } from './dto/updatePassWord.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 import { Account } from 'src/auth/entities/account.entity';
-import { CheckNickNameDto } from './dto/checkNickName.dto';
+import { CheckNicknameDto } from './dto/check-nickname.dto';
 
 import { compare, hash } from 'bcrypt';
 
@@ -97,62 +96,13 @@ export class UsersService {
     return updateProfile;
   }
 
-  // // 회원 관심사 저장
-  // async createUserInterest(user: any, interestDto: UserToInterestDto) {
-  //   // 1. 지금 행동하는 사람이 내가 맞는지 확인
-  //   const userId = user.id;
-
-  //   const data = await this.userRepository.findOne({
-  //     where: { id: userId },
-  //     relations: ['userToInterests'], //typeOrm에 의해서 문자열로 받고 나중에 확장성을 위해서 []로 받는다.
-  //   });
-
-  //   // 2. 아니라면 에러를 발생 시켜서 내보내기
-  //   if (!data) {
-  //     throw new NotFoundException('허용되지 않는 사용자입니다.');
-  //   }
-
-  //   // 기존의 회원의 관심사 삭제 및 초기화
-  //   await this.userToInterestRepository.delete({ userId });
-
-  //   // 새로운 관심사 저장
-  //   const userInterests = interestDto.interestIds.map((interestId) => {
-  //     const userToInterest = new UserToInterest();
-  //     userToInterest.userId = userId;
-  //     userToInterest.interestId = interestId;
-  //     return userToInterest;
-  //   });
-
-  //   await this.userToInterestRepository.save(userInterests);
-
-  //   // 업데이트된 사용자 데이터를 반환합니다.
-  //   const updatedUser = await this.userRepository.findOne({
-  //     where: { id: userId },
-  //     relations: ['userToInterests', 'userToInterests.interest'], // 새롭게 저장된 관심사와 함께 사용자 데이터를 로드합니다.
-  //   });
-
-  //   return updatedUser;
-  // }
-
-  // findOne(id: number) {
-  //   return `This action returns a #${id} user`;
-  // }
-
-  // update(id: number, updateUserDto: UpdateUserDto) {
-  //   return `This action updates a #${id} user`;
-  // }
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} user`;
-  // }
-
   /**
    * 비밀번호 수정
    * @param id
-   * @param updatePassWordDto
+   * @param updatePasswordDto
    * @returns
    */
-  async updatePassWord(id: number, updatePassWordDto: UpdatePassWordDto) {
+  async updatePassword(id: number, updatePasswordDto: UpdatePasswordDto) {
     // 기존의 패스워드를 입력해서 존재하는 유저인지 확인
     const findUser = await this.accountRepository.findOne({
       where: {
@@ -165,29 +115,29 @@ export class UsersService {
     }
 
     // 비밀번호 비교
-    const existingPassWord = await compare(updatePassWordDto.password, findUser.password);
+    const existingPassword = await compare(updatePasswordDto.password, findUser.password);
 
-    if (!existingPassWord) {
+    if (!existingPassword) {
       throw new BadRequestException('비밀번호가 일치하지 않습니다.');
     }
 
     // 새로운 비밀번호 해싱 // 10을 content에다가 넣을까?
-    const hashedNewPassword = await hash(updatePassWordDto.newPassword, 10);
+    const hashedNewPassword = await hash(updatePasswordDto.newPassword, 10);
 
     // 비밀번호는 회원정보(auth)니까 authRepository가 되나?
     await this.accountRepository.update({ id }, { password: hashedNewPassword });
 
-    const updatePassWord = await this.accountRepository.findOne({
+    const updatePassword = await this.accountRepository.findOne({
       where: { id },
     });
 
-    return updatePassWord;
+    return updatePassword;
   }
 
-  async checkName(checkNickNameDto: CheckNickNameDto) {
+  async checkName(checkNicknameDto: CheckNicknameDto) {
     // 1.userRepository에 같은 닉네임이 있는지 확인
     const checkName = await this.userRepository.findOne({
-      where: { nickname: checkNickNameDto.nickname },
+      where: { nickname: checkNicknameDto.nickname },
     });
 
     // 2, 있다면 에러를 발생
@@ -198,24 +148,4 @@ export class UsersService {
     // 없다면 반환
     return;
   }
-
-  // 회원 변경 가능한 정보 데이터에 저장 // 영진님 쓰세요.
-  async createDetailUser(createDetailUserDto: CreateDetailUserDto) {
-    const data = { ...createDetailUserDto };
-
-    await this.userRepository.save(data);
-
-    return data;
-  }
-
-  // 회원 기술사 저장 // 영진님 쓰세요.
-  async createUserTech(createTechDto: CreateTechDto) {
-    const data = { ...createTechDto };
-
-    await this.techRepository.save(data);
-
-    return data;
-  }
-
-  // 회원 변경 불가한 정보 데이터에 저장// account 정보 저장 영진
 }

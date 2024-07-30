@@ -3,7 +3,7 @@ import { InterestService } from './interest.service';
 import { InterestController } from './interest.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
-import { Interest } from './entities/Interest.entity';
+import { Interest } from '../users/entities/interest.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, Interest])],

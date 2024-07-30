@@ -7,9 +7,9 @@ export class Tech {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '기술을 입력해주세요.' })
   @IsString()
-  @Column({ type: 'varchar' })
+  @Column({ unique: true })
   techName: string;
 
   @OneToMany(() => UserToTech, (userToTech) => userToTech.tech)
