@@ -1,34 +1,31 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { MatchingsService } from './matchings.service';
-import { CreateMatchingDto } from './dto/create-matching.dto';
-import { UpdateMatchingDto } from './dto/update-matching.dto';
+import { Controller, Get, Post, Body, Query, ParseIntPipe } from '@nestjs/common';
+import { MatchingService } from '../matchings/matchings.service';
 
 @Controller('matchings')
-export class MatchingsController {
-  constructor(private readonly matchingsService: MatchingsService) {}
+export class MatchingController {
+  constructor(private readonly matchingService: MatchingService) {}
 
-  @Post()
-  create(@Body() createMatchingDto: CreateMatchingDto) {
-    return this.matchingsService.create(createMatchingDto);
-  }
-
+  // 매칭 상대 정보를 10명씩 조회 (interactionType이 null인 유저들)
   @Get()
-  findAll() {
-    return this.matchingsService.findAll();
+  async getMatchingUsers(@Query('userId', ParseIntPipe) userId: number) {
+    return this.matchingService.getMatchingUsers(userId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.matchingsService.findOne(+id);
+  // 좋아요 처리
+  @Post('like')
+  async likeUser(
+    @Body('userId', ParseIntPipe) userId: number,
+    @Body('targetUserId', ParseIntPipe) targetUserId: number,
+  ) {
+    await this.matchingService.likeUser(userId, targetUserId);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMatchingDto: UpdateMatchingDto) {
-    return this.matchingsService.update(+id, updateMatchingDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.matchingsService.remove(+id);
+  // 싫어요 처리
+  @Post('dislike')
+  async dislikeUser(
+    @Body('userId', ParseIntPipe) userId: number,
+    @Body('targetUserId', ParseIntPipe) targetUserId: number,
+  ) {
+    await this.matchingService.dislikeUser(userId, targetUserId);
   }
 }

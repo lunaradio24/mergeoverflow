@@ -27,7 +27,7 @@ import { Heart } from '../../matchings/entities/heart.entity';
 import { ChatMessage } from '../../chat-rooms/entities/chat-message.entity';
 import { ChatRoom } from '../../chat-rooms/entities/chat-room.entity';
 import { Account } from '../../auth/entities/account.entity';
-import { IsEnum, IsInt, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 @Entity({ name: 'users' })
 export class User {
@@ -39,17 +39,17 @@ export class User {
   @Column({ type: 'int' })
   accountId: number;
 
-  @IsNotEmpty({message : "생년월일을 입력해주세요."})
+  @IsNotEmpty({ message: '생년월일을 입력해주세요.' })
   @IsString()
   @Column({ type: 'date' })
   birthDate: string;
 
-  @IsNotEmpty({message : "성별을 선택해주세요."})
+  @IsNotEmpty({ message: '성별을 선택해주세요.' })
   @IsEnum(Gender)
   @Column({ type: 'enum', enum: Gender })
   gender: Gender;
 
-  @IsNotEmpty({message : "닉네임을 입력해주세요."})
+  @IsNotEmpty({ message: '닉네임을 입력해주세요.' })
   @IsString()
   @Column({ type: 'varchar' })
   nickname: string;
@@ -58,49 +58,49 @@ export class User {
   @Column({ type: 'int', default: 0 })
   codingLevel: number;
 
-  @IsNotEmpty({message : "흡연 정도를 선택해주세요."})
+  @IsNotEmpty({ message: '흡연 정도를 선택해주세요.' })
   @IsEnum(Frequency)
   @Column({ type: 'enum', enum: Frequency })
   smokingFreq: Frequency;
 
-  @IsNotEmpty({message : "음주 정도를 선택해주세요."})
+  @IsNotEmpty({ message: '음주 정도를 선택해주세요.' })
   @IsEnum(Frequency)
   @Column({ type: 'enum', enum: Frequency })
   drinkingFreq: Frequency;
 
-  @IsNotEmpty({message : "종교를 선택해주세요."})
+  @IsNotEmpty({ message: '종교를 선택해주세요.' })
   @IsEnum(Religion)
   @Column({ type: 'enum', enum: Religion })
   religion: Religion;
 
-  @IsNotEmpty({message : "Mbti를 선택해주세요."})
+  @IsNotEmpty({ message: 'Mbti를 선택해주세요.' })
   @IsEnum(Mbti)
   @Column({ type: 'enum', enum: Mbti })
   mbti: Mbti;
 
-  @IsNotEmpty({message : "키를 해주세요."})
+  @IsNotEmpty({ message: '키를 해주세요.' })
   @IsNumber()
   @Column({ type: 'float' })
   height: number;
 
-  @IsNotEmpty({message : "체형을 선택해주세요."})
+  @IsNotEmpty({ message: '체형을 선택해주세요.' })
   @IsEnum(BodyShape)
   @Column({ type: 'enum', enum: BodyShape })
   bodyShape: BodyShape;
 
-  @IsNotEmpty({message : "반려동물 여부를 선택해주세요."})
+  @IsNotEmpty({ message: '반려동물 여부를 선택해주세요.' })
   @IsEnum(Pet)
   @Column({ type: 'enum', enum: Pet })
   pet: Pet;
 
-  @IsNotEmpty({message : "거주 지역을 선택 해주세요."})
+  @IsNotEmpty({ message: '거주 지역을 선택 해주세요.' })
   @IsEnum(Region)
   @Column({ type: 'enum', enum: Region })
   region: Region;
 
-  @IsNotEmpty({message : "자기소개를 기깔라게 작성해주세요."})
+  @IsOptional()
   @IsString()
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   bio: string;
 
   @CreateDateColumn()
