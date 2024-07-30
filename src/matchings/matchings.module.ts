@@ -8,7 +8,7 @@ import { Matching } from './entities/matching.entity';
 import { ChatRoomsModule } from '../chat-rooms/chat-rooms.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Heart, Matching]), forwardRef(() => ChatRoomsModule)],
+  imports: [TypeOrmModule.forFeature([User, Heart, Matching]), ChatRoomsModule],
   controllers: [MatchingController],
   providers: [MatchingService],
   exports: [MatchingService],

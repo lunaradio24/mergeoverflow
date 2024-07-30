@@ -8,7 +8,7 @@ export class RedisService {
 
   constructor(private readonly configService: ConfigService) {
     const redisHost = this.configService.get<string>('REDIS_HOST');
-    const redisPort = this.configService.get<number>('REDIS_PORT');
+    const redisPort = Number(this.configService.get<number>('REDIS_PORT'));
     const redisPassword = this.configService.get<string>('REDIS_PASSWORD');
 
     this.redis = new Redis({

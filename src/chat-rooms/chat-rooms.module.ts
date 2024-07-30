@@ -11,5 +11,6 @@ import { ChatRoomsGateway } from './chat-rooms.gateway';
   imports: [TypeOrmModule.forFeature([User, ChatRoom, ChatMessage])],
   controllers: [ChatRoomsController],
   providers: [ChatRoomsService, ChatRoomsGateway],
+  exports: [ChatRoomsService],
 })
 export class ChatRoomsModule {}
