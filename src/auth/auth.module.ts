@@ -11,10 +11,14 @@ import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { RedisService } from '../redis/redis.service';
 import { RolesGuard } from './guards/roles.guard';
+import { UsersModule } from '../users/users.module';
+import { UserToInterest } from 'src/users/entities/user-to-interest.entity';
+import { UserToTech } from 'src/users/entities/user-to-tech.entity';
+import { SmsModule } from './sms/sms.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Account, User]),
+    TypeOrmModule.forFeature([Account, User, UserToInterest, UserToTech]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -24,6 +28,8 @@ import { RolesGuard } from './guards/roles.guard';
       inject: [ConfigService],
     }),
     ConfigModule,
+    UsersModule,
+    SmsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, AccessTokenStrategy, RefreshTokenStrategy, LocalStrategy, RedisService, RolesGuard],
