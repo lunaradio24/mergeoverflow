@@ -34,7 +34,7 @@ export class SmsService implements OnModuleInit {
       });
       return response;
     } catch (error) {
-      throw new Error(`Failed to send SMS: ${error.message}`);
+      throw new Error(`SMS 전송 실패: ${error.message}`);
     }
   }
 
@@ -47,7 +47,7 @@ export class SmsService implements OnModuleInit {
     }
 
     const verificationCode = this.createVerificationCode();
-    await this.sendOne(formattedPhoneNum, `[Moyiza] 아래의 인증번호를 입력해주세요\n${verificationCode}`);
+    await this.sendOne(formattedPhoneNum, `[Moyiza] 인증번호를 입력해주세요\n${verificationCode}`);
 
     // 인증코드 유효기간 설정
     const expireAt = Math.floor(Date.now() / 1000) + VERIFICATION_CODE_EXPIRATION;

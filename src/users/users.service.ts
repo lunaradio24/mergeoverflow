@@ -1,5 +1,4 @@
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateProfileDto } from './dto/update-user.dto';
 import { CreateDetailUserDto } from './dto/create-detail.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -219,8 +218,5 @@ export class UsersService {
     return data;
   }
 
-  // 회원 변경 불가한 정보 데이터에 저장
-  async create(createUserDto: CreateUserDto) {
-    return;
-  }
+  // 회원 변경 불가한 정보 데이터에 저장// account 정보 저장 영진
 }

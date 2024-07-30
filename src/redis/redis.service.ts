@@ -1,19 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createRedisClient } from '../utils/redis.utils';
-import { Redis } from '@upstash/redis';
+import { Redis } from 'ioredis';
 
 @Injectable()
 export class RedisService {
   private redis: Redis;
 
   constructor(private readonly configService: ConfigService) {
-    const redisUrl = this.configService.get<string>('REDIS_URL');
-    const redisToken = this.configService.get<string>('REDIS_TOKEN');
-    this.redis = createRedisClient(redisUrl, redisToken);
+    const redisHost = this.configService.get<string>('REDIS_HOST');
+    const redisPort = this.configService.get<number>('REDIS_PORT');
+    const redisPassword = this.configService.get<string>('REDIS_PASSWORD');
+
+    this.redis = new Redis({
+      host: redisHost,
+      port: redisPort,
+      password: redisPassword,
+    });
   }
 
-  async set(key: string, value: string | number): Promise<void> {
+  async set(key: string, value: string): Promise<void> {
     await this.redis.set(key, value);
   }
 
@@ -21,7 +26,7 @@ export class RedisService {
     await this.redis.expireat(key, timestamp);
   }
 
-  async get(key: string): Promise<number> {
+  async get(key: string): Promise<string> {
     return await this.redis.get(key);
   }
 
