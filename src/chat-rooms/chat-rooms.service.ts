@@ -1,10 +1,11 @@
-import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateChatRoomDto } from './dto/create-chat-room.dto';
 import { UpdateChatRoomDto } from './dto/update-chat-room.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChatRoom } from './entities/chat-room.entity';
 import { ChatMessage } from './entities/chat-message.entity';
 import { Repository } from 'typeorm';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ChatRoomsService {
@@ -13,6 +14,8 @@ export class ChatRoomsService {
     private readonly chatRoomRepository: Repository<ChatRoom>,
     @InjectRepository(ChatMessage)
     private readonly chatMessageRepository: Repository<ChatMessage>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
   async createdRoom(user1Id: number, user2Id: number) {
     return await this.chatRoomRepository.save({ user1Id, user2Id });
@@ -27,15 +30,33 @@ export class ChatRoomsService {
     return newMessage;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} chatRoom`;
+  async validateChatRoomToUser(userId: number, roomId: number) {
+    const chatRoom = await this.chatRoomRepository.findOne({
+      where: [
+        { id: roomId, user1Id: userId },
+        { id: roomId, user2Id: userId },
+      ],
+    });
+    if (!chatRoom) {
+      throw new UnauthorizedException('해당 채팅방에 접근 권한이 없습니다.');
+    }
+    return chatRoom;
   }
 
-  update(id: number, updateChatRoomDto: UpdateChatRoomDto) {
-    return `This action updates a #${id} chatRoom`;
+  async exitChatRoom(userId: number, roomId: number) {
+    const chatRoom = await this.validateChatRoomToUser(userId, roomId);
+    if (chatRoom) {
+      await this.chatRoomRepository.delete({ id: roomId });
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} chatRoom`;
+  async findAllChatRoom(userId: number) {
+    return await this.chatRoomRepository.find({
+      where: [{ user1Id: userId }, { user2Id: userId }],
+    });
+  }
+
+  async findUser(userId: number) {
+    return await this.userRepository.findOne({ where: { id: userId }, select: ['nickname'] });
   }
 }

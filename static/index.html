@@ -9,6 +9,7 @@
 
 <body>
     <h1>WebSocket Chat</h1>
+
     <div>
         <label for="user1Id">User 1 ID:</label>
         <input type="number" id="user1Id">
@@ -18,14 +19,36 @@
         <input type="number" id="user2Id">
     </div>
     <button id="createRoomButton">Create Chat Room</button>
-    <br>
+
     <div>
-        <label for="roomId">Room ID:</label>
-        <input type="number" id="roomId">
+        <label for="joinUserId">User ID:</label>
+        <input type="number" id="joinUserId">
     </div>
     <div>
-        <label for="userId">User ID:</label>
-        <input type="number" id="userId">
+        <label for="joinRoomId">Room Id:</label>
+        <input type="number" id="joinRoomId">
+    </div>
+    <button id="joinRoomButton">Join Chat Room</button>
+    <br>
+
+    <div>
+        <label for="exitUserId">User ID:</label>
+        <input type="number" id="exitUserId">
+    </div>
+    <div>
+        <label for="exitRoomId">Room Id:</label>
+        <input type="number" id="exitRoomId">
+    </div>
+    <button id="exitRoomButton">Exit Chat Room</button>
+    <br>
+
+    <div>
+        <label for="sendRoomId">Room ID:</label>
+        <input type="number" id="sendRoomId">
+    </div>
+    <div>
+        <label for="sendUserId">User ID:</label>
+        <input type="number" id="sendUserId">
     </div>
     <div>
         <label for="message">Message:</label>
@@ -36,10 +59,12 @@
 
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script>
-        const socket = io('http://localhost:3001/chat_matchings');
-
+        const socket = io('ws://localhost:3000/chat');
+        const token = ''
         const createRoomButton = document.getElementById('createRoomButton');
         const sendMessageButton = document.getElementById('sendMessageButton');
+        const joinRoomButton = document.getElementById('joinRoomButton');
+        const exitRoomButton = document.getElementById('exitRoomButton');
         const messagesList = document.getElementById('messages');
 
         createRoomButton.addEventListener('click', () => {
@@ -48,11 +73,23 @@
             socket.emit('createdChatRoom', { user1Id: Number(user1Id), user2Id: Number(user2Id) });
         });
 
+        joinRoomButton.addEventListener('click', () => {
+            const userId = document.getElementById('joinUserId').value;
+            const roomId = document.getElementById('joinRoomId').value;
+            socket.emit('join', { userId: Number(userId), roomId: Number(roomId) });
+        });
+
         sendMessageButton.addEventListener('click', () => {
-            const roomId = document.getElementById('roomId').value;
-            const userId = document.getElementById('userId').value;
+            const roomId = document.getElementById('sendRoomId').value;
+            const userId = document.getElementById('sendUserId').value;
             const message = document.getElementById('message').value;
             socket.emit('message', { roomId: Number(roomId), userId: Number(userId), message: message });
+        });
+
+        exitRoomButton.addEventListener('click', () => {
+            const roomId = document.getElementById('exitRoomId').value;
+            const userId = document.getElementById('exitUserId').value;
+            socket.emit('exit', { userId: Number(userId), roomId: Number(roomId) });
         });
 
         socket.on('createdChatRoom', (chatRoom) => {
@@ -63,7 +100,8 @@
 
         socket.on('message', (message) => {
             const item = document.createElement('li');
-            item.textContent = `User ${message.userId}: ${message.message}`;
+            console.log(message)
+            item.textContent = `User ${message.senderId}: ${message.text}`;
             messagesList.appendChild(item);
         });
     </script>
