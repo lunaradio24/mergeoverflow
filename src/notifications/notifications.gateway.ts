@@ -37,6 +37,7 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
     @ConnectedSocket() socket: Socket,
   ) {
     const { userId, message, type } = data;
+    socket.join(userId.toString());
     this.server.to(userId.toString()).emit('reception', { type, message });
     this.logger.log(`알림 : ${userId}:${message},${type}`);
   }

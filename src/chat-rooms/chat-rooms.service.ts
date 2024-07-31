@@ -17,8 +17,9 @@ export class ChatRoomsService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
-  async createdRoom(user1Id: number, user2Id: number) {
-    return await this.chatRoomRepository.save({ user1Id, user2Id });
+  async createdRoom(user1Id: number, user2Id: number): Promise<void> {
+    await this.chatRoomRepository.save({ user1Id, user2Id });
+    return;
   }
 
   async savedMessage(userId: number, roomId: number, message: string) {

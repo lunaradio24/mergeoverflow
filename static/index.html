@@ -59,7 +59,7 @@
     <!-- Notification Section -->
     <div>
         <h2>Notifications</h2>
-        <ul id="notificationsList"></ul>
+        <ul id="notifications"></ul>
     </div>
 
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
@@ -72,7 +72,7 @@
         const joinRoomButton = document.getElementById('joinRoomButton');
         const exitRoomButton = document.getElementById('exitRoomButton');
         const messagesList = document.getElementById('messages');
-        const notificationsList = document.getElementById('notificationsList');
+        const notificationsList = document.getElementById('notifications');
 
 
         createRoomButton.addEventListener('click', () => {
@@ -102,13 +102,13 @@
             chatSocket.emit('exit', { userId: Number(userId), roomId: Number(roomId) });
         });
 
-        socket.on('createdChatRoom', (chatRoom) => {
+        chatSocket.on('createdChatRoom', (chatRoom) => {
             const item = document.createElement('li');
             item.textContent = `Chat room created with ID ${chatRoom.id}`;
             messagesList.appendChild(item);
         });
 
-        socket.on('message', (message) => {
+        chatSocket.on('message', (message) => {
             const item = document.createElement('li');
             item.textContent = `User ${message.senderId}: ${message.text}`;
             messagesList.appendChild(item);

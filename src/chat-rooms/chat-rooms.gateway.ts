@@ -84,3 +84,7 @@ export class ChatRoomsGateway implements OnGatewayInit, OnGatewayConnection, OnG
 // 2. 다시 로그인 했을 때
 // 1. 채팅 메시지를 db에 저장하는 주기 (매번 보낼때마다 저장하는지, 몇초 간격으로 저장하는지, 채팅방을 나가는 시점에 모든 메시지를 한꺼번에 저장하는지)
 // 2. 유저 아이디 2개를 같이 채팅방에 join 시키는 게 맞나? 각각 따로 join 시키는 게 맞는 거 같은데..
+
+// 채팅방 목록 -> 채팅방 (네임스페이스, join)
+
+// 소켓 서버  -> 네임스페이스 여러개 -> 방userId, 방rommId
