@@ -1,46 +1,37 @@
-import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateProfileDto } from './dto/update-user.dto';
-import { CreateDetailUserDto } from './dto/create-detail.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
-import { Interest } from './entities/interest.entity';
-import { CreateTechDto } from './dto/tech.dto';
-import { Tech } from './entities/tech.entity';
-import { UserToInterest } from './entities/user-to-interest.entity';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { Account } from 'src/auth/entities/account.entity';
 import { CheckNicknameDto } from './dto/check-nickname.dto';
-
 import { compare, hash } from 'bcrypt';
 
 @Injectable()
 export class UsersService {
   // Repository 주입
-  @InjectRepository(User)
-  private readonly userRepository: Repository<User>;
-  @InjectRepository(Interest)
-  private readonly interestRepository: Repository<Interest>;
-  @InjectRepository(UserToInterest)
-  private readonly userToInterestRepository: Repository<UserToInterest>;
-  @InjectRepository(Tech)
-  private readonly techRepository: Repository<Tech>;
-  @InjectRepository(Account)
-  private readonly accountRepository: Repository<Account>;
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(Account)
+    private readonly accountRepository: Repository<Account>,
+  ) {}
 
   /**
    * 내 정보 조회, 프로필 조회
    * @param user
    * @returns
    */
+
   // 토큰에서 사용자 정보 추출
-  async find(id: number) {
+  async find(user: any) {
     // JWT 토큰에서 사용자의 ID를 추출해
-    // const userId = user.id;
+    const userId = user.id;
 
     // ID로 사용자를 찾아
     const data = await this.userRepository.findOne({
-      where: { id: id }, //       where: { id: userId },
+      where: { id: userId },
     });
 
     // 사용자의 정보를 반환해
@@ -53,21 +44,17 @@ export class UsersService {
    * @param updateProfileDto
    * @returns
    */
-  async updateUserProfile(id: number, updateProfileDto: UpdateProfileDto) {
-    // user: any,
-    // 1. 지금 행동하는 사람이 내가 맞는지 확인
-    const userId = id; //    const userId = user.id;
+  async updateUserProfile(user: any, updateProfileDto: UpdateProfileDto) {
+    const userId = user.id;
 
-    const data = await this.userRepository.findOne({
+    const foundUser = await this.userRepository.findOne({
       where: { id: userId },
     });
 
-    // 2. 아니라면 에러를 발생 시켜서 내보내기
-    if (!data) {
+    if (!foundUser) {
       throw new NotFoundException('허용되지 않는 사용자입니다.');
     }
 
-    // 3. updateProfileDto로 받은 내용 one or all 업데이트 이때 save?
     await this.userRepository.update(
       // 3-1. update를 하는데 나라는 특정 id를 먼저 찾아야함.(update 메서드의 필수사항)
       { id: userId },
@@ -102,11 +89,21 @@ export class UsersService {
    * @param updatePasswordDto
    * @returns
    */
-  async updatePassword(id: number, updatePasswordDto: UpdatePasswordDto) {
+  async updatePassword(user: any, updatePasswordDto: UpdatePasswordDto) {
+    const userId = user.id;
+
+    const data = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!data) {
+      throw new NotFoundException('허용되지 않는 사용자입니다.');
+    }
+
     // 기존의 패스워드를 입력해서 존재하는 유저인지 확인
     const findUser = await this.accountRepository.findOne({
       where: {
-        id: id,
+        id: userId,
       },
     });
 
@@ -125,10 +122,10 @@ export class UsersService {
     const hashedNewPassword = await hash(updatePasswordDto.newPassword, 10);
 
     // 비밀번호는 회원정보(auth)니까 authRepository가 되나?
-    await this.accountRepository.update({ id }, { password: hashedNewPassword });
+    await this.accountRepository.update(userId, { password: hashedNewPassword });
 
     const updatePassword = await this.accountRepository.findOne({
-      where: { id },
+      where: userId,
     });
 
     return updatePassword;
