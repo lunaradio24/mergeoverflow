@@ -22,6 +22,10 @@ export class RedisService {
     await this.redis.set(key, value);
   }
 
+  async setWithTTL(key: string, value: string, ttl: number): Promise<void> {
+    await this.redis.set(key, value, 'EX', ttl);
+  }
+
   async expireAt(key: string, timestamp: number): Promise<void> {
     await this.redis.expireat(key, timestamp);
   }

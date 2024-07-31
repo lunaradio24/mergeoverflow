@@ -19,19 +19,14 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { compare, hash } from 'bcrypt';
 import { SignInDto } from './dto/sign-in.dto';
-import { MAX_INTERESTS, MAX_TECHS, MIN_INTERESTS, MIN_TECHS } from './constants/auth.constants';
+import { CODE_TTL, MAX_INTERESTS, MAX_TECHS, MIN_INTERESTS, MIN_TECHS } from './constants/auth.constants';
+import { formatPhoneNumber } from '../utils/phone.util';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(Account)
     private readonly accountRepository: Repository<Account>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-    @InjectRepository(UserToInterest)
-    private readonly userToInterestRepository: Repository<UserToInterest>,
-    @InjectRepository(UserToTech)
-    private readonly userToTechRepository: Repository<UserToTech>,
     private readonly smsService: SmsService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -40,7 +35,7 @@ export class AuthService {
   ) {}
 
   async sendSmsForVerification(phoneNum: string) {
-    const formattedPhoneNum = phoneNum.replace(/-/g, '');
+    const formattedPhoneNum = formatPhoneNumber(phoneNum);
     const foundAccount = await this.accountRepository.findOne({ where: { phoneNum: formattedPhoneNum } });
 
     if (foundAccount) {
@@ -51,20 +46,32 @@ export class AuthService {
   }
 
   async verifyCode(phoneNum: string, code: string) {
+    const formattedPhoneNum = formatPhoneNumber(phoneNum);
     const storedPhoneNum = await this.redisService.get(code);
-    if (storedPhoneNum !== phoneNum) {
+    if (storedPhoneNum !== formattedPhoneNum) {
       throw new NotFoundException('잘못된 인증번호입니다.');
     }
+
+    // 인증된 전화번호를 Redis에 저장 (유효기간 설정)
+    await this.redisService.setWithTTL(`verified_${formattedPhoneNum}`, formattedPhoneNum, CODE_TTL);
+
     return { message: '인증 성공' };
   }
 
   async signUp(signUpDto: SignUpDto) {
-    const { phoneNum, password, code, interests, techs, ...userData } = signUpDto;
+    const { phoneNum, password, interests, techs, ...userData } = signUpDto;
+    const formattedPhoneNum = formatPhoneNumber(phoneNum);
 
-    // 전화번호 인증 코드 검증
-    const verificationResult = await this.verifyCode(phoneNum, code);
-    if (verificationResult.message !== '인증 성공') {
-      throw new BadRequestException('인증 실패');
+    // 전화번호 인증 확인
+    const verifiedPhoneNum = await this.redisService.get(`verified_${formattedPhoneNum}`);
+    if (!verifiedPhoneNum) {
+      throw new BadRequestException('전화번호 인증이 필요합니다.');
+    }
+
+    // 전화번호 중복 확인
+    const existingAccount = await this.accountRepository.findOne({ where: { phoneNum: formattedPhoneNum } });
+    if (existingAccount) {
+      throw new ConflictException('이미 존재하는 전화번호입니다.');
     }
 
     // 비밀번호 해싱
@@ -72,14 +79,17 @@ export class AuthService {
     const hashedPassword = await hash(password, hashRounds);
 
     // 트랜잭션 시작
-    return await this.connection.transaction(async (manager) => {
+    const queryRunner = this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
       // Account 생성 및 저장
-      const formattedPhoneNum = phoneNum.replace(/-/g, '');
       const account = new Account();
       account.password = hashedPassword;
-      account.phoneNum = formattedPhoneNum;
+      account.phoneNum = phoneNum;
 
-      const savedAccount = await manager.save(account);
+      const savedAccount = await queryRunner.manager.save(account);
 
       // User 데이터 생성
       if (interests.length < MIN_INTERESTS || interests.length > MAX_INTERESTS) {
@@ -90,10 +100,9 @@ export class AuthService {
         throw new BadRequestException(`기술 스택은 최소 ${MIN_TECHS}개, 최대 ${MAX_TECHS}개 선택해야 합니다.`);
       }
 
-      // 평범한 객체(userData)를 User 클래스의 인스턴스로 변환
       const user = plainToClass(User, userData);
       user.accountId = savedAccount.id;
-      const savedUser = await this.userRepository.save(user);
+      const savedUser = await queryRunner.manager.save(user);
 
       // UserToInterest 생성
       const userToInterests = interests.map((interestId) => {
@@ -102,7 +111,7 @@ export class AuthService {
         userToInterest.interestId = interestId;
         return userToInterest;
       });
-      await this.userToInterestRepository.save(userToInterests);
+      await queryRunner.manager.save(userToInterests);
 
       // UserToTech 생성
       const userToTechs = techs.map((techId) => {
@@ -111,15 +120,22 @@ export class AuthService {
         userToTech.techId = techId;
         return userToTech;
       });
-      await this.userToTechRepository.save(userToTechs);
+      await queryRunner.manager.save(userToTechs);
 
+      await queryRunner.commitTransaction();
       return { message: '회원가입 성공' };
-    });
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async validateUser(signInDto: SignInDto) {
     const { phoneNum, password } = signInDto;
-    const account = await this.accountRepository.findOne({ where: { phoneNum } });
+    const formattedPhoneNum = formatPhoneNumber(phoneNum);
+    const account = await this.accountRepository.findOne({ where: { phoneNum: formattedPhoneNum } });
     if (account && (await compare(password, account.password))) {
       return account;
     }
@@ -145,7 +161,8 @@ export class AuthService {
 
     // 토큰 발급
     const tokens = await this.issueTokens(payload);
-    const hashedRefreshToken = await hash(tokens.refreshToken, 10);
+    const hashRounds = Number(this.configService.get('HASH_ROUNDS'));
+    const hashedRefreshToken = await hash(tokens.refreshToken, hashRounds);
     await this.redisService.set(`refresh_token_${userId}`, hashedRefreshToken);
     return tokens;
   }
