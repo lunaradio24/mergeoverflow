@@ -1,28 +1,19 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  HttpCode,
-  HttpStatus,
-  UseGuards,
-  ParseIntPipe,
-} from '@nestjs/common';
+import { Req, Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, UseGuards } from '@nestjs/common';
 import { TechService } from './tech.service';
 import { CreateTechDto } from 'src/users/dto/tech.dto';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Role } from 'src/auth/types/role.type';
+import { Roles } from 'src/utils/decorators/roles.decorator';
 
 @Controller('tech')
 export class TechController {
   constructor(private readonly techService: TechService) {}
 
-  @UseGuards() // 관리자만 가능
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN) // 관리자만 가능
   @Post()
-  async create(@Body() createTechDto: CreateTechDto) {
-    // @Req() req: any,
-    const data = await this.techService.create(createTechDto); // req.user
+  async create(@Req() req: any, @Body() createTechDto: CreateTechDto) {
+    const data = await this.techService.create(req.user, createTechDto);
     return {
       statusCode: HttpStatus.CREATED,
       message: '기술 생성에 성공했습니다.',
@@ -41,11 +32,11 @@ export class TechController {
     };
   }
 
-  @UseGuards() // 관리자만 가능
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN) // 관리자만 가능
   @Patch(':id')
-  // @Req() req: any,
-  async update(@Param('id') id: number, @Body() createTechDto: CreateTechDto) {
-    const data = await this.techService.update(id, createTechDto); // req.user
+  async update(@Req() req: any, @Param('id') id: number, @Body() createTechDto: CreateTechDto) {
+    const data = await this.techService.update(req.user, id, createTechDto); // req.user
 
     return {
       statusCode: HttpStatus.OK,
@@ -54,10 +45,11 @@ export class TechController {
     };
   }
 
-  @UseGuards() // 관리자만 가능
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN) // 관리자만 가능
   @Delete(':id')
-  async remove(@Param('id') id: number) {
-    await this.techService.remove(id);
+  async remove(@Req() req: any, @Param('id') id: number) {
+    await this.techService.remove(req.user, id);
 
     return {
       statusCode: HttpStatus.OK,

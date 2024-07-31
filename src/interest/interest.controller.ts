@@ -1,30 +1,20 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  Req,
-  HttpStatus,
-  ParseIntPipe,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, HttpStatus } from '@nestjs/common';
 import { InterestService } from './interest.service';
 import { InterestDto } from 'src/users/dto/interest.dto';
-// import { UpdateInterestDto } from './dto/update-interest.dto';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/utils/decorators/roles.decorator';
+import { Role } from 'src/auth/types/role.type';
 
 @Controller('interest')
 export class InterestController {
   constructor(private readonly interestService: InterestService) {}
 
-  @UseGuards() // 관리자만
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN) // 관리자만
   @Post()
-  async create(@Body() interestDto: InterestDto) {
-    // @Req() req: any,
-    const data = await this.interestService.create(interestDto);
-    // req.user
+  async create(@Req() req: any, @Body() interestDto: InterestDto) {
+    const data = await this.interestService.create(req.user, interestDto);
+
     return {
       statusCode: HttpStatus.CREATED,
       message: '관심사 생성에 성공했습니다.',
@@ -43,11 +33,11 @@ export class InterestController {
     };
   }
 
-  @UseGuards() // 관리자만
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN) // 관리자만
   @Patch(':id')
-  async update(@Param('id') id: number, @Body() interestDto: InterestDto) {
-    // @Req() req: any,
-    const data = await this.interestService.update(id, interestDto);
+  async update(@Req() req: any, @Param('id') id: number, @Body() interestDto: InterestDto) {
+    const data = await this.interestService.update(req.user, id, interestDto);
     return {
       statusCode: HttpStatus.OK,
       message: '관심사 수정에 성공했습니다.',
@@ -55,11 +45,11 @@ export class InterestController {
     };
   }
 
-  @UseGuards() // 관리자만
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN) // 관리자만
   @Delete(':id')
-  async remove(@Param('id') id: number) {
-    // @Req() req: any,
-    await this.interestService.remove(id);
+  async remove(@Req() req: any, @Param('id') id: number) {
+    await this.interestService.remove(req.user, id);
 
     return {
       statusCode: HttpStatus.OK,
