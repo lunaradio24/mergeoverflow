@@ -1,1 +1,3 @@
 export const VERIFICATION_CODE_EXPIRATION = 60 * 5; // 5분
+export const CODE_BASE_NUMBER = 100000;
+export const CODE_MULTIPLY_NUMBER = 900000;

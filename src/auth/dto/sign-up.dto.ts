@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEnum, IsInt, IsNumber, IsOptional, IsArray, ArrayNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsNumber, IsArray, ArrayNotEmpty } from 'class-validator';
 import { Gender } from '../../users/types/Gender.type';
 import { Region } from '../../users/types/region.type';
 import { Pet } from '../../users/types/pet.type';
@@ -32,9 +32,6 @@ export class SignUpDto {
   @IsString()
   nickname: string;
 
-  @IsInt()
-  codingLevel: number;
-
   @IsNotEmpty()
   @IsEnum(Frequency)
   smokingFreq: Frequency;
@@ -66,10 +63,6 @@ export class SignUpDto {
   @IsNotEmpty()
   @IsEnum(Region)
   region: Region;
-
-  @IsOptional()
-  @IsString()
-  bio: string;
 
   @IsArray()
   @ArrayNotEmpty()
