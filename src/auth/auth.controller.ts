@@ -65,12 +65,13 @@ export class AuthController {
     };
   }
 
-  /**토큰 재발급 */
+  /** 토큰 재발급 */
   @Post('tokens/renew')
   @ApiBearerAuth()
   @UseGuards(RefreshTokenGuard)
   async renewTokens(@Request() req: any) {
-    const tokens = await this.authService.renewTokens(req.user.refreshToken);
+    const refreshToken = req.headers.authorization.split(' ')[1];
+    const tokens = await this.authService.renewTokens(refreshToken);
     return {
       message: '토큰 재발급에 성공했습니다.',
       data: tokens,
