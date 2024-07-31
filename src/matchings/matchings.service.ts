@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, Not, IsNull } from 'typeorm';
+import { Repository, In, IsNull } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { Matching } from './entities/matching.entity';
 import { InteractionType } from './types/interaction-type.type';
@@ -30,16 +30,16 @@ export class MatchingService {
     if (existingMatchings.length === 0) {
       // 새로운 매칭을 위해 무작위로 10명의 유저를 가져옴 (이미 매칭된 유저 제외)
       const matchedUserIds = (await this.matchingRepository.find({ where: { userId } })).map((m) => m.targetUserId);
-      const newUsers = await this.userRepository.find({
-        where: {
-          id: Not(In([userId, ...matchedUserIds])), // 자신과 이미 매칭된 유저 제외
-        },
-        order: { id: 'ASC' },
-        take: bringSomeOne, // 상수 사용하여 한 번에 가져올 유저 수 설정
-      });
+      const newUsers = await this.userRepository
+        .createQueryBuilder('user')
+        .where('user.id NOT IN (:...ids)', { ids: [userId, ...matchedUserIds] }) // 자신과 이미 매칭된 유저 제외
+        .orderBy('RAND()') // 무작위로 정렬
+        .take(bringSomeOne) // 상수 사용하여 한 번에 가져올 유저 수 설정
+        .getMany();
 
       // 새로운 매칭 엔티티 생성 및 저장
-      const newMatchings = newUsers.map((user) => {
+      let newMatchings = newUsers.map((user) => {
+        //newMatchings 변수를 선언한 후, 다시 정렬된 결과로 재할당하기 위해서 let 사용함
         const matching = new Matching();
         matching.userId = userId;
         matching.targetUserId = user.id;
@@ -47,9 +47,13 @@ export class MatchingService {
         return matching;
       });
 
+      // targetUserId 순으로 정렬
+      newMatchings = newMatchings.sort((a, b) => a.targetUserId - b.targetUserId);
+
       await this.matchingRepository.save(newMatchings);
 
-      return newUsers;
+      // 정렬된 순서대로 반환
+      return newMatchings.map((matching) => newUsers.find((user) => user.id === matching.targetUserId));
     } else {
       // 기존 매칭된 유저들 중 interactionType이 null인 유저 조회
       const targetUserIds = existingMatchings.map((matching) => matching.targetUserId);
@@ -58,6 +62,7 @@ export class MatchingService {
           id: In(targetUserIds),
         },
         relations: ['images'],
+        order: { id: 'ASC' },
       });
 
       return users;
@@ -86,17 +91,17 @@ export class MatchingService {
     const existingMatchings = await this.matchingRepository.find({
       where: {
         userId,
-        interactionType: IsNull(),
+        interactionType: IsNull(), // interaction 타입이 null인 매칭을 가져옴
       },
-      order: { createdAt: 'ASC' },
+      order: { createdAt: 'ASC' }, // 생성된 순서대로 정렬
     });
-
+    // interaction 타입이 null인 매칭이 없으면 에러 메시지 출력
     if (existingMatchings.length === 0) {
       throw new BadRequestException('매칭할 사용자가 없습니다.');
     }
-
+    // interaction 타입이 null인 가장 첫 번째 매칭의 targetUserId 가져오기
     const nextTargetUserId = existingMatchings[0].targetUserId;
-
+    // 상호작용해야 하는 대상 사용자 ID와 다른 경우 에러 메시지 출력
     if (nextTargetUserId !== targetUserId) {
       throw new BadRequestException('제공된 순서대로 사용자와 상호작용하세요.');
     }
