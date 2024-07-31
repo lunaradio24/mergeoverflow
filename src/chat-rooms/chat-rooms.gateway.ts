@@ -10,13 +10,15 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatRoomsService } from './chat-rooms.service';
-import { Inject, Logger, forwardRef } from '@nestjs/common';
+import { Inject, Logger, UnauthorizedException, forwardRef } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 
 @WebSocketGateway({ namespace: 'chat', cors: { origin: '*' } })
 export class ChatRoomsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     @Inject(forwardRef(() => ChatRoomsService))
     private readonly chatRoomsService: ChatRoomsService,
+    private jwtService: JwtService,
   ) {}
 
   @WebSocketServer() public server: Server;
@@ -25,21 +27,32 @@ export class ChatRoomsGateway implements OnGatewayInit, OnGatewayConnection, OnG
   afterInit(server: Server) {
     this.logger.log(`chat ${server} init`);
   }
-  // @핸드쉐이크 어써라이제이션 , 페이로드 디코드만 , 어댑터 설정으로
-  // userId 인증 추가 + 닉네임 뽑아오기
-  handleConnection(@ConnectedSocket() socket: Socket) {
-    const token = socket.handshake.auth.token;
 
-    this.logger.log(`클라이언트 토큰:${token}`);
-    this.logger.log(`Client connected: ${socket.id}`);
+  async handleConnection(@ConnectedSocket() socket: Socket) {
+    try {
+      const token = socket.handshake.auth.token;
+
+      if (!token) {
+        throw new UnauthorizedException('토큰이 유효하지 않습니다.');
+      }
+      const decoded = this.jwtService.verify(token, { secret: process.env.ACCESS_TOKEN_SECRET_KEY });
+      const userNickname = await this.chatRoomsService.findByUserId(decoded.id);
+
+      socket.data = { userId: decoded.id, nickname: userNickname };
+
+      this.logger.log(`Client connected: ${socket.id}`);
+    } catch (error) {
+      this.logger.error(`${socket.id} 연결 강제 종료, status: ${error.status}, ${error.message}`);
+      socket.disconnect();
+    }
   }
 
   handleDisconnect(socket: Socket) {
     this.logger.log(`Client disconnected: ${socket.id}`);
   }
 
-  @SubscribeMessage('createdChatRoom')
-  async handleCreatedChatRoom(
+  @SubscribeMessage('createChatRoom')
+  async handleCreateChatRoom(
     @MessageBody() data: { chatRoomId: number; user1Id: number; user2Id: number },
     @ConnectedSocket() socket: Socket,
   ) {
@@ -63,24 +76,10 @@ export class ChatRoomsGateway implements OnGatewayInit, OnGatewayConnection, OnG
   }
 
   @SubscribeMessage('message')
-  async handleMessage(
-    @MessageBody() data: { userId: number; roomId: number; message: string },
-    @ConnectedSocket() socket: Socket,
-  ) {
-    const { userId, roomId, message } = data;
-    const chatMessage = await this.chatRoomsService.saveMessage(userId, roomId, message);
+  async handleMessage(@MessageBody() data: { roomId: number; message: string }, @ConnectedSocket() socket: Socket) {
+    const { roomId, message } = data;
+    const chatMessage = await this.chatRoomsService.saveMessage(socket.data.userId, roomId, message);
     this.server.to(roomId.toString()).emit('message', chatMessage);
-    this.logger.log(`${roomId},${userId}:${message}`);
+    this.logger.log(`방번호:${roomId}번 / ${socket.data.nickname}:${message}`);
   }
 }
-
-// namespace (채널) -> room (개별방) -> socket, client
-// workspace (채널) -> channel/dm (개별방)
-// 1. db 저장주기 (몇 초, 나갈 때)
-// 2. 다시 로그인 했을 때
-// 1. 채팅 메시지를 db에 저장하는 주기 (매번 보낼때마다 저장하는지, 몇초 간격으로 저장하는지, 채팅방을 나가는 시점에 모든 메시지를 한꺼번에 저장하는지)
-// 2. 유저 아이디 2개를 같이 채팅방에 join 시키는 게 맞나? 각각 따로 join 시키는 게 맞는 거 같은데..
-
-// 채팅방 목록 -> 채팅방 (네임스페이스, join)
-
-// 소켓 서버  -> 네임스페이스 여러개 -> 방userId, 방rommId

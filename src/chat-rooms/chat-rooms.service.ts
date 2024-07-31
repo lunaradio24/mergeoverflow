@@ -1,4 +1,11 @@
-import { HttpException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChatRoom } from './entities/chat-room.entity';
 import { ChatMessage } from './entities/chat-message.entity';
@@ -20,7 +27,7 @@ export class ChatRoomsService {
 
   async createChatRoom(user1Id: number, user2Id: number): Promise<void> {
     const chatRoom = await this.chatRoomRepository.save({ user1Id, user2Id });
-    this.chatRoomsGateway.server.emit('createdChatRoom', { chatRoomId: chatRoom.id, user1Id, user2Id });
+    this.chatRoomsGateway.server.emit('createChatRoom', { chatRoomId: chatRoom.id, user1Id, user2Id });
   }
 
   async joinChatRoom(userId: number, roomId: number): Promise<void> {
@@ -64,7 +71,11 @@ export class ChatRoomsService {
     });
   }
 
-  async findUser(userId: number) {
-    return await this.userRepository.findOne({ where: { id: userId }, select: ['nickname'] });
+  async findByUserId(userId: number): Promise<String> {
+    const user = await this.userRepository.findOne({ where: { id: userId }, select: ['nickname'] });
+    if (!user) {
+      throw new UnauthorizedException('존재하지 않는 유저입니다.');
+    }
+    return user.nickname;
   }
 }

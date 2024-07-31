@@ -1,24 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { ChatRoomsService } from './chat-rooms.service';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 
+// @UseGuards(AccessTokenGuard)
 @Controller('chat-rooms')
 export class ChatRoomsController {
   constructor(private readonly chatRoomsService: ChatRoomsService) {}
-
-  @Get(':userId')
-  getUserChatRooms(@Param('userId') userId: number) {
-    return this.chatRoomsService.getUserChatRooms(userId);
+  @Get()
+  async getUserChatRooms(@Request() req) {
+    const userId = req.user.id;
+    return await this.chatRoomsService.getUserChatRooms(userId);
   }
 
   @Post(':roomId')
-  joinChatRoom(@Param('roomId') roomId: number) {
-    const userId = 1;
-    return this.chatRoomsService.joinChatRoom(userId, roomId);
+  async joinChatRoom(@Param('roomId') roomId: number) {
+    const userId = 19;
+    return await this.chatRoomsService.joinChatRoom(userId, roomId);
   }
 
   @Delete(':roomId')
-  exitChatRoom(@Param('roomId') roomId: number) {
-    const userId = 1;
-    return this.chatRoomsService.exitChatRoom(userId, roomId);
+  async exitChatRoom(@Param('roomId') roomId: number) {
+    const userId = 20;
+    await this.chatRoomsService.exitChatRoom(userId, roomId);
+    return { message: `${roomId}번 채팅방에서 퇴장했습니다.` };
   }
 }
