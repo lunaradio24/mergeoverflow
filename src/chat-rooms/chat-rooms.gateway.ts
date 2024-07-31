@@ -37,13 +37,12 @@ export class ChatRoomsGateway implements OnGatewayInit, OnGatewayConnection, OnG
 
   @SubscribeMessage('createdChatRoom')
   async handleCreatedChatRoom(
-    @MessageBody() data: { user1Id: number; user2Id: number },
+    @MessageBody() data: { chatRoomId: number; user1Id: number; user2Id: number },
     @ConnectedSocket() socket: Socket,
   ) {
-    const { user1Id, user2Id } = data;
-    const chatRoom = await this.chatRoomsService.createdRoom(user1Id, user2Id);
-    socket.join(chatRoom.id.toString());
-    this.logger.log(`유저 ${user1Id}번님과 유저 ${user2Id}번님이 ${chatRoom.id}번방에 머지하였습니다.`);
+    const { chatRoomId, user1Id, user2Id } = data;
+    socket.join(chatRoomId.toString());
+    this.logger.log(`유저 ${user1Id}번님과 유저 ${user2Id}번님이 ${chatRoomId}번방에 머지하였습니다.`);
   }
 
   @SubscribeMessage('join')
@@ -52,7 +51,7 @@ export class ChatRoomsGateway implements OnGatewayInit, OnGatewayConnection, OnG
     const nickname = await this.chatRoomsService.findUser(userId);
     socket.data = nickname;
 
-    await this.chatRoomsService.validateChatRoomToUser(userId, roomId);
+    await this.chatRoomsService.isUserInChatRoom(userId, roomId);
     socket.join(roomId.toString());
 
     this.logger.log(`${socket.data.nickname}님께서 ${roomId}번 방에 입장했습니다.`);
@@ -72,7 +71,7 @@ export class ChatRoomsGateway implements OnGatewayInit, OnGatewayConnection, OnG
     @ConnectedSocket() socket: Socket,
   ) {
     const { userId, roomId, message } = data;
-    const chatMessage = await this.chatRoomsService.savedMessage(userId, roomId, message);
+    const chatMessage = await this.chatRoomsService.saveMessage(userId, roomId, message);
     this.server.to(roomId.toString()).emit('message', chatMessage);
     this.logger.log(`${roomId},${userId}:${message}`);
   }

@@ -7,6 +7,11 @@ export class ChatRoomsController {
 
   @Get(':id')
   findAllChatRoom(@Param('id') id: number) {
-    return this.chatRoomsService.findAllChatRoom(id);
+    return this.chatRoomsService.getUserChatRooms(id);
+  }
+
+  @Post(':id')
+  joinChatRoom(@Param('id') id: number) {
+    return this.chatRoomsService.joinChatRoom(id);
   }
 }

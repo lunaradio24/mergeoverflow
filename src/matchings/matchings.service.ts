@@ -139,7 +139,7 @@ export class MatchingService {
     if (interactionType === InteractionType.LIKE && targetUserMatching) {
       const user1Id = targetUserMatching ? targetUserId : userId;
       const user2Id = targetUserMatching ? userId : targetUserId;
-      await this.chatRoomsService.createdRoom(user1Id, user2Id);
+      await this.chatRoomsService.createChatRoom(user1Id, user2Id);
     }
   }
 
