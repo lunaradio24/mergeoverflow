@@ -90,26 +90,28 @@ export class AuthService {
         throw new BadRequestException(`기술 스택은 최소 ${MIN_TECHS}개, 최대 ${MAX_TECHS}개 선택해야 합니다.`);
       }
 
-      //평범한 객체(userData)를 User 클래스의 인스턴스로 변환
+      // 평범한 객체(userData)를 User 클래스의 인스턴스로 변환
       const user = plainToClass(User, userData);
       user.accountId = savedAccount.id;
-      const savedUser = await manager.save(user);
+      const savedUser = await this.userRepository.save(user);
 
       // UserToInterest 생성
-      for (const interestId of interests) {
+      const userToInterests = interests.map((interestId) => {
         const userToInterest = new UserToInterest();
         userToInterest.userId = savedUser.id;
         userToInterest.interestId = interestId;
-        await manager.save(userToInterest);
-      }
+        return userToInterest;
+      });
+      await this.userToInterestRepository.save(userToInterests);
 
       // UserToTech 생성
-      for (const techId of techs) {
+      const userToTechs = techs.map((techId) => {
         const userToTech = new UserToTech();
         userToTech.userId = savedUser.id;
         userToTech.techId = techId;
-        await manager.save(userToTech);
-      }
+        return userToTech;
+      });
+      await this.userToTechRepository.save(userToTechs);
 
       return { message: '회원가입 성공' };
     });
@@ -143,7 +145,8 @@ export class AuthService {
 
     // 토큰 발급
     const tokens = await this.issueTokens(payload);
-    await this.redisService.set(`refresh_token_${userId}`, tokens.refreshToken);
+    const hashedRefreshToken = await hash(tokens.refreshToken, 10);
+    await this.redisService.set(`refresh_token_${userId}`, hashedRefreshToken);
     return tokens;
   }
 
@@ -164,8 +167,13 @@ export class AuthService {
     });
 
     // Redis에서 Refresh Token 확인
-    const token = await this.redisService.get(`refresh_token_${decoded.id}`);
-    if (!token || token !== refreshToken) {
+    const storedHash = await this.redisService.get(`refresh_token_${decoded.id}`);
+    if (!storedHash) {
+      throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.');
+    }
+
+    const isMatch = await compare(refreshToken, storedHash);
+    if (!isMatch) {
       throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.');
     }
 
