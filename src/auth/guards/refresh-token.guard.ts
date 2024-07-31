@@ -1,21 +1,16 @@
 import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { Reflector } from '@nestjs/core';
 
 @Injectable()
 export class RefreshTokenGuard extends AuthGuard('refresh-token') {
-  constructor(private reflector: Reflector) {
-    super();
-  }
-
   canActivate(context: ExecutionContext) {
-    return super.canActivate(context);
-  }
+    const request = context.switchToHttp().getRequest();
+    const authHeader = request.headers.authorization;
 
-  handleRequest(err, user, info) {
-    if (err || !user) {
-      throw err || new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.');
+    if (!authHeader || !authHeader.startsWith('Bearer')) {
+      throw new UnauthorizedException('리프레시 토큰이 제공되지 않았습니다.');
     }
-    return user;
+
+    return super.canActivate(context);
   }
 }

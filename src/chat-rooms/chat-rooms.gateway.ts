@@ -11,10 +11,14 @@ import {
 import { Server, Socket } from 'socket.io';
 import { ChatRoomsService } from './chat-rooms.service';
 import { Logger } from '@nestjs/common';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @WebSocketGateway({ namespace: 'chat', cors: { origin: '*' } })
 export class ChatRoomsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  constructor(private readonly chatRoomsService: ChatRoomsService) {}
+  constructor(
+    private readonly chatRoomsService: ChatRoomsService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
   @WebSocketServer() public server: Server;
   private logger: Logger = new Logger('chatGateWay');
 
