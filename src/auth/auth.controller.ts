@@ -5,6 +5,7 @@ import { VerificationRequestDto } from './dto/verification-request.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { LocalAuthGuard } from './guards/local-auth.guard';
+import { SignInDto } from './dto/sign-in.dto';
 
 @ApiTags('Auth')
 @Controller('auth')

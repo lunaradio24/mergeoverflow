@@ -17,6 +17,7 @@ import { mailerModuleOptions } from './configs/mailer.config';
 import { InterestModule } from './interest/interest.module';
 import { TechModule } from './tech/tech.module';
 import { SmsModule } from './auth/sms/sms.module';
+import { S3Module } from './s3/s3.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -40,6 +41,7 @@ import { SmsModule } from './auth/sms/sms.module';
     InterestModule,
     TechModule,
     SmsModule,
+    S3Module,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -4,31 +4,32 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Interest } from '../users/entities/interest.entity';
 import { Repository } from 'typeorm';
 import { InterestDto } from 'src/users/dto/interest.dto';
+import { Account } from 'src/auth/entities/account.entity';
 
 @Injectable()
 export class InterestService {
   @InjectRepository(Interest)
-  private readonly adminInterestRepository: Repository<Interest>;
+  private readonly interestRepository: Repository<Interest>;
+  @InjectRepository(Account)
+  private readonly accountRepository: Repository<Account>;
 
   // 관심사 DB 등록
-  async create(interestDto: InterestDto) {
-    // user: any,
+  async create(user: any, interestDto: InterestDto) {
+    // 1. 내가 관리자인지 확인
+    const userId = user.id;
 
-    // // 1. 내가 관리자인지 확인
-    // const userId = user.id;
+    // 2. 관리자가 아니라면 권한 없음으로 에러 발생
+    const checkedAdmin = await this.accountRepository.findOne({
+      where: { id: userId },
+    });
 
-    // // 2. 관리자가 아니라면 권한 없음으로 에러 발생
-    // const checkedAdmin = await this.interestRepository.findOne({
-    //   where: { id: userId },
-    // });
-
-    // if (!checkedAdmin) {
-    //   throw new NotFoundException('허가 받지 않은 사용자입니다.');
-    // }
+    if (!checkedAdmin) {
+      throw new NotFoundException('허가 받지 않은 사용자입니다.');
+    }
 
     // 3. DTO에서 입력 받은 데이터 입력
     try {
-      const createdInterest = await this.adminInterestRepository.save(interestDto);
+      const createdInterest = await this.interestRepository.save(interestDto);
 
       return createdInterest;
     } catch (error) {
@@ -41,7 +42,7 @@ export class InterestService {
 
   // 관심사 DB조회 관리자 x
   async findAll(): Promise<Interest[]> {
-    const findInterest = await this.adminInterestRepository.find({
+    const findInterest = await this.interestRepository.find({
       order: {
         id: 'ASC',
       },
@@ -51,22 +52,20 @@ export class InterestService {
   }
 
   // 관심사 업데이트
-  async update(id: number, interestDto: InterestDto) {
-    // user: any,
+  async update(user: any, id: number, interestDto: InterestDto) {
+    // 1. 내가 관리자인지 확인
+    const userId = user.id;
 
-    // // 1. 내가 관리자인지 확인
-    // const userId = user.id;
+    // 2. 관리자가 아니라면 권한 없음으로 에러 발생
+    const checkedAdmin = await this.accountRepository.findOne({
+      where: { id: userId },
+    });
 
-    // // 2. 관리자가 아니라면 권한 없음으로 에러 발생
-    // const checkedAdmin = await this.interestRepository.findOne({
-    //   where: { id: userId },
-    // });
+    if (!checkedAdmin) {
+      throw new NotFoundException('허가 받지 않은 사용자입니다.');
+    }
 
-    // if (!checkedAdmin) {
-    //   throw new NotFoundException('허가 받지 않은 사용자입니다.');
-    // }
-
-    const findInterestId = await this.adminInterestRepository.findOne({
+    const findInterestId = await this.interestRepository.findOne({
       where: { id: id },
     });
 
@@ -74,9 +73,9 @@ export class InterestService {
       throw new BadRequestException('존재하지 않는 Id입니다.');
     }
 
-    await this.adminInterestRepository.update({ id }, { interest: interestDto.interest });
+    await this.interestRepository.update({ id }, { interest: interestDto.interest });
 
-    const updateInterest = await this.adminInterestRepository.findOne({
+    const updateInterest = await this.interestRepository.findOne({
       where: { id },
     });
 
@@ -90,22 +89,20 @@ export class InterestService {
   }
 
   // 관심사 삭제
-  async remove(id: number) {
-    // user: any,
+  async remove(user: any, id: number) {
+    // 1. 내가 관리자인지 확인
+    const userId = user.id;
 
-    // // 1. 내가 관리자인지 확인
-    // const userId = user.id;
+    // 2. 관리자가 아니라면 권한 없음으로 에러 발생
+    const checkedAdmin = await this.accountRepository.findOne({
+      where: { id: userId },
+    });
 
-    // // 2. 관리자가 아니라면 권한 없음으로 에러 발생
-    // const checkedAdmin = await this.interestRepository.findOne({
-    //   where: { id: userId },
-    // });
+    if (!checkedAdmin) {
+      throw new NotFoundException('허가 받지 않은 사용자입니다.');
+    }
 
-    // if (!checkedAdmin) {
-    //   throw new NotFoundException('허가 받지 않은 사용자입니다.');
-    // }
-
-    const findInterestId = await this.adminInterestRepository.findOne({
+    const findInterestId = await this.interestRepository.findOne({
       where: { id },
     });
 
@@ -113,7 +110,7 @@ export class InterestService {
       throw new BadRequestException('존재하지 않는 Id입니다.');
     }
 
-    const deleteInterestId = await this.adminInterestRepository.delete(id);
+    const deleteInterestId = await this.interestRepository.delete(id);
 
     return deleteInterestId;
   }
