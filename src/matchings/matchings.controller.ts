@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Query, ParseIntPipe } from '@nestjs/common';
 import { MatchingService } from '../matchings/matchings.service';
 
+// @UseGuards(AccessTokenGuard)
 @Controller('matchings')
 export class MatchingController {
   constructor(private readonly matchingService: MatchingService) {}

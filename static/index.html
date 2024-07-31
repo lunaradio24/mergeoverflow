@@ -11,44 +11,8 @@
     <h1>WebSocket Chat</h1>
 
     <div>
-        <label for="user1Id">User 1 ID:</label>
-        <input type="number" id="user1Id">
-    </div>
-    <div>
-        <label for="user2Id">User 2 ID:</label>
-        <input type="number" id="user2Id">
-    </div>
-    <button id="createRoomButton">Create Chat Room</button>
-
-    <div>
-        <label for="joinUserId">User ID:</label>
-        <input type="number" id="joinUserId">
-    </div>
-    <div>
-        <label for="joinRoomId">Room Id:</label>
-        <input type="number" id="joinRoomId">
-    </div>
-    <button id="joinRoomButton">Join Chat Room</button>
-    <br>
-
-    <div>
-        <label for="exitUserId">User ID:</label>
-        <input type="number" id="exitUserId">
-    </div>
-    <div>
-        <label for="exitRoomId">Room Id:</label>
-        <input type="number" id="exitRoomId">
-    </div>
-    <button id="exitRoomButton">Exit Chat Room</button>
-    <br>
-
-    <div>
         <label for="sendRoomId">Room ID:</label>
         <input type="number" id="sendRoomId">
-    </div>
-    <div>
-        <label for="sendUserId">User ID:</label>
-        <input type="number" id="sendUserId">
     </div>
     <div>
         <label for="message">Message:</label>
@@ -56,68 +20,83 @@
     </div>
     <button id="sendMessageButton">Send Message</button>
     <ul id="messages"></ul>
+
     <!-- Notification Section -->
     <div>
         <h2>Notifications</h2>
-        <ul id="notificationsList"></ul>
+        <ul id="notifications"></ul>
     </div>
 
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script>
-        const chatSocket = io('ws://localhost:3000/chat');
-        const notifySocket = io('ws://localhost:3000/notifications');
-        const token = ''
-        const createRoomButton = document.getElementById('createRoomButton');
+        const login = async (phoneNum, password) => {
+            const response = await fetch("localhost:3000/auth/sign-in", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    phoneNum,
+                    password
+                })
+            })
+            const data = await response.json();
+            const { accessToken } = data;
+            return accessToken;
+        }
+
+        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzEsInBob25lTnVtIjoiMDEwLTg0NDktMTIzNSIsImlhdCI6MTcyMjQ0NzcyNSwiZXhwIjoxNzIyNDYyMTI1fQ.A7OSsnrMlDq7msBafR-cW2AwATNEh5csi1v2AzEyy80"
+
+        const chatSocket = io('ws://localhost:3000/chat', {
+            auth: {
+                token
+            }
+        });
+        const notifySocket = io('ws://localhost:3000/notifications', {
+            auth: {
+                token
+            }
+        });
+
         const sendMessageButton = document.getElementById('sendMessageButton');
-        const joinRoomButton = document.getElementById('joinRoomButton');
-        const exitRoomButton = document.getElementById('exitRoomButton');
         const messagesList = document.getElementById('messages');
-        const notificationsList = document.getElementById('notificationsList');
-
-
-        createRoomButton.addEventListener('click', () => {
-            const user1Id = document.getElementById('user1Id').value;
-            const user2Id = document.getElementById('user2Id').value;
-            chatSocket.emit('createdChatRoom', { user1Id: Number(user1Id), user2Id: Number(user2Id) });
-            notifySocket.emit('notify', { userId: 1, message: `${user2Id}번님과 매칭되었습니다.`, type: 'matching' })
-        });
-
-        joinRoomButton.addEventListener('click', () => {
-            const userId = document.getElementById('joinUserId').value;
-            const roomId = document.getElementById('joinRoomId').value;
-            chatSocket.emit('join', { userId: Number(userId), roomId: Number(roomId) });
-        });
+        const notificationsList = document.getElementById('notifications');
 
         sendMessageButton.addEventListener('click', () => {
             const roomId = document.getElementById('sendRoomId').value;
-            const userId = document.getElementById('sendUserId').value;
             const message = document.getElementById('message').value;
-            chatSocket.emit('message', { roomId: Number(roomId), userId: Number(userId), message: message });
-            notifySocket.emit('notify', { userId, message, type: 'message' })
+            chatSocket.emit('message', { roomId: Number(roomId), message: message });
+            notifySocket.emit('notify', { message, type: 'message' })
         });
 
-        exitRoomButton.addEventListener('click', () => {
-            const roomId = document.getElementById('exitRoomId').value;
-            const userId = document.getElementById('exitUserId').value;
-            chatSocket.emit('exit', { userId: Number(userId), roomId: Number(roomId) });
-        });
+        chatSocket.on('join', (data) => {
+            const { userId, roomId } = data
+            chatSocket.emit('join', { userId, roomId });
+        })
 
-        socket.on('createdChatRoom', (chatRoom) => {
+        chatSocket.on('createChatRoom', (data) => {
+            const { chatRoomId, user1Id, user2Id } = data
+            chatSocket.emit('createChatRoom', { chatRoomId, user1Id, user2Id });
             const item = document.createElement('li');
             item.textContent = `Chat room created with ID ${chatRoom.id}`;
             messagesList.appendChild(item);
-        });
+        })
 
-        socket.on('message', (message) => {
+        chatSocket.on('exit', (data) => {
+            const { roomId } = data
+            chatSocket.emit('exit', { roomId });
+        })
+
+        chatSocket.on('message', (message) => {
             const item = document.createElement('li');
             item.textContent = `User ${message.senderId}: ${message.text}`;
             messagesList.appendChild(item);
         });
-        notifySocket.on('reception', (notification) => {
-            const item = document.createElement('li');
-            item.textContent = `Notification: ${notification.message}`;
-            notificationsList.appendChild(item);
-        })
+        // notifySocket.on('reception', (notification) => {
+        //     const item = document.createElement('li');
+        //     item.textContent = `Notification: ${notification.message}`;
+        //     notificationsList.appendChild(item);
+        // })
     </script>
 </body>
 
