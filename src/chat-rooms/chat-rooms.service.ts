@@ -23,19 +23,23 @@ export class ChatRoomsService {
     this.chatRoomsGateway.server.emit('createdChatRoom', { chatRoomId: chatRoom.id, user1Id, user2Id });
   }
 
-  async joinChatRoom(roomId: number) {}
+  async joinChatRoom(userId: number, roomId: number): Promise<void> {
+    await this.isUserInChatRoom(userId, roomId);
+    this.chatRoomsGateway.server.emit('join', { userId, roomId });
+  }
 
   async exitChatRoom(userId: number, roomId: number): Promise<void> {
     const chatRoom = await this.isUserInChatRoom(userId, roomId);
     if (chatRoom) {
       await this.chatRoomRepository.delete({ id: roomId });
+      this.chatRoomsGateway.server.emit('exit', { roomId });
     }
   }
 
   async saveMessage(userId: number, roomId: number, message: string) {
     const chatRoom = await this.chatRoomRepository.findOne({ where: { id: roomId } });
     if (!chatRoom) {
-      throw new NotFoundException('존재하지 않는 방입니다.');
+      throw new NotFoundException('존재하지 않는 방이거나 접근 권한이 없습니다.');
     }
     const newMessage = await this.chatMessageRepository.save({ roomId, senderId: userId, text: message });
     return newMessage;

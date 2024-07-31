@@ -64,9 +64,18 @@
 
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script>
-        const chatSocket = io('ws://localhost:3000/chat');
-        const notifySocket = io('ws://localhost:3000/notifications');
-        const token = ''
+        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsInBob25lTnVtIjoiMDEwLTkwMzQtMTY4NiIsImlhdCI6MTcyMjQwODg2OSwiZXhwIjoxNzIyNDIzMjY5fQ.Ul3ftqy1ib9ueQ9KlizryuF-GZ41Y_k-FcSxzplRwZk"
+        const chatSocket = io('ws://localhost:3000/chat', {
+            auth: {
+                token
+            }
+        });
+        const notifySocket = io('ws://localhost:3000/notifications', {
+            auth: {
+                token
+            }
+        });
+
         const createRoomButton = document.getElementById('createRoomButton');
         const sendMessageButton = document.getElementById('sendMessageButton');
         const joinRoomButton = document.getElementById('joinRoomButton');
@@ -75,49 +84,52 @@
         const notificationsList = document.getElementById('notifications');
 
 
-        createRoomButton.addEventListener('click', () => {
-            const user1Id = document.getElementById('user1Id').value;
-            const user2Id = document.getElementById('user2Id').value;
-            chatSocket.emit('createdChatRoom', { user1Id: Number(user1Id), user2Id: Number(user2Id) });
-            notifySocket.emit('notify', { userId: 1, message: `${user2Id}번님과 매칭되었습니다.`, type: 'matching' })
-        });
+        // createRoomButton.addEventListener('click', () => {
+        //     const user1Id = document.getElementById('user1Id').value;
+        //     const user2Id = document.getElementById('user2Id').value;
+        //     chatSocket.emit('createdChatRoom', { user1Id: Number(user1Id), user2Id: Number(user2Id) });
+        //     notifySocket.emit('notify', { userId: 1, message: `${user2Id}번님과 매칭되었습니다.`, type: 'matching' })
+        // });
 
-        joinRoomButton.addEventListener('click', () => {
-            const userId = document.getElementById('joinUserId').value;
-            const roomId = document.getElementById('joinRoomId').value;
-            chatSocket.emit('join', { userId: Number(userId), roomId: Number(roomId) });
-        });
+        // joinRoomButton.addEventListener('click', () => {
+        //     const userId = document.getElementById('joinUserId').value;
+        //     const roomId = document.getElementById('joinRoomId').value;
+        //     chatSocket.emit('join', { userId: Number(userId), roomId: Number(roomId) });
+        // });
 
-        sendMessageButton.addEventListener('click', () => {
-            const roomId = document.getElementById('sendRoomId').value;
-            const userId = document.getElementById('sendUserId').value;
-            const message = document.getElementById('message').value;
-            chatSocket.emit('message', { roomId: Number(roomId), userId: Number(userId), message: message });
-            notifySocket.emit('notify', { userId, message, type: 'message' })
-        });
+        // sendMessageButton.addEventListener('click', () => {
+        //     const roomId = document.getElementById('sendRoomId').value;
+        //     const userId = document.getElementById('sendUserId').value;
+        //     const message = document.getElementById('message').value;
+        //     chatSocket.emit('message', { roomId: Number(roomId), userId: Number(userId), message: message });
+        //     notifySocket.emit('notify', { userId, message, type: 'message' })
+        // });
 
-        exitRoomButton.addEventListener('click', () => {
-            const roomId = document.getElementById('exitRoomId').value;
-            const userId = document.getElementById('exitUserId').value;
-            chatSocket.emit('exit', { userId: Number(userId), roomId: Number(roomId) });
-        });
+        // exitRoomButton.addEventListener('click', () => {
+        //     const roomId = document.getElementById('exitRoomId').value;
+        //     const userId = document.getElementById('exitUserId').value;
+        //     chatSocket.emit('exit', { userId: Number(userId), roomId: Number(roomId) });
+        // });
 
-        chatSocket.on('createdChatRoom', (chatRoom) => {
-            const item = document.createElement('li');
-            item.textContent = `Chat room created with ID ${chatRoom.id}`;
-            messagesList.appendChild(item);
-        });
+        // chatSocket.on('createdChatRoom', (chatRoom) => {
+        //     const item = document.createElement('li');
+        //     item.textContent = `Chat room created with ID ${chatRoom.id}`;
+        //     messagesList.appendChild(item);
+        // });
+        // const { userId, roomId, message } = data;
+        // const chatMessage = await this.chatRoomsService.savedMessage(userId, roomId, message);
+        // this.server.to(roomId.toString()).emit('message', chatMessage);
 
-        chatSocket.on('message', (message) => {
-            const item = document.createElement('li');
-            item.textContent = `User ${message.senderId}: ${message.text}`;
-            messagesList.appendChild(item);
-        });
-        notifySocket.on('reception', (notification) => {
-            const item = document.createElement('li');
-            item.textContent = `Notification: ${notification.message}`;
-            notificationsList.appendChild(item);
-        })
+        // chatSocket.on('message', (message) => {
+        //     const item = document.createElement('li');
+        //     item.textContent = `User ${message.senderId}: ${message.text}`;
+        //     messagesList.appendChild(item);
+        // });
+        // notifySocket.on('reception', (notification) => {
+        //     const item = document.createElement('li');
+        //     item.textContent = `Notification: ${notification.message}`;
+        //     notificationsList.appendChild(item);
+        // })
     </script>
 </body>
 

@@ -10,15 +10,15 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatRoomsService } from './chat-rooms.service';
-import { Logger } from '@nestjs/common';
-import { NotificationsService } from 'src/notifications/notifications.service';
+import { Inject, Logger, forwardRef } from '@nestjs/common';
 
 @WebSocketGateway({ namespace: 'chat', cors: { origin: '*' } })
 export class ChatRoomsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   constructor(
+    @Inject(forwardRef(() => ChatRoomsService))
     private readonly chatRoomsService: ChatRoomsService,
-    private readonly notificationsService: NotificationsService,
   ) {}
+
   @WebSocketServer() public server: Server;
   private logger: Logger = new Logger('chatGateWay');
 
@@ -28,6 +28,9 @@ export class ChatRoomsGateway implements OnGatewayInit, OnGatewayConnection, OnG
   // @핸드쉐이크 어써라이제이션 , 페이로드 디코드만 , 어댑터 설정으로
   // userId 인증 추가 + 닉네임 뽑아오기
   handleConnection(@ConnectedSocket() socket: Socket) {
+    const token = socket.handshake.auth.token;
+
+    this.logger.log(`클라이언트 토큰:${token}`);
     this.logger.log(`Client connected: ${socket.id}`);
   }
 
@@ -48,19 +51,13 @@ export class ChatRoomsGateway implements OnGatewayInit, OnGatewayConnection, OnG
   @SubscribeMessage('join')
   async handleJoinChatRoom(@MessageBody() data: { userId: number; roomId: number }, @ConnectedSocket() socket: Socket) {
     const { userId, roomId } = data;
-    const nickname = await this.chatRoomsService.findUser(userId);
-    socket.data = nickname;
-
-    await this.chatRoomsService.isUserInChatRoom(userId, roomId);
     socket.join(roomId.toString());
-
-    this.logger.log(`${socket.data.nickname}님께서 ${roomId}번 방에 입장했습니다.`);
+    this.logger.log(`${userId}님께서 ${roomId}번 방에 입장했습니다.`);
   }
 
   @SubscribeMessage('exit')
-  async handleExitChatRoom(@MessageBody() data: { userId: number; roomId: number }, @ConnectedSocket() socket: Socket) {
-    const { userId, roomId } = data;
-    await this.chatRoomsService.exitChatRoom(userId, roomId);
+  async handleExitChatRoom(@MessageBody() data: { roomId: number }, @ConnectedSocket() socket: Socket) {
+    const { roomId } = data;
     socket.leave(roomId.toString());
     this.logger.log(`${socket.data.nickname}님께서  ${roomId}번 방에서 퇴장하셨습니다.`);
   }

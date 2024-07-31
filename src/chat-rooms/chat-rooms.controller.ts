@@ -5,13 +5,20 @@ import { ChatRoomsService } from './chat-rooms.service';
 export class ChatRoomsController {
   constructor(private readonly chatRoomsService: ChatRoomsService) {}
 
-  @Get(':id')
-  findAllChatRoom(@Param('id') id: number) {
-    return this.chatRoomsService.getUserChatRooms(id);
+  @Get(':userId')
+  getUserChatRooms(@Param('userId') userId: number) {
+    return this.chatRoomsService.getUserChatRooms(userId);
   }
 
-  @Post(':id')
-  joinChatRoom(@Param('id') id: number) {
-    return this.chatRoomsService.joinChatRoom(id);
+  @Post(':roomId')
+  joinChatRoom(@Param('roomId') roomId: number) {
+    const userId = 1;
+    return this.chatRoomsService.joinChatRoom(userId, roomId);
+  }
+
+  @Delete(':roomId')
+  exitChatRoom(@Param('roomId') roomId: number) {
+    const userId = 1;
+    return this.chatRoomsService.exitChatRoom(userId, roomId);
   }
 }
