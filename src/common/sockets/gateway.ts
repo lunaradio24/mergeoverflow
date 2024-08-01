@@ -1,11 +1,25 @@
 import { ConnectedSocket } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
+import { Logger } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 
 export class SocketGateway {
-  jwtService: any;
+  jwtService: JwtService;
+  name: string;
+  logger: Logger;
 
-  injectJwtService(jwtService) {
+  constructor({ jwtService, name }: { jwtService: JwtService; name: string }) {
     this.jwtService = jwtService;
+    this.name = name;
+    this.logger = new Logger(name);
+  }
+
+  afterInit(server: any) {
+    this.logger.log(`${this.name} ${server} init`);
+  }
+
+  handleDisconnect(socket: Socket) {
+    this.logger.log(`[${this.name} 서버 연결 해제] 소켓 ID : ${socket.id}`);
   }
 
   parseToken(@ConnectedSocket() socket: Socket) {

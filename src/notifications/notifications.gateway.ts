@@ -19,23 +19,14 @@ export class NotificationsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   constructor(jwtService: JwtService) {
-    super(jwtService, 'notificaction');
+    super({ jwtService, name: 'notificaction' });
   }
 
   @WebSocketServer() public server: Server;
-  private logger: Logger = new Logger('notifications');
-
-  afterInit(server: Server) {
-    this.logger.log(`notifications ${server} init`);
-  }
 
   handleConnection(@ConnectedSocket() socket: Socket) {
     const decoded = this.parseToken(socket);
     this.logger.log(`[알림 서버 연결] 소켓 ID : ${socket.id}`);
-  }
-
-  handleDisconnect(socket: Socket) {
-    this.logger.log(`[알림 서버 연결 해제] 소켓 ID : ${socket.id}`);
   }
 
   @SubscribeMessage('notify')
