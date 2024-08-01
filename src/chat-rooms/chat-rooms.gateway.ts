@@ -40,15 +40,15 @@ export class ChatRoomsGateway implements OnGatewayInit, OnGatewayConnection, OnG
 
       socket.data = { userId: decoded.id, nickname: userNickname };
 
-      this.logger.log(`Client connected: ${socket.id}`);
+      this.logger.log(`[채팅 서버 연결] 소켓 ID: ${socket.id}`);
     } catch (error) {
-      this.logger.error(`${socket.id} 연결 강제 종료, status: ${error.status}, ${error.message}`);
+      this.logger.error(`[연결 강제 종료] 소켓 ID: ${socket.id} / status: ${error.status}, ${error.message}`);
       socket.disconnect();
     }
   }
 
   handleDisconnect(socket: Socket) {
-    this.logger.log(`Client disconnected: ${socket.id}`);
+    this.logger.log(`[채팅 서버 연결 해제] 소켓 ID: ${socket.id}`);
   }
 
   @SubscribeMessage('createChatRoom')

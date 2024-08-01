@@ -9,11 +9,19 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
-import { NotificationsService } from './notifications.service';
+import { Logger, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { SocketGateway } from 'src/common/sockets/gateway';
 
 @WebSocketGateway({ namespace: 'notifications', cors: { origin: '*' } })
-export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class NotificationsGateway
+  extends SocketGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
+  constructor(jwtService: JwtService) {
+    super(jwtService, 'notificaction');
+  }
+
   @WebSocketServer() public server: Server;
   private logger: Logger = new Logger('notifications');
 
@@ -22,13 +30,12 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
   }
 
   handleConnection(@ConnectedSocket() socket: Socket) {
-    const userId = 1;
-    socket.join(userId.toString());
-    this.logger.log(`알림 서버 입장 : ${socket.id}`);
+    const decoded = this.parseToken(socket);
+    this.logger.log(`[알림 서버 연결] 소켓 ID : ${socket.id}`);
   }
 
   handleDisconnect(socket: Socket) {
-    this.logger.log(`알림 서버 퇴장 : ${socket.id}`);
+    this.logger.log(`[알림 서버 연결 해제] 소켓 ID : ${socket.id}`);
   }
 
   @SubscribeMessage('notify')
