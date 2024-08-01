@@ -173,17 +173,14 @@ export class AuthService {
   async signIn(userId: number, phoneNum: string) {
     const payload = { id: userId, phoneNum };
 
-    // Redis에서 로그인 여부 확인
-    const token = await this.redisService.get(`refresh_token_${userId}`);
-    if (token) {
-      throw new BadRequestException('이미 로그인 하셨습니다.');
-    }
-
     // 토큰 발급
     const tokens = await this.issueTokens(payload);
     const hashRounds = Number(this.configService.get('HASH_ROUNDS'));
     const hashedRefreshToken = await hash(tokens.refreshToken, hashRounds);
+
+    // Redis에 리프레시 토큰 저장 (기존 토큰을 덮어씀)
     await this.redisService.set(`refresh_token_${userId}`, hashedRefreshToken);
+
     return tokens;
   }
 
