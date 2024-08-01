@@ -6,6 +6,8 @@ import { Matching } from './entities/matching.entity';
 import { InteractionType } from './types/interaction-type.type';
 import { bringSomeOne } from '../matchings/constants/constants';
 import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
+import { NotificationsGateway } from 'src/notifications/notifications.gateway';
+import { NotificationType } from 'src/notifications/types/notification-type.type';
 
 @Injectable()
 export class MatchingService {
@@ -15,6 +17,7 @@ export class MatchingService {
     @InjectRepository(Matching)
     private readonly matchingRepository: Repository<Matching>,
     private readonly chatRoomsService: ChatRoomsService,
+    private readonly NotificationsGateway: NotificationsGateway,
   ) {}
 
   // 새로운 매칭 상대를 생성하는 메서드
@@ -100,28 +103,28 @@ export class MatchingService {
     }
 
     // // 순차적으로 처리되었는지 확인
-    // let existingMatchings = await this.matchingRepository.find({
-    //   where: {
-    //     userId,
-    //     interactionType: IsNull(), // interaction 타입이 null인 매칭을 가져옴
-    //   },
-    //   order: { createdAt: 'ASC' }, // 생성된 순서대로 정렬
-    // });
+    let existingMatchings = await this.matchingRepository.find({
+      where: {
+        userId,
+        interactionType: IsNull(), // interaction 타입이 null인 매칭을 가져옴
+      },
+      order: { createdAt: 'ASC' }, // 생성된 순서대로 정렬
+    });
 
-    // if (existingMatchings.length === 0) {
-    //   // interaction 타입이 null인 매칭이 0이면 새로운 생성 메소드로 다시 가져옴
-    //   existingMatchings = await this.createNewMatchings(userId);
-    // }
+    if (existingMatchings.length === 0) {
+      // interaction 타입이 null인 매칭이 0이면 새로운 생성 메소드로 다시 가져옴
+      existingMatchings = await this.createNewMatchings(userId);
+    }
 
-    // if (existingMatchings.length > 0) {
-    //   // interaction 타입이 null인 가장 첫 번째 매칭의 targetUserId 가져오기
-    //   const nextTargetUserId = existingMatchings[0].targetUserId;
+    if (existingMatchings.length > 0) {
+      // interaction 타입이 null인 가장 첫 번째 매칭의 targetUserId 가져오기
+      const nextTargetUserId = existingMatchings[0].targetUserId;
 
-    //   // 상호작용해야 하는 대상 사용자 ID와 다른 경우 에러 메시지 출력
-    //   if (nextTargetUserId !== targetUserId) {
-    //     throw new BadRequestException('제공된 순서대로 사용자와 상호작용하세요.');
-    //   }
-    // }
+      // 상호작용해야 하는 대상 사용자 ID와 다른 경우 에러 메시지 출력
+      if (nextTargetUserId !== targetUserId) {
+        throw new BadRequestException('제공된 순서대로 사용자와 상호작용하세요.');
+      }
+    }
 
     // // 매칭 정보 업데이트
     await this.matchingRepository.update({ userId, targetUserId }, { interactionType });
@@ -139,7 +142,17 @@ export class MatchingService {
       const user1Id = targetUserMatching ? targetUserId : userId;
       const user2Id = targetUserMatching ? userId : targetUserId;
       await this.chatRoomsService.createChatRoom(user1Id, user2Id);
+      this.NotificationsGateway.server
+        .to(user1Id.toString())
+        .emit('notify', { type: NotificationType.MERGED, userId: user1Id });
+
+      this.NotificationsGateway.server
+        .to(user2Id.toString())
+        .emit('notify', { type: NotificationType.MERGED, userId: user2Id });
     }
+    this.NotificationsGateway.server
+      .to(targetUserId.toString())
+      .emit('notify', { type: NotificationType.LIKE, userId: targetUserId });
   }
 
   // 좋아요를 처리하는 함수

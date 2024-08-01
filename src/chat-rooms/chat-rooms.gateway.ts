@@ -10,45 +10,24 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatRoomsService } from './chat-rooms.service';
-import { Inject, Logger, UnauthorizedException, forwardRef } from '@nestjs/common';
+import { Inject, UnauthorizedException, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { SocketGateway } from 'src/common/sockets/gateway';
 
 @WebSocketGateway({ namespace: 'chat', cors: { origin: '*' } })
-export class ChatRoomsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class ChatRoomsGateway extends SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     @Inject(forwardRef(() => ChatRoomsService))
     private readonly chatRoomsService: ChatRoomsService,
-    private jwtService: JwtService,
-  ) {}
-
-  @WebSocketServer() public server: Server;
-  private logger: Logger = new Logger('chatGateWay');
-
-  afterInit(server: Server) {
-    this.logger.log(`chat ${server} init`);
+    jwtService: JwtService,
+  ) {
+    super({ jwtService, name: 'chat' });
   }
-
-  async handleConnection(@ConnectedSocket() socket: Socket) {
-    try {
-      const token = socket.handshake.auth.token;
-
-      if (!token) {
-        throw new UnauthorizedException('토큰이 유효하지 않습니다.');
-      }
-      const decoded = this.jwtService.verify(token, { secret: process.env.ACCESS_TOKEN_SECRET_KEY });
-      const userNickname = await this.chatRoomsService.findByUserId(decoded.id);
-
-      socket.data = { userId: decoded.id, nickname: userNickname };
-
-      this.logger.log(`Client connected: ${socket.id}`);
-    } catch (error) {
-      this.logger.error(`${socket.id} 연결 강제 종료, status: ${error.status}, ${error.message}`);
-      socket.disconnect();
-    }
-  }
-
-  handleDisconnect(socket: Socket) {
-    this.logger.log(`Client disconnected: ${socket.id}`);
+  async handleConnection(@ConnectedSocket() socket: Socket, server: Server) {
+    const decoded = this.parseToken(socket);
+    const userNickname = this.chatRoomsService.findNicknameByUserId(decoded.id);
+    socket.data = { userId: decoded.id, nickname: userNickname };
+    this.logger.log(`[채팅 서버 연결] 소켓 ID : ${socket.id}`);
   }
 
   @SubscribeMessage('createChatRoom')
@@ -65,21 +44,21 @@ export class ChatRoomsGateway implements OnGatewayInit, OnGatewayConnection, OnG
   async handleJoinChatRoom(@MessageBody() data: { userId: number; roomId: number }, @ConnectedSocket() socket: Socket) {
     const { userId, roomId } = data;
     socket.join(roomId.toString());
-    this.logger.log(`${userId}님께서 ${roomId}번 방에 입장했습니다.`);
+    this.logger.log(`${await socket.data.nickname}님께서 ${roomId}번 방에 입장했습니다.`);
   }
 
   @SubscribeMessage('exit')
   async handleExitChatRoom(@MessageBody() data: { roomId: number }, @ConnectedSocket() socket: Socket) {
     const { roomId } = data;
     socket.leave(roomId.toString());
-    this.logger.log(`${socket.data.nickname}님께서  ${roomId}번 방에서 퇴장하셨습니다.`);
+    this.logger.log(`${await socket.data.nickname}님께서  ${roomId}번 방에서 퇴장하셨습니다.`);
   }
 
   @SubscribeMessage('message')
   async handleMessage(@MessageBody() data: { roomId: number; message: string }, @ConnectedSocket() socket: Socket) {
     const { roomId, message } = data;
-    const chatMessage = await this.chatRoomsService.saveMessage(socket.data.userId, roomId, message);
-    this.server.to(roomId.toString()).emit('message', chatMessage);
-    this.logger.log(`방번호:${roomId}번 / ${socket.data.nickname}:${message}`);
+    await this.chatRoomsService.saveMessage(socket.data.userId, roomId, message);
+    this.server.to(roomId.toString()).emit('message', { nickname: await socket.data.nickname, text: message });
+    this.logger.log(`방번호:${roomId}번 / ${await socket.data.nickname}:${message}`);
   }
 }

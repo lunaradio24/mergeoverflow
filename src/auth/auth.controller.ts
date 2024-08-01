@@ -1,10 +1,12 @@
-import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { VerificationRequestDto } from './dto/verification-request.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { LocalAuthGuard } from './guards/local-auth.guard';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { IMAGE_LIMIT } from './constants/auth.constants';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -34,8 +36,9 @@ export class AuthController {
 
   /**회원가입 */
   @Post('sign-up')
-  async signUp(@Body() signUpDto: SignUpDto) {
-    const newUser = await this.authService.signUp(signUpDto);
+  @UseInterceptors(FilesInterceptor('profileImages', IMAGE_LIMIT))
+  async signUp(@Body() signUpDto: SignUpDto, @UploadedFiles() profileImages: Express.Multer.File[]) {
+    const newUser = await this.authService.signUp(signUpDto, profileImages);
     return {
       message: '회원가입을 완료했습니다.',
       data: newUser,

@@ -21,6 +21,8 @@ import { Heart } from 'src/matchings/entities/heart.entity';
 import { Matching } from 'src/matchings/entities/matching.entity';
 import { Notification } from 'src/notifications/entities/notification.entity';
 import { accountFactory } from './factories/account.factory';
+import ProfileImageSeeder from './seeders/profile-image.seeder';
+import { profileImageFactory } from './factories/profile-image.factory';
 
 (async () => {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -49,8 +51,8 @@ import { accountFactory } from './factories/account.factory';
       Matching,
       Notification,
     ],
-    seeds: [AccountSeeder, UserSeeder],
-    factories: [accountFactory, userFactory],
+    seeds: [AccountSeeder, UserSeeder, ProfileImageSeeder],
+    factories: [accountFactory, userFactory, profileImageFactory],
   };
 
   const dataSource = new DataSource(options);
@@ -59,6 +61,7 @@ import { accountFactory } from './factories/account.factory';
   // Run seeders in order
   await runSeeders(dataSource, { seeds: [AccountSeeder] });
   await runSeeders(dataSource, { seeds: [UserSeeder] });
+  await runSeeders(dataSource, { seeds: [ProfileImageSeeder] });
 
   console.log('Seeding completed');
   await app.close();
