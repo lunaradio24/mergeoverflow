@@ -1,1 +1,1 @@
-export const NUM_CREATING_IMAGES = 3;
+export const NUM_CREATING_IMAGES = 2;

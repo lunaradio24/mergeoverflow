@@ -26,9 +26,13 @@ export default class ProfileImageSeeder implements Seeder {
       newUsers.map((user) =>
         Promise.all(
           Array.from({ length: NUM_CREATING_IMAGES }).map(async () => {
-            const newProfileImage = await profileImageFactory.make();
-            newProfileImage.userId = user.id;
-            await profileImageRepository.save(newProfileImage);
+            try {
+              const newProfileImage = await profileImageFactory.make();
+              newProfileImage.userId = user.id;
+              await profileImageRepository.save(newProfileImage);
+            } catch (error) {
+              console.error(`Failed to save profile image for user: ${user.id}`, error);
+            }
           }),
         ),
       ),
