@@ -21,6 +21,8 @@ import { compare, hash } from 'bcrypt';
 import { SignInDto } from './dto/sign-in.dto';
 import { CODE_TTL, MAX_INTERESTS, MAX_TECHS, MIN_INTERESTS, MIN_TECHS } from './constants/auth.constants';
 import { formatPhoneNumber } from '../utils/phone.util';
+import { S3Service } from 'src/s3/s3.service';
+import { ProfileImage } from 'src/users/entities/profile-image.entity';
 
 @Injectable()
 export class AuthService {
@@ -32,6 +34,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly redisService: RedisService,
     private readonly connection: Connection,
+    private readonly s3Service: S3Service,
   ) {}
 
   async sendSmsForVerification(phoneNum: string) {
@@ -58,8 +61,8 @@ export class AuthService {
     return { message: '인증 성공' };
   }
 
-  async signUp(signUpDto: SignUpDto) {
-    const { phoneNum, password, interests, techs, ...userData } = signUpDto;
+  async signUp(signUpDto: SignUpDto, file: Express.Multer.File[]) {
+    let { phoneNum, password, interests, techs, ...userData } = signUpDto;
     const formattedPhoneNum = formatPhoneNumber(phoneNum);
 
     // 전화번호 인증 확인
@@ -72,6 +75,14 @@ export class AuthService {
     const existingAccount = await this.accountRepository.findOne({ where: { phoneNum: formattedPhoneNum } });
     if (existingAccount) {
       throw new ConflictException('이미 존재하는 전화번호입니다.');
+    }
+
+    // interests와 techs가 문자열인 경우 배열로 변환
+    if (typeof interests === 'string') {
+      interests = JSON.parse(interests);
+    }
+    if (typeof techs === 'string') {
+      techs = JSON.parse(techs);
     }
 
     // 비밀번호 해싱
@@ -121,6 +132,15 @@ export class AuthService {
         return userToTech;
       });
       await queryRunner.manager.save(userToTechs);
+
+      // ProfileImage 생성
+      for (const image of file) {
+        const imageUrl = await this.s3Service.imageUploadToS3(image.originalname, image);
+        const profileImage = new ProfileImage();
+        profileImage.userId = savedUser.id;
+        profileImage.image = imageUrl;
+        await queryRunner.manager.save(profileImage);
+      }
 
       await queryRunner.commitTransaction();
       return { message: '회원가입 성공' };

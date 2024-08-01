@@ -15,10 +15,12 @@ import { UsersModule } from '../users/users.module';
 import { UserToInterest } from 'src/users/entities/user-to-interest.entity';
 import { UserToTech } from 'src/users/entities/user-to-tech.entity';
 import { SmsModule } from './sms/sms.module';
+import { ProfileImage } from 'src/users/entities/profile-image.entity';
+import { S3Module } from 'src/s3/s3.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Account, User, UserToInterest, UserToTech]),
+    TypeOrmModule.forFeature([Account, User, UserToInterest, UserToTech, ProfileImage]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -30,6 +32,7 @@ import { SmsModule } from './sms/sms.module';
     ConfigModule,
     UsersModule,
     SmsModule,
+    S3Module,
   ],
   controllers: [AuthController],
   providers: [AuthService, AccessTokenStrategy, RefreshTokenStrategy, LocalStrategy, RedisService, RolesGuard],
