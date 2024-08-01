@@ -99,29 +99,29 @@ export class MatchingService {
       throw new NotFoundException(`대상 사용자 ID ${targetUserId}를 찾을 수 없습니다.`);
     }
 
-    // // 순차적으로 처리되었는지 확인
-    // let existingMatchings = await this.matchingRepository.find({
-    //   where: {
-    //     userId,
-    //     interactionType: IsNull(), // interaction 타입이 null인 매칭을 가져옴
-    //   },
-    //   order: { createdAt: 'ASC' }, // 생성된 순서대로 정렬
-    // });
+    // 순차적으로 처리되었는지 확인
+    let existingMatchings = await this.matchingRepository.find({
+      where: {
+        userId,
+        interactionType: IsNull(), // interaction 타입이 null인 매칭을 가져옴
+      },
+      order: { createdAt: 'ASC' }, // 생성된 순서대로 정렬
+    });
 
-    // if (existingMatchings.length === 0) {
-    //   // interaction 타입이 null인 매칭이 0이면 새로운 생성 메소드로 다시 가져옴
-    //   existingMatchings = await this.createNewMatchings(userId);
-    // }
+    if (existingMatchings.length === 0) {
+      // interaction 타입이 null인 매칭이 0이면 새로운 생성 메소드로 다시 가져옴
+      existingMatchings = await this.createNewMatchings(userId);
+    }
 
-    // if (existingMatchings.length > 0) {
-    //   // interaction 타입이 null인 가장 첫 번째 매칭의 targetUserId 가져오기
-    //   const nextTargetUserId = existingMatchings[0].targetUserId;
+    if (existingMatchings.length > 0) {
+      // interaction 타입이 null인 가장 첫 번째 매칭의 targetUserId 가져오기
+      const nextTargetUserId = existingMatchings[0].targetUserId;
 
-    //   // 상호작용해야 하는 대상 사용자 ID와 다른 경우 에러 메시지 출력
-    //   if (nextTargetUserId !== targetUserId) {
-    //     throw new BadRequestException('제공된 순서대로 사용자와 상호작용하세요.');
-    //   }
-    // }
+      // 상호작용해야 하는 대상 사용자 ID와 다른 경우 에러 메시지 출력
+      if (nextTargetUserId !== targetUserId) {
+        throw new BadRequestException('제공된 순서대로 사용자와 상호작용하세요.');
+      }
+    }
 
     // // 매칭 정보 업데이트
     await this.matchingRepository.update({ userId, targetUserId }, { interactionType });
