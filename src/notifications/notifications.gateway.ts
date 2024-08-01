@@ -8,37 +8,53 @@ import {
   MessageBody,
   ConnectedSocket,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
+import { Socket } from 'socket.io';
+import { Logger, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { SocketGateway } from 'src/common/sockets/gateway';
 import { NotificationsService } from './notifications.service';
+import { NotificationType } from './types/notification-type.type';
 
 @WebSocketGateway({ namespace: 'notifications', cors: { origin: '*' } })
-export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer() public server: Server;
-  private logger: Logger = new Logger('notifications');
-
-  afterInit(server: Server) {
-    this.logger.log(`notifications ${server} init`);
+export class NotificationsGateway
+  extends SocketGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
+  constructor(
+    jwtService: JwtService,
+    private readonly notificationsService: NotificationsService,
+  ) {
+    super({ jwtService, name: 'notificaction' });
   }
 
   handleConnection(@ConnectedSocket() socket: Socket) {
-    const userId = 1;
-    socket.join(userId.toString());
-    this.logger.log(`알림 서버 입장 : ${socket.id}`);
-  }
-
-  handleDisconnect(socket: Socket) {
-    this.logger.log(`알림 서버 퇴장 : ${socket.id}`);
+    const decoded = this.parseToken(socket);
+    const userNickname = this.notificationsService.findByUserId(decoded.id);
+    socket.data = { userId: decoded.id, nickname: userNickname };
+    socket.join(socket.data.userId.toString());
+    this.logger.log(`[알림 서버 연결] 소켓 ID : ${socket.id}`);
   }
 
   @SubscribeMessage('notify')
-  async handleNotification(
-    @MessageBody() data: { userId: number; message: string; type: string },
+  async sendNotification(
     @ConnectedSocket() socket: Socket,
+    @MessageBody() data: { type: NotificationType; userId?: number },
   ) {
-    const { userId, message, type } = data;
-    socket.join(userId.toString());
+    let message;
+    const { type, userId } = data;
+    switch (type) {
+      case NotificationType.CHAT:
+        message = '새로운 메세지가 왔습니다.';
+        break;
+      case NotificationType.LIKE:
+        message = '누군가가 당신에게 좋아요를 눌렀습니다.';
+        break;
+      case NotificationType.MERGED:
+        message = '새로운 이와 Merge 되었습니다 !';
+        break;
+    }
     this.server.to(userId.toString()).emit('reception', { type, message });
-    this.logger.log(`알림 : ${userId}:${message},${type}`);
+    await this.notificationsService.saveNotification(userId, message, type);
+    this.logger.log(`[알림]${await socket.data.nickname}:[${type}]${message}`);
   }
 }

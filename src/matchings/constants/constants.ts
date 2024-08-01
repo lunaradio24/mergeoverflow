@@ -1,1 +1,1 @@
-export const bringSomeOne = 100;
+export const bringSomeOne = 10;

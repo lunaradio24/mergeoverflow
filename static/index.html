@@ -19,8 +19,9 @@
         <input type="text" id="message">
     </div>
     <button id="sendMessageButton">Send Message</button>
-    <ul id="messages"></ul>
-
+    <div>
+        <ul id="messages"></ul>
+    </div>
     <!-- Notification Section -->
     <div>
         <h2>Notifications</h2>
@@ -29,24 +30,7 @@
 
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script>
-        const login = async (phoneNum, password) => {
-            const response = await fetch("localhost:3000/auth/sign-in", {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    phoneNum,
-                    password
-                })
-            })
-            const data = await response.json();
-            const { accessToken } = data;
-            return accessToken;
-        }
-
-        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzEsInBob25lTnVtIjoiMDEwLTg0NDktMTIzNSIsImlhdCI6MTcyMjQ0NzcyNSwiZXhwIjoxNzIyNDYyMTI1fQ.A7OSsnrMlDq7msBafR-cW2AwATNEh5csi1v2AzEyy80"
-
+        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjQsInBob25lTnVtIjoiMDEwLTM2NzItNzQyMiIsImlhdCI6MTcyMjUwNzY2NiwiZXhwIjoxNzIyNTUwODY2fQ.cS6tpKnjiafH-O6O7sedKFU33H07mX3J0usRqf5HgOk"
         const chatSocket = io('ws://localhost:3000/chat', {
             auth: {
                 token
@@ -89,14 +73,21 @@
 
         chatSocket.on('message', (message) => {
             const item = document.createElement('li');
-            item.textContent = `User ${message.senderId}: ${message.text}`;
+            item.textContent = `${message.nickname}: ${message.text}`;
             messagesList.appendChild(item);
         });
-        // notifySocket.on('reception', (notification) => {
-        //     const item = document.createElement('li');
-        //     item.textContent = `Notification: ${notification.message}`;
-        //     notificationsList.appendChild(item);
-        // })
+
+        notifySocket.on('notify', (data) => {
+            const { type, userId } = data
+            notifySocket.emit('notify', { type, userId });
+        })
+
+        notifySocket.on('reception', (data) => {
+            const { type, message } = data
+            const item = document.createElement('li');
+            item.textContent = `Notification: ${type},${message}`;
+            notificationsList.appendChild(item);
+        })
     </script>
 </body>
 
