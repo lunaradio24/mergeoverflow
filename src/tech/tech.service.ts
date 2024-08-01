@@ -8,10 +8,12 @@ import { Account } from 'src/auth/entities/account.entity';
 
 @Injectable()
 export class TechService {
-  @InjectRepository(Tech)
-  private readonly techRepository: Repository<Tech>;
-  @InjectRepository(Account)
-  private readonly accountRepository: Repository<Account>;
+  constructor(
+    @InjectRepository(Tech)
+    private readonly techRepository: Repository<Tech>,
+    @InjectRepository(Account)
+    private readonly accountRepository: Repository<Account>,
+  ) {}
 
   // 기술 목록 생성
   async create(user: any, createTechDto: CreateTechDto) {
