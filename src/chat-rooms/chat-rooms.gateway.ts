@@ -10,45 +10,24 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatRoomsService } from './chat-rooms.service';
-import { Inject, Logger, UnauthorizedException, forwardRef } from '@nestjs/common';
+import { Inject, UnauthorizedException, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { SocketGateway } from 'src/common/sockets/gateway';
 
 @WebSocketGateway({ namespace: 'chat', cors: { origin: '*' } })
-export class ChatRoomsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class ChatRoomsGateway extends SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     @Inject(forwardRef(() => ChatRoomsService))
     private readonly chatRoomsService: ChatRoomsService,
-    private jwtService: JwtService,
-  ) {}
-
-  @WebSocketServer() public server: Server;
-  private logger: Logger = new Logger('chatGateWay');
-
-  afterInit(server: Server) {
-    this.logger.log(`chat ${server} init`);
+    jwtService: JwtService,
+  ) {
+    super({ jwtService, name: 'chat' });
   }
-
-  async handleConnection(@ConnectedSocket() socket: Socket) {
-    try {
-      const token = socket.handshake.auth.token;
-
-      if (!token) {
-        throw new UnauthorizedException('토큰이 유효하지 않습니다.');
-      }
-      const decoded = this.jwtService.verify(token, { secret: process.env.ACCESS_TOKEN_SECRET_KEY });
-      const userNickname = await this.chatRoomsService.findByUserId(decoded.id);
-
-      socket.data = { userId: decoded.id, nickname: userNickname };
-
-      this.logger.log(`[채팅 서버 연결] 소켓 ID: ${socket.id}`);
-    } catch (error) {
-      this.logger.error(`[연결 강제 종료] 소켓 ID: ${socket.id} / status: ${error.status}, ${error.message}`);
-      socket.disconnect();
-    }
-  }
-
-  handleDisconnect(socket: Socket) {
-    this.logger.log(`[채팅 서버 연결 해제] 소켓 ID: ${socket.id}`);
+  async handleConnection(@ConnectedSocket() socket: Socket, server: Server) {
+    const decoded = this.parseToken(socket);
+    const userNickname = this.chatRoomsService.findByUserId(decoded.id);
+    socket.data = { userId: decoded.id, nickname: userNickname };
+    this.logger.log(`[채팅 서버 연결] 소켓 ID : ${socket.id}`);
   }
 
   @SubscribeMessage('createChatRoom')

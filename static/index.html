@@ -45,7 +45,7 @@
             return accessToken;
         }
 
-        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTIsInBob25lTnVtIjoiMDEwLTk0MDktNTY5MiIsImlhdCI6MTcyMjQ3NzA2OCwiZXhwIjoxNzIyNDkxNDY4fQ.9IvSBfpSW-X51SmZAkRd-E1HPMP4FVhGuUcgizCSEjY"
+        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTMsInBob25lTnVtIjoiMDEwLTYxOTgtNDIwNCIsImlhdCI6MTcyMjQ5MTkzMywiZXhwIjoxNzIyNTA2MzMzfQ.IGehEoRq1jFQ9EUu-az0FzdtDsunQKchXOMXRawprTQ"
         const chatSocket = io('ws://localhost:3000/chat', {
             auth: {
                 token
@@ -91,11 +91,13 @@
             item.textContent = `User ${message.senderId}: ${message.text}`;
             messagesList.appendChild(item);
         });
-        // notifySocket.on('reception', (notification) => {
-        //     const item = document.createElement('li');
-        //     item.textContent = `Notification: ${notification.message}`;
-        //     notificationsList.appendChild(item);
-        // })
+
+        notifySocket.on('notify', (notification) => {
+            const item = document.createElement('li');
+            item.textContent = `Notification: ${notification.type},${notification.message}`;
+            notificationsList.appendChild(item);
+            notifySocket.emit('notify', { type: notification.type });
+        })
     </script>
 </body>
 

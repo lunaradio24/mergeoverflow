@@ -11,6 +11,6 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [TypeOrmModule.forFeature([User, Notification]), JwtModule],
   controllers: [NotificationsController],
   providers: [NotificationsService, NotificationsGateway],
-  exports: [NotificationsService],
+  exports: [NotificationsService, NotificationsGateway],
 })
 export class NotificationsModule {}

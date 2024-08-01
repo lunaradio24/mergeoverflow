@@ -1,5 +1,5 @@
-import { ConnectedSocket } from '@nestjs/websockets';
-import { Socket } from 'socket.io';
+import { ConnectedSocket, WebSocketServer } from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
@@ -13,8 +13,9 @@ export class SocketGateway {
     this.name = name;
     this.logger = new Logger(name);
   }
+  @WebSocketServer() public server: Server;
 
-  afterInit(server: any) {
+  afterInit(server: Server) {
     this.logger.log(`${this.name} ${server} init`);
   }
 
@@ -25,7 +26,6 @@ export class SocketGateway {
   parseToken(@ConnectedSocket() socket: Socket) {
     try {
       const token = socket.handshake.auth.token;
-
       if (!token) {
         throw new Error('토큰이 유효하지 않습니다.');
       }

@@ -1,11 +1,16 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { ChatRoomsService } from './chat-rooms.service';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { NotificationsGateway } from 'src/notifications/notifications.gateway';
+import { NotificationType } from 'src/notifications/types/notification-type.type';
 
-// @UseGuards(AccessTokenGuard)
+@UseGuards(AccessTokenGuard)
 @Controller('chat-rooms')
 export class ChatRoomsController {
-  constructor(private readonly chatRoomsService: ChatRoomsService) {}
+  constructor(
+    private readonly chatRoomsService: ChatRoomsService,
+    private readonly notificationsGateway: NotificationsGateway,
+  ) {}
   @Get()
   async getUserChatRooms(@Request() req) {
     const userId = req.user.id;
@@ -14,13 +19,14 @@ export class ChatRoomsController {
 
   @Post(':roomId')
   async joinChatRoom(@Param('roomId') roomId: number) {
-    const userId = 19;
+    const userId = 13;
+    this.notificationsGateway.server.to(userId.toString()).emit('notify', { type: NotificationType.MERGED });
     return await this.chatRoomsService.joinChatRoom(userId, roomId);
   }
 
   @Delete(':roomId')
   async exitChatRoom(@Param('roomId') roomId: number) {
-    const userId = 20;
+    const userId = 13;
     await this.chatRoomsService.exitChatRoom(userId, roomId);
     return { message: `${roomId}번 채팅방에서 퇴장했습니다.` };
   }
