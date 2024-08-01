@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { UpdateProfileDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
@@ -7,6 +7,9 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 import { Account } from 'src/auth/entities/account.entity';
 import { CheckNicknameDto } from './dto/check-nickname.dto';
 import { compare, hash } from 'bcrypt';
+import { aw } from '@upstash/redis/zmscore-80635339';
+import { ProfileImage } from './entities/profile-image.entity';
+import { S3Service } from 'src/s3/s3.service';
 
 @Injectable()
 export class UsersService {
@@ -16,6 +19,10 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Account)
     private readonly accountRepository: Repository<Account>,
+    @InjectRepository(ProfileImage)
+    private readonly profileImageRepository: Repository<ProfileImage>,
+    // S3Service
+    private readonly s3Service: S3Service,
   ) {}
 
   /**
@@ -52,7 +59,7 @@ export class UsersService {
     });
 
     if (!foundUser) {
-      throw new NotFoundException('허용되지 않는 사용자입니다.');
+      throw new NotFoundException('존재하지 않는 사용자입니다.');
     }
 
     await this.userRepository.update(
@@ -131,6 +138,83 @@ export class UsersService {
     return updatePassword;
   }
 
+  // 프로필 이미지 추가
+  async createProfileImage(userId: number, file: Express.MulterS3.File) {
+    // 1. 유저 존재 확인
+    const foundUser = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!foundUser) {
+      throw new NotFoundException('존재하지 않는 사용자입니다.');
+    }
+
+    // 2. S3에 이미지 업로드 후 URL 반환
+    const imageUrl = await this.s3Service.imageUploadToS3(`${Date.now()}_${file.originalname}`, file);
+
+    const savedImage = await this.profileImageRepository.save({ userId, image: imageUrl });
+
+    return savedImage;
+  }
+
+  // 프로필 이미지 변경
+  async updateProfileImage(userId: number, imageId: number, file: Express.MulterS3.File) {
+    // 1. 유저 존재 확인
+    const foundUser = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!foundUser) {
+      throw new NotFoundException('존재하지 않는 사용자입니다.');
+    }
+
+    // 2. 존재하는 이미지 인지 확인
+    const foundImage = await this.profileImageRepository.findOne({
+      where: { id: imageId },
+    });
+
+    if (!foundImage) {
+      throw new NotFoundException('존재하지 않은 이미지입니다.');
+    }
+
+    // 3. 파일을 S3에 업로드하고 URL 반환
+    const imageUrl = await this.s3Service.imageUploadToS3(`${Date.now()}_${file.originalname}`, file);
+    // Date.now()는 중복을 막기 위해서
+
+    // 4. 해당 이미지 Id의 URL을 수정한다.
+    await this.profileImageRepository.update({ id: imageId }, { image: imageUrl });
+
+    // 도전과제 5. S3에서 변경 전 이미지를 삭제한다.
+
+    return imageUrl;
+  }
+
+  // // 프로필 이미지 삭제
+  // async deleteProfileImage(userId: number, imageId: number) {
+  //   // 1. 유저 존재 확인
+  //   const foundUser = await this.userRepository.findOne({
+  //     where: { id: userId },
+  //   });
+
+  //   if (!foundUser) {
+  //     throw new NotFoundException('존재하지 않는 사용자입니다.');
+  //   }
+
+  //   // 2. 존재하는 이미지 인지 확인
+  //   const foundImage = await this.profileImageRepository.findOne({
+  //     where: { id: imageId },
+  //   });
+
+  //   if (!foundImage) {
+  //     throw new NotFoundException('존재하지 않은 이미지입니다.');
+  //   }
+
+  //   // 이미지 S3에서 삭제
+  //   // 먼저 S3에서 삭제하고 그 다음 DB에서 삭제한다.
+  //   const
+  // }
+
+  // 닉네임 중복 확인
   async checkName(checkNicknameDto: CheckNicknameDto) {
     // 1.userRepository에 같은 닉네임이 있는지 확인
     const checkName = await this.userRepository.findOne({
@@ -142,7 +226,6 @@ export class UsersService {
       throw new BadRequestException('이미 존재하는 닉네임입니다.');
     }
 
-    // 없다면 반환
     return;
   }
 }

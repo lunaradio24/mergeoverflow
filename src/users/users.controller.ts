@@ -1,11 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards, Request, HttpStatus, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  UseGuards,
+  Request,
+  HttpStatus,
+  Req,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { CheckNicknameDto } from './dto/check-nickname.dto';
-import { UpdateProfileDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/utils/decorators/roles.decorator';
 import { Role } from 'src/auth/types/role.type';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('users')
 export class UsersController {
@@ -42,7 +56,7 @@ export class UsersController {
   // 비밀번호 수정
   @UseGuards(RolesGuard)
   @Roles(Role.USER) // 로그인한 사람만 가능하게
-  @Patch('password')
+  @Patch('me/password')
   async updatePassword(@Req() req: any, @Body() UpdatePasswordDto: UpdatePasswordDto) {
     const data = await this.usersService.updatePassword(req.user, UpdatePasswordDto);
 
@@ -53,8 +67,45 @@ export class UsersController {
     };
   }
 
+  // 프로필 이미지 추가
+  @UseGuards(RolesGuard)
+  @Roles(Role.USER)
+  @Post('me/images')
+  @UseInterceptors(FileInterceptor('image'))
+  async createProfileImage(@Req() req: any, @UploadedFile() file: Express.MulterS3.File) {
+    console.log('req', req);
+    const imageUrl = await this.usersService.createProfileImage(req.user.id, file);
+
+    return imageUrl;
+  }
+
+  // 프로필 이미지 변경
+  @UseGuards(RolesGuard)
+  @Roles(Role.USER)
+  @Patch('me/images/:imageId')
+  @UseInterceptors(FileInterceptor('image'))
+  async updateProfileImage(
+    @Req() req: any,
+    @Param('imageId') imageId: number,
+    @UploadedFile() file: Express.MulterS3.File,
+  ) {
+    const imageUrl = await this.usersService.updateProfileImage(req.user.id, imageId, file);
+
+    return imageUrl;
+  }
+
+  // // 프로필 이미지 삭제
+  // @UseGuards(RolesGuard)
+  // @Roles(Role.USER)
+  // @Post('me/images/:imageId')
+  // async deleteProfileImage(@Req() req: any, @Param('imageId') imageId: number) {
+  //   const deleteUrl = await this.usersService.deleteProfileImage(req.user.id, imageId);
+
+  //   return deleteUrl;
+  // }
+
   // 닉네임 중복 확인(이거 아마 auth에서 쓸거 같은데 왜 여기서??)
-  @Post('checkNickname')
+  @Post('nicknames/check-duplicate')
   async checkNickname(@Body() checkNicknameDto: CheckNicknameDto) {
     const data = await this.usersService.checkName(checkNicknameDto);
 
