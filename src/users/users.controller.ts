@@ -74,7 +74,6 @@ export class UsersController {
   @Post('me/images')
   @UseInterceptors(FileInterceptor('image'))
   async createProfileImage(@Req() req: any, @UploadedFile() file: Express.MulterS3.File) {
-    // console.log('req', req);
     const imageUrl = await this.usersService.createProfileImage(req.user.id, file);
 
     return {
@@ -106,9 +105,8 @@ export class UsersController {
   // 프로필 이미지 삭제
   @UseGuards(RolesGuard)
   @Roles(Role.USER)
-  @Delete('me/images/deleteImage/:imageId')
+  @Delete('me/images/:imageId')
   async deleteProfileImage(@Req() req: any, @Param('imageId') imageId: number) {
-    console.log('컨트롤러', req);
     const deleteUrl = await this.usersService.deleteProfileImage(req.user.id, imageId);
 
     return {
