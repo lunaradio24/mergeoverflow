@@ -7,6 +7,7 @@ import { Mbti } from '../../users/types/mbti.type';
 import { Religion } from '../../users/types/religion.type';
 import { Frequency } from '../../users/types/frequency.type';
 import { IsPasswordMatchingConstraint } from 'src/utils/decorators/password-match.decorator';
+import { Transform } from 'class-transformer';
 
 export class SignUpDto {
   @IsNotEmpty()
@@ -53,6 +54,7 @@ export class SignUpDto {
 
   @IsNotEmpty()
   @IsNumber()
+  @Transform(({ value }) => parseFloat(value))
   height: number;
 
   @IsNotEmpty()
@@ -69,9 +71,11 @@ export class SignUpDto {
 
   @IsArray()
   @ArrayNotEmpty()
+  @Transform(({ value }) => JSON.parse(value))
   interests: number[];
 
   @IsArray()
   @ArrayNotEmpty()
+  @Transform(({ value }) => JSON.parse(value))
   techs: number[];
 }
