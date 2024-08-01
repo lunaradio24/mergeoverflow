@@ -8,10 +8,12 @@ import { Account } from 'src/auth/entities/account.entity';
 
 @Injectable()
 export class InterestService {
-  @InjectRepository(Interest)
-  private readonly interestRepository: Repository<Interest>;
-  @InjectRepository(Account)
-  private readonly accountRepository: Repository<Account>;
+  constructor(
+    @InjectRepository(Interest)
+    private readonly interestRepository: Repository<Interest>,
+    @InjectRepository(Account)
+    private readonly accountRepository: Repository<Account>,
+  ) {}
 
   // 관심사 DB 등록
   async create(user: any, interestDto: InterestDto) {

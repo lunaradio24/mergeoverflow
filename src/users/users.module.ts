@@ -14,9 +14,11 @@ import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
 import { ChatMessage } from '../chat-rooms/entities/chat-message.entity';
 import { Account } from '../auth/entities/account.entity';
 import { Notification } from '../notifications/entities/notification.entity';
+import { S3Module } from 'src/s3/s3.module';
 
 @Module({
   imports: [
+    S3Module,
     TypeOrmModule.forFeature([
       User,
       UserToInterest,
