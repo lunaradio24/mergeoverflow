@@ -55,7 +55,6 @@ export class NotificationsGateway
     }
     this.server.to(userId.toString()).emit('reception', { type, message });
     await this.notificationsService.saveNotification(userId, message, type);
-    // this.server.to(socket.data.userId.toString()).emit('notify', { type, message });
     this.logger.log(`[알림]${await socket.data.nickname}:[${type}]${message}`);
   }
 }

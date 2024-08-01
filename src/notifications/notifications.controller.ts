@@ -21,15 +21,4 @@ export class NotificationsController {
     const notificactions = await this.notificationsService.latestNotifications(userId);
     return notificactions;
   }
-
-  // @Patch('late')
-  // async latestNotifications(@Request() req): Promise<Notification[]> {
-  //   const userId = req.user.id;
-  //   const notificactions = await this.notificationsService.latestNotifications(userId);
-  //   return notificactions;
-  // }
-  // @Post()
-  // (@Body() createNotificationDto: CreateNotificationDto) {
-  //   return this.notificationsService.create(createNotificationDto);
-  // }
 }

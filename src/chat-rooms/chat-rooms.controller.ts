@@ -1,16 +1,11 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { ChatRoomsService } from './chat-rooms.service';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
-import { NotificationsGateway } from 'src/notifications/notifications.gateway';
-import { NotificationType } from 'src/notifications/types/notification-type.type';
 
 @UseGuards(AccessTokenGuard)
 @Controller('chat-rooms')
 export class ChatRoomsController {
-  constructor(
-    private readonly chatRoomsService: ChatRoomsService,
-    private readonly notificationsGateway: NotificationsGateway,
-  ) {}
+  constructor(private readonly chatRoomsService: ChatRoomsService) {}
   @Get()
   async getUserChatRooms(@Request() req) {
     const userId = req.user.id;

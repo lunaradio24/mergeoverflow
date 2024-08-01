@@ -30,22 +30,6 @@
 
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script>
-        // const login = async (phoneNum, password) => {
-        //     const response = await fetch("localhost:3000/auth/sign-in", {
-        //         method: "POST",
-        //         headers: {
-        //             'Content-Type': 'application/json'
-        //         },
-        //         body: JSON.stringify({
-        //             phoneNum,
-        //             password
-        //         })
-        //     })
-        //     const data = await response.json();
-        //     const { accessToken } = data;
-        //     return accessToken;
-        // }
-
         const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjQsInBob25lTnVtIjoiMDEwLTM2NzItNzQyMiIsImlhdCI6MTcyMjUwNzY2NiwiZXhwIjoxNzIyNTUwODY2fQ.cS6tpKnjiafH-O6O7sedKFU33H07mX3J0usRqf5HgOk"
         const chatSocket = io('ws://localhost:3000/chat', {
             auth: {
