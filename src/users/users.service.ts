@@ -189,30 +189,38 @@ export class UsersService {
     return imageUrl;
   }
 
-  // // 프로필 이미지 삭제
-  // async deleteProfileImage(userId: number, imageId: number) {
-  //   // 1. 유저 존재 확인
-  //   const foundUser = await this.userRepository.findOne({
-  //     where: { id: userId },
-  //   });
+  // 프로필 이미지 삭제
+  async deleteProfileImage(userId: number, imageId: number) {
+    // 1. 유저 존재 확인
+    const foundUser = await this.userRepository.findOne({
+      where: { id: userId },
+    });
 
-  //   if (!foundUser) {
-  //     throw new NotFoundException('존재하지 않는 사용자입니다.');
-  //   }
+    console.log('1차 확인');
+    if (!foundUser) {
+      throw new NotFoundException('존재하지 않는 사용자입니다.');
+    }
 
-  //   // 2. 존재하는 이미지 인지 확인
-  //   const foundImage = await this.profileImageRepository.findOne({
-  //     where: { id: imageId },
-  //   });
+    console.log('2차 확인');
+    // 2. 존재하는 이미지 인지 확인
+    const foundImage = await this.profileImageRepository.findOne({
+      where: { id: imageId, userId: userId },
+    });
 
-  //   if (!foundImage) {
-  //     throw new NotFoundException('존재하지 않은 이미지입니다.');
-  //   }
+    if (!foundImage) {
+      throw new NotFoundException('존재하지 않은 이미지입니다.');
+    }
 
-  //   // 이미지 S3에서 삭제
-  //   // 먼저 S3에서 삭제하고 그 다음 DB에서 삭제한다.
-  //   const
-  // }
+    console.log('3차 확인');
+    // 이미지 S3에서 삭제
+    // 먼저 S3에서 삭제하고 그 다음 DB에서 삭제한다. ?
+
+    const deleteImage = await this.s3Service.deleteFileFromS3(foundImage.image);
+
+    await this.profileImageRepository.delete(imageId);
+
+    return deleteImage;
+  }
 
   // 닉네임 중복 확인
   async checkName(checkNicknameDto: CheckNicknameDto) {

@@ -11,6 +11,7 @@ import {
   Req,
   UseInterceptors,
   UploadedFile,
+  Delete,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdatePasswordDto } from './dto/update-password.dto';
@@ -73,10 +74,14 @@ export class UsersController {
   @Post('me/images')
   @UseInterceptors(FileInterceptor('image'))
   async createProfileImage(@Req() req: any, @UploadedFile() file: Express.MulterS3.File) {
-    console.log('req', req);
+    // console.log('req', req);
     const imageUrl = await this.usersService.createProfileImage(req.user.id, file);
 
-    return imageUrl;
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: '이미지 생성이 성공적으로 완료되었습니다.',
+      imageUrl,
+    };
   }
 
   // 프로필 이미지 변경
@@ -91,18 +96,27 @@ export class UsersController {
   ) {
     const imageUrl = await this.usersService.updateProfileImage(req.user.id, imageId, file);
 
-    return imageUrl;
+    return {
+      statusCode: HttpStatus.OK,
+      message: '이미지 변경이 성공적으로 완료되었습니다.',
+      imageUrl,
+    };
   }
 
-  // // 프로필 이미지 삭제
-  // @UseGuards(RolesGuard)
-  // @Roles(Role.USER)
-  // @Post('me/images/:imageId')
-  // async deleteProfileImage(@Req() req: any, @Param('imageId') imageId: number) {
-  //   const deleteUrl = await this.usersService.deleteProfileImage(req.user.id, imageId);
+  // 프로필 이미지 삭제
+  @UseGuards(RolesGuard)
+  @Roles(Role.USER)
+  @Delete('me/images/deleteImage/:imageId')
+  async deleteProfileImage(@Req() req: any, @Param('imageId') imageId: number) {
+    console.log('컨트롤러', req);
+    const deleteUrl = await this.usersService.deleteProfileImage(req.user.id, imageId);
 
-  //   return deleteUrl;
-  // }
+    return {
+      statusCode: HttpStatus.OK,
+      message: '삭제가 성공적으로 완료되었습니다.',
+      deleteUrl,
+    };
+  }
 
   // 닉네임 중복 확인(이거 아마 auth에서 쓸거 같은데 왜 여기서??)
   @Post('nicknames/check-duplicate')
