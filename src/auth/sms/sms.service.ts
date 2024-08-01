@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Account } from '../entities/account.entity';
 import { CODE_BASE_NUMBER, CODE_MULTIPLY_NUMBER, VERIFICATION_CODE_EXPIRATION } from '../constants/sms.constants';
+import { formatPhoneNumber } from 'src/utils/phone.util';
 
 @Injectable()
 export class SmsService implements OnModuleInit {
@@ -39,7 +40,7 @@ export class SmsService implements OnModuleInit {
   }
 
   async sendSmsForVerification(phoneNum: string): Promise<any> {
-    const formattedPhoneNum = phoneNum.replace(/-/g, '');
+    const formattedPhoneNum = formatPhoneNumber(phoneNum);
 
     // 해당 전화번호를 가진 사용자가 없는 경우에만 SMS를 발송합니다.
     const foundAccount = await this.accountRepository.findOne({ where: { phoneNum: formattedPhoneNum } });

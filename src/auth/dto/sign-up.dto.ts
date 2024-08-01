@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEnum, IsNumber, IsArray, ArrayNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsNumber, IsArray, ArrayNotEmpty, Validate, Matches } from 'class-validator';
 import { Gender } from '../../users/types/Gender.type';
 import { Region } from '../../users/types/region.type';
 import { Pet } from '../../users/types/pet.type';
@@ -6,19 +6,22 @@ import { BodyShape } from '../../users/types/bodyshape.type';
 import { Mbti } from '../../users/types/mbti.type';
 import { Religion } from '../../users/types/religion.type';
 import { Frequency } from '../../users/types/frequency.type';
+import { IsPasswordMatchingConstraint } from 'src/utils/decorators/password-match.decorator';
 
 export class SignUpDto {
   @IsNotEmpty()
   @IsString()
-  password: string;
-
-  @IsNotEmpty()
-  @IsString()
+  @Matches(/^010-\d{4}-\d{4}$/, { message: '전화번호 형식이 올바르지 않습니다. (예: 010-1234-5678)' })
   phoneNum: string;
 
   @IsNotEmpty()
   @IsString()
-  code: string;
+  password: string;
+
+  @IsString()
+  @IsNotEmpty({ message: '비밀번호 확인을 입력해주세요.' })
+  @Validate(IsPasswordMatchingConstraint)
+  readonly passwordConfirm: string;
 
   @IsNotEmpty()
   @IsString()
