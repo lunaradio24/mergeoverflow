@@ -43,13 +43,12 @@ export class ChatRoomsService {
     }
   }
 
-  async saveMessage(userId: number, roomId: number, message: string) {
+  async saveMessage(userId: number, roomId: number, message: string): Promise<void> {
     const chatRoom = await this.chatRoomRepository.findOne({ where: { id: roomId } });
     if (!chatRoom) {
       throw new NotFoundException('존재하지 않는 방이거나 접근 권한이 없습니다.');
     }
     const newMessage = await this.chatMessageRepository.save({ roomId, senderId: userId, text: message });
-    return newMessage;
   }
 
   async isUserInChatRoom(userId: number, roomId: number): Promise<boolean> {
@@ -71,7 +70,7 @@ export class ChatRoomsService {
     });
   }
 
-  async findByUserId(userId: number): Promise<String> {
+  async findNicknameByUserId(userId: number): Promise<String> {
     const user = await this.userRepository.findOne({ where: { id: userId }, select: ['nickname'] });
     if (!user) {
       throw new UnauthorizedException('존재하지 않는 유저입니다.');

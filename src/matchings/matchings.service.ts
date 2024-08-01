@@ -6,6 +6,8 @@ import { Matching } from './entities/matching.entity';
 import { InteractionType } from './types/interaction-type.type';
 import { bringSomeOne } from '../matchings/constants/constants';
 import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
+import { NotificationsGateway } from 'src/notifications/notifications.gateway';
+import { NotificationType } from 'src/notifications/types/notification-type.type';
 
 @Injectable()
 export class MatchingService {
@@ -15,6 +17,7 @@ export class MatchingService {
     @InjectRepository(Matching)
     private readonly matchingRepository: Repository<Matching>,
     private readonly chatRoomsService: ChatRoomsService,
+    private readonly NotificationsGateway: NotificationsGateway,
   ) {}
 
   // 새로운 매칭 상대를 생성하는 메서드
@@ -139,7 +142,17 @@ export class MatchingService {
       const user1Id = targetUserMatching ? targetUserId : userId;
       const user2Id = targetUserMatching ? userId : targetUserId;
       await this.chatRoomsService.createChatRoom(user1Id, user2Id);
+      this.NotificationsGateway.server
+        .to(user1Id.toString())
+        .emit('notify', { type: NotificationType.MERGED, userId: user1Id });
+
+      this.NotificationsGateway.server
+        .to(user2Id.toString())
+        .emit('notify', { type: NotificationType.MERGED, userId: user2Id });
     }
+    this.NotificationsGateway.server
+      .to(targetUserId.toString())
+      .emit('notify', { type: NotificationType.LIKE, userId: targetUserId });
   }
 
   // 좋아요를 처리하는 함수

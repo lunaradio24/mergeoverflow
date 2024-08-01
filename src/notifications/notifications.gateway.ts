@@ -36,9 +36,12 @@ export class NotificationsGateway
   }
 
   @SubscribeMessage('notify')
-  async sendNotification(@ConnectedSocket() socket: Socket, @MessageBody() data: { type: NotificationType }) {
+  async sendNotification(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: { type: NotificationType; userId?: number },
+  ) {
     let message;
-    const { type } = data;
+    const { type, userId } = data;
     switch (type) {
       case NotificationType.CHAT:
         message = '새로운 메세지가 왔습니다.';
@@ -50,8 +53,8 @@ export class NotificationsGateway
         message = '새로운 이와 Merge 되었습니다 !';
         break;
     }
-
-    await this.notificationsService.saveNotification(socket.data.userId, message, type);
+    this.server.to(userId.toString()).emit('reception', { type, message });
+    await this.notificationsService.saveNotification(userId, message, type);
     // this.server.to(socket.data.userId.toString()).emit('notify', { type, message });
     this.logger.log(`[알림]${await socket.data.nickname}:[${type}]${message}`);
   }

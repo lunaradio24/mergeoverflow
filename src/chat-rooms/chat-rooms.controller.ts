@@ -18,15 +18,14 @@ export class ChatRoomsController {
   }
 
   @Post(':roomId')
-  async joinChatRoom(@Param('roomId') roomId: number) {
-    const userId = 13;
-    this.notificationsGateway.server.to(userId.toString()).emit('notify', { type: NotificationType.MERGED });
+  async joinChatRoom(@Param('roomId') roomId: number, @Request() req) {
+    const userId = req.user.id;
     return await this.chatRoomsService.joinChatRoom(userId, roomId);
   }
 
   @Delete(':roomId')
-  async exitChatRoom(@Param('roomId') roomId: number) {
-    const userId = 13;
+  async exitChatRoom(@Param('roomId') roomId: number, @Request() req) {
+    const userId = req.user.id;
     await this.chatRoomsService.exitChatRoom(userId, roomId);
     return { message: `${roomId}번 채팅방에서 퇴장했습니다.` };
   }

@@ -25,7 +25,7 @@ export class ChatRoomsGateway extends SocketGateway implements OnGatewayInit, On
   }
   async handleConnection(@ConnectedSocket() socket: Socket, server: Server) {
     const decoded = this.parseToken(socket);
-    const userNickname = this.chatRoomsService.findByUserId(decoded.id);
+    const userNickname = this.chatRoomsService.findNicknameByUserId(decoded.id);
     socket.data = { userId: decoded.id, nickname: userNickname };
     this.logger.log(`[채팅 서버 연결] 소켓 ID : ${socket.id}`);
   }
@@ -44,21 +44,21 @@ export class ChatRoomsGateway extends SocketGateway implements OnGatewayInit, On
   async handleJoinChatRoom(@MessageBody() data: { userId: number; roomId: number }, @ConnectedSocket() socket: Socket) {
     const { userId, roomId } = data;
     socket.join(roomId.toString());
-    this.logger.log(`${userId}님께서 ${roomId}번 방에 입장했습니다.`);
+    this.logger.log(`${await socket.data.nickname}님께서 ${roomId}번 방에 입장했습니다.`);
   }
 
   @SubscribeMessage('exit')
   async handleExitChatRoom(@MessageBody() data: { roomId: number }, @ConnectedSocket() socket: Socket) {
     const { roomId } = data;
     socket.leave(roomId.toString());
-    this.logger.log(`${socket.data.nickname}님께서  ${roomId}번 방에서 퇴장하셨습니다.`);
+    this.logger.log(`${await socket.data.nickname}님께서  ${roomId}번 방에서 퇴장하셨습니다.`);
   }
 
   @SubscribeMessage('message')
   async handleMessage(@MessageBody() data: { roomId: number; message: string }, @ConnectedSocket() socket: Socket) {
     const { roomId, message } = data;
-    const chatMessage = await this.chatRoomsService.saveMessage(socket.data.userId, roomId, message);
-    this.server.to(roomId.toString()).emit('message', chatMessage);
-    this.logger.log(`방번호:${roomId}번 / ${socket.data.nickname}:${message}`);
+    await this.chatRoomsService.saveMessage(socket.data.userId, roomId, message);
+    this.server.to(roomId.toString()).emit('message', { nickname: await socket.data.nickname, text: message });
+    this.logger.log(`방번호:${roomId}번 / ${await socket.data.nickname}:${message}`);
   }
 }

@@ -15,6 +15,20 @@ export class NotificationsService {
     private readonly notificationRepository: Repository<Notification>,
   ) {}
 
+  async getUserNotifications(userId: number): Promise<Notification[]> {
+    const notifications = await this.notificationRepository.find({ where: { userId }, order: { createdAt: 'DESC' } });
+    return notifications;
+  }
+
+  async latestNotifications(userId: number): Promise<Notification[]> {
+    const notifications = await this.notificationRepository.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+      take: 10,
+    });
+    return notifications;
+  }
+
   async saveNotification(userId: number, message: string, type: NotificationType): Promise<void> {
     await this.notificationRepository.save({ userId, message, type });
   }
