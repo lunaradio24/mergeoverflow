@@ -53,7 +53,6 @@ export class NotificationsGateway
         message = '새로운 이와 Merge 되었습니다 !';
         break;
     }
-    this.logger.log(userId);
     this.server.to(userId.toString()).emit('reception', { type, message });
     await this.notificationsService.saveNotification(userId, message, type);
     this.logger.log(`[알림]${await socket.data.nickname}:[${type}]${message}`);
