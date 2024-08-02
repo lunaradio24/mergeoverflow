@@ -7,8 +7,22 @@ import { ApiResponse } from './response.interface';
 export class ResponseInterceptor<T> implements NestInterceptor<T, ApiResponse<T>> {
   intercept(context: ExecutionContext, next: CallHandler): Observable<ApiResponse<T>> {
     return next.handle().pipe(
-      map(({ code = HttpStatus.OK, message = '요청이 성공적으로 완료되었습니다.', data = 'response body is null' }) => {
-        return { code, message, data };
+      map((response) => {
+        // 기본값 설정
+        const defaultStatusCode = HttpStatus.OK;
+        const defaultMessage = '요청이 성공적으로 완료되었습니다.';
+
+        // response가 객체인지 확인
+        if (typeof response === 'object' && response !== null) {
+          const { statusCode, message = defaultMessage, data = response, code, status } = response;
+          const finalStatusCode = statusCode || code || status || defaultStatusCode;
+          return { statusCode: finalStatusCode, message, data };
+        }
+
+        // response가 객체가 아닌 경우
+        else {
+          return { statusCode: defaultStatusCode, message: defaultMessage, data: response };
+        }
       }),
     );
   }
