@@ -25,7 +25,7 @@
         <input type="text" id="message">
     </div>
     <button id="sendMessageButton">Send Message</button>
-    <div>
+    <div id>
         <ul id="messages"></ul>
     </div>
     <!-- Notification Section -->
@@ -33,10 +33,9 @@
         <h2>Notifications</h2>
         <ul id="notifications"></ul>
     </div>
-
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script>
-        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzMsInBob25lTnVtIjoiMDEwLTMwMjItNTkzMSIsImlhdCI6MTcyMjU1ODIyOCwiZXhwIjoxNzIzNDIyMjI4fQ.ngstw56-zs3uMmosPyOH8BDS5dnBxJoy_rCnckgupGE"
+        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjQsInBob25lTnVtIjoiMDEwLTM2NzItNzQyMiIsImlhdCI6MTcyMjU1ODM0NywiZXhwIjoxNzIzNDIyMzQ3fQ.HEknTL7lwkZNauyLAEu9o2YQxxY6bBk-1R9rYzu_fxw"
         const chatSocket = io('ws://localhost:3000/chat', {
             auth: {
                 token
@@ -47,6 +46,7 @@
                 token
             }
         });
+
         const joinRoomButton = document.getElementById('joinRoomButton');
         const sendMessageButton = document.getElementById('sendMessageButton');
         const messagesList = document.getElementById('messages');
@@ -61,14 +61,22 @@
             const roomId = document.getElementById('sendRoomId').value;
             const message = document.getElementById('message').value;
             chatSocket.emit('message', { roomId: Number(roomId), message: message });
-            notifySocket.emit('notify', { message, type: 'message' })
         });
 
         chatSocket.on('join', (data) => {
             const item = document.createElement('h1');
-            item.textContent = `${data.roomId}번방`;
+            item.textContent = `${data.nickname}님이 입장했습니다.`;
             messagesList.appendChild(item);
         })
+
+        chatSocket.on('history', (data) => {
+            console.log(data)
+            data.messages.forEach((msg) => {
+                const item = document.createElement('li');
+                item.textContent = `${msg.nickname}:${msg.text}`;
+                messagesList.appendChild(item);
+            });
+        });
 
         chatSocket.on('createChatRoom', (data) => {
             const { chatRoomId, user1Id, user2Id } = data
@@ -82,6 +90,8 @@
             const { roomId } = data
             chatSocket.emit('exit', { roomId });
         })
+
+
 
         chatSocket.on('message', (message) => {
             const item = document.createElement('li');

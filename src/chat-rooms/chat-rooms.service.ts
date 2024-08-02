@@ -32,7 +32,7 @@ export class ChatRoomsService {
 
   async joinChatRoom(userId: number, roomId: number): Promise<void> {
     await this.isUserInChatRoom(userId, roomId);
-    // this.chatRoomsGateway.server.emit('join', { userId, roomId });
+    this.chatRoomsGateway.server.emit('join', { userId, roomId });
   }
 
   async exitChatRoom(userId: number, roomId: number): Promise<void> {
@@ -41,6 +41,20 @@ export class ChatRoomsService {
       await this.chatRoomRepository.delete({ id: roomId });
       this.chatRoomsGateway.server.emit('exit', { roomId });
     }
+  }
+
+  async getRoomMessage(roomId: number) {
+    const data = await this.chatMessageRepository.find({
+      where: { roomId },
+      select: { text: true, senderId: true, sender: { nickname: true } },
+      order: { createdAt: 'DESC' },
+      relations: ['sender'],
+    });
+    const messages = data.map((msg) => ({
+      nickname: msg.sender.nickname,
+      text: msg.text,
+    }));
+    return messages;
   }
 
   async saveMessage(userId: number, roomId: number, message: string): Promise<void> {
