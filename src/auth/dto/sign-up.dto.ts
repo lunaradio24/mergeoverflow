@@ -8,6 +8,8 @@ import {
   Validate,
   Matches,
   ArrayMaxSize,
+  MinLength,
+  MaxLength,
 } from 'class-validator';
 import { Gender } from '../../users/types/Gender.type';
 import { Region } from '../../users/types/region.type';
@@ -28,11 +30,13 @@ export class SignUpDto {
 
   @IsNotEmpty()
   @IsString()
+  @MinLength(8, { message: `비밀번호는 최소 8자리입니다.` })
+  @MaxLength(16, { message: `비밀번호는 최대 16자리입니다.` })
   password: string;
 
+  @IsNotEmpty()
   @IsString()
-  @IsNotEmpty({ message: '비밀번호 확인을 입력해주세요.' })
-  @Validate(IsPasswordMatchingConstraint)
+  @Validate(IsPasswordMatchingConstraint, { message: '비밀번호가 일치하지 않습니다.' })
   readonly passwordConfirm: string;
 
   @IsNotEmpty()
