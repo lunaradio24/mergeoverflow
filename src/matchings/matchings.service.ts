@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, IsNull } from 'typeorm';
 import { User } from '../users/entities/user.entity';
@@ -13,6 +13,7 @@ import { PreferredGender } from './types/preferred-gender.type';
 import { Gender } from '../users/types/Gender.type';
 import { PreferredAgeGap } from './types/preferred-age-gap.type';
 import { PreferredHeight } from './types/preferred-height.type';
+import { Heart } from './entities/heart.entity';
 
 @Injectable()
 export class MatchingService {
@@ -23,6 +24,8 @@ export class MatchingService {
     private readonly matchingRepository: Repository<Matching>,
     @InjectRepository(MatchingPreferences)
     private readonly matchingPreferencesRepository: Repository<MatchingPreferences>,
+    @InjectRepository(Heart)
+    private readonly heartRepository: Repository<Heart>,
     private readonly chatRoomsService: ChatRoomsService,
     private readonly NotificationsGateway: NotificationsGateway,
   ) {}
@@ -201,6 +204,16 @@ export class MatchingService {
       throw new NotFoundException(`대상 사용자 ID ${targetUserId}를 찾을 수 없습니다.`);
     }
 
+    // 하트 차감 로직 추가
+    if (interactionType === InteractionType.LIKE) {
+      const userHearts = await this.heartRepository.findOne({ where: { userId } });
+      if (!userHearts || userHearts.remainHearts < 1) {
+        throw new BadRequestException('남은 하트가 없습니다.');
+      }
+      userHearts.remainHearts -= 1;
+      await this.heartRepository.save(userHearts);
+    }
+
     // 순차적으로 처리되었는지 확인
     let existingMatchings = await this.matchingRepository.find({
       where: {
@@ -263,7 +276,20 @@ export class MatchingService {
 
   // 좋아요를 처리하는 함수
   async likeUser(userId: number, targetUserId: number) {
-    await this.saveMatchingResult(userId, targetUserId, InteractionType.LIKE); // 좋아요 처리
+    const heart = await this.heartRepository.findOne({ where: { userId } });
+
+    if (!heart) {
+      throw new NotFoundException('Heart record not found.');
+    }
+
+    if (heart.remainHearts < 1) {
+      throw new ForbiddenException('남은 하트가 없습니다.');
+    }
+
+    await this.saveMatchingResult(userId, targetUserId, InteractionType.LIKE);
+
+    heart.remainHearts -= 1;
+    await this.heartRepository.save(heart);
   }
 
   // 싫어요를 처리하는 함수

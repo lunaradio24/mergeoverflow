@@ -19,6 +19,10 @@ import { TechModule } from './tech/tech.module';
 import { SmsModule } from './auth/sms/sms.module';
 import { S3Module } from './s3/s3.module';
 import { MatchingPreferencesModule } from './matchings/matching-preferences.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { HeartResetService } from './matchings/heart-reset.service';
+import { HeartResetController } from './matchings/heart-reset.controller';
+import { Heart } from './matchings/entities/heart.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -30,6 +34,7 @@ import { MatchingPreferencesModule } from './matchings/matching-preferences.modu
     }),
     MailerModule.forRootAsync(mailerModuleOptions),
     TypeOrmModule.forRootAsync(typeOrmModuleOptions),
+    TypeOrmModule.forFeature([Heart]),
     AuthModule,
     UsersModule,
     MatchingModule,
@@ -37,15 +42,16 @@ import { MatchingPreferencesModule } from './matchings/matching-preferences.modu
     ChatRoomsModule,
     NotificationsModule,
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..'), // 프로젝트 루트 디렉토리를 가리키도록 설정
-      serveRoot: '/', // 정적 파일의 접근 경로 설정
+      rootPath: join(__dirname, '..'),
+      serveRoot: '/',
     }),
     InterestModule,
     TechModule,
     SmsModule,
     S3Module,
+    ScheduleModule.forRoot(),
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, HeartResetController],
+  providers: [AppService, HeartResetService],
 })
 export class AppModule {}
