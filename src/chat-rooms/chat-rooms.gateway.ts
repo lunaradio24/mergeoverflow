@@ -41,9 +41,10 @@ export class ChatRoomsGateway extends SocketGateway implements OnGatewayInit, On
   }
 
   @SubscribeMessage('join')
-  async handleJoinChatRoom(@MessageBody() data: { userId: number; roomId: number }, @ConnectedSocket() socket: Socket) {
-    const { userId, roomId } = data;
+  async handleJoinChatRoom(@MessageBody() data: { roomId: number }, @ConnectedSocket() socket: Socket) {
+    const { roomId } = data;
     socket.join(roomId.toString());
+    this.server.to(roomId.toString()).emit('join', { roomId });
     this.logger.log(`${await socket.data.nickname}님께서 ${roomId}번 방에 입장했습니다.`);
   }
 

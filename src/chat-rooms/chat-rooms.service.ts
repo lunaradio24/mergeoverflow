@@ -32,7 +32,7 @@ export class ChatRoomsService {
 
   async joinChatRoom(userId: number, roomId: number): Promise<void> {
     await this.isUserInChatRoom(userId, roomId);
-    this.chatRoomsGateway.server.emit('join', { userId, roomId });
+    // this.chatRoomsGateway.server.emit('join', { userId, roomId });
   }
 
   async exitChatRoom(userId: number, roomId: number): Promise<void> {
