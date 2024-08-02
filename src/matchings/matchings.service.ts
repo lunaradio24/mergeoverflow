@@ -4,7 +4,7 @@ import { Repository, In, IsNull } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { Matching } from './entities/matching.entity';
 import { InteractionType } from './types/interaction-type.type';
-import { bringSomeOne } from '../matchings/constants/constants';
+import { BRING_SOMEONE } from '../matchings/constants/constants';
 import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
 import { NotificationsGateway } from 'src/notifications/notifications.gateway';
 import { NotificationType } from 'src/notifications/types/notification-type.type';
@@ -128,7 +128,7 @@ export class MatchingService {
       // }
     }
 
-    queryBuilder.orderBy('RAND()').take(bringSomeOne);
+    queryBuilder.orderBy('RAND()').take(BRING_SOMEONE);
     const newUsers = await queryBuilder.getMany();
 
     // 새로운 매칭 엔티티 생성 및 저장
@@ -250,6 +250,7 @@ export class MatchingService {
         .to(user2Id.toString())
         .emit('notify', { type: NotificationType.MERGED, userId: user2Id });
     }
+    // 좋아요 알람을 상대방에게 보냄
     this.NotificationsGateway.server
       .to(targetUserId.toString())
       .emit('notify', { type: NotificationType.LIKE, userId: targetUserId });
