@@ -8,6 +8,8 @@ import { bringSomeOne } from '../matchings/constants/constants';
 import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
 import { NotificationsGateway } from 'src/notifications/notifications.gateway';
 import { NotificationType } from 'src/notifications/types/notification-type.type';
+import { MatchingPreferences } from './entities/matching-preferences.entity';
+import { PreferredGender } from './types/preferred-gender.type';
 
 @Injectable()
 export class MatchingService {
@@ -16,20 +18,54 @@ export class MatchingService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Matching)
     private readonly matchingRepository: Repository<Matching>,
+    @InjectRepository(MatchingPreferences)
+    private readonly matchingPreferencesRepository: Repository<MatchingPreferences>,
     private readonly chatRoomsService: ChatRoomsService,
     private readonly NotificationsGateway: NotificationsGateway,
   ) {}
 
   // 새로운 매칭 상대를 생성하는 메서드
   private async createNewMatchings(userId: number): Promise<Matching[]> {
-    // 이미 매칭된 유저 제외
-    const matchedUserIds = (await this.matchingRepository.find({ where: { userId } })).map((m) => m.targetUserId);
-    const newUsers = await this.userRepository
-      .createQueryBuilder('user')
-      .where('user.id NOT IN (:...ids)', { ids: [userId, ...matchedUserIds] }) // 자신과 이미 매칭된 유저 제외
-      .orderBy('RAND()') // 무작위로 정렬
-      .take(bringSomeOne) // 상수 사용하여 한 번에 가져올 유저 수 설정
-      .getMany();
+    // 사용자의 매칭 선호도 가져오기
+    const preferences = await this.matchingPreferencesRepository.findOne({ where: { user: { id: userId } } });
+
+    const queryBuilder = this.userRepository.createQueryBuilder('user');
+    queryBuilder.where('user.id != :userId', { userId });
+
+    // 매칭 선호도 필터링 적용
+    if (preferences) {
+      if (preferences.gender && preferences.gender !== PreferredGender.NO_PREFERENCE) {
+        queryBuilder.andWhere('user.gender = :gender', { gender: preferences.gender });
+      }
+      if (preferences.region) {
+        queryBuilder.andWhere('user.region = :region', { region: preferences.region });
+      }
+      if (preferences.ageGap) {
+        // AgeGap에 대한 로직 추가 필요
+        // 예시: 5살 이내 -> user.birthDate의 범위를 지정
+      }
+      if (preferences.height) {
+        // Height에 대한 로직 추가 필요
+      }
+      if (preferences.bodyShape) {
+        queryBuilder.andWhere('user.bodyShape = :bodyShape', { bodyShape: preferences.bodyShape });
+      }
+      if (preferences.smokingFrequency) {
+        queryBuilder.andWhere('user.smokingFreq = :smokingFreq', { smokingFreq: preferences.smokingFrequency });
+      }
+      if (preferences.drinkingFrequency) {
+        queryBuilder.andWhere('user.drinkingFreq = :drinkingFreq', { drinkingFreq: preferences.drinkingFrequency });
+      }
+      if (preferences.religion) {
+        queryBuilder.andWhere('user.religion = :religion', { religion: preferences.religion });
+      }
+      if (preferences.codingLevel) {
+        queryBuilder.andWhere('user.codingLevel = :codingLevel', { codingLevel: preferences.codingLevel });
+      }
+    }
+
+    queryBuilder.orderBy('RAND()').take(bringSomeOne);
+    const newUsers = await queryBuilder.getMany();
 
     // 새로운 매칭 엔티티 생성 및 저장
     let newMatchings = newUsers.map((user) => {
@@ -43,7 +79,6 @@ export class MatchingService {
     // targetUserId 순으로 정렬
     newMatchings = newMatchings.sort((a, b) => a.targetUserId - b.targetUserId);
 
-    // 새로운 매칭이 있으면 매칭레파지토리에 세이브
     if (newMatchings.length > 0) {
       await this.matchingRepository.save(newMatchings);
     }
@@ -126,7 +161,7 @@ export class MatchingService {
       }
     }
 
-    // // 매칭 정보 업데이트
+    // 매칭 정보 업데이트
     await this.matchingRepository.update({ userId, targetUserId }, { interactionType });
 
     // 상대방이 이미 좋아요를 눌렀는지 확인
@@ -137,6 +172,7 @@ export class MatchingService {
         interactionType: InteractionType.LIKE,
       },
     });
+
     // 서로 좋아요를 눌렀다면 채팅방 생성
     if (interactionType === InteractionType.LIKE && targetUserMatching) {
       const user1Id = targetUserMatching ? targetUserId : userId;
