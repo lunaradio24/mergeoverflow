@@ -17,5 +17,6 @@ import { MatchingPreferences } from './entities/matching-preferences.entity';
   ],
   controllers: [MatchingController],
   providers: [MatchingService],
+  exports: [MatchingService],
 })
 export class MatchingModule {}

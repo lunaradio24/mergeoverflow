@@ -14,14 +14,7 @@ export class MatchingPreferencesController {
     @Body('userId', ParseIntPipe) userId: number,
     @Body() createMatchingPreferencesDto: CreateMatchingPreferencesDto,
   ) {
-    try {
-      return await this.matchingPreferencesService.createPreferences(userId, createMatchingPreferencesDto);
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        return { message: '이미 매칭 선호도를 설정하셨습니다.' };
-      }
-      throw error;
-    }
+    return this.matchingPreferencesService.createPreferences(userId, createMatchingPreferencesDto);
   }
 
   // 특정 유저의 매칭 선호도 조회

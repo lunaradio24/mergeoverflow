@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MatchingPreferences } from './entities/matching-preferences.entity';
-import { User } from '../users/entities/user.entity';
 import { CreateMatchingPreferencesDto } from './dto/create-matching-preferences.dto';
 import { UpdateMatchingPreferencesDto } from './dto/update-matching-preferences.dto';
+import { User } from '../users/entities/user.entity';
+import { MatchingService } from './matchings.service';
 
 @Injectable()
 export class MatchingPreferencesService {
@@ -13,6 +14,7 @@ export class MatchingPreferencesService {
     private readonly matchingPreferencesRepository: Repository<MatchingPreferences>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly matchingService: MatchingService,
   ) {}
 
   async createPreferences(userId: number, createMatchingPreferencesDto: CreateMatchingPreferencesDto) {
@@ -21,12 +23,7 @@ export class MatchingPreferencesService {
       throw new NotFoundException(`사용자 ID ${userId}를 찾을 수 없습니다.`);
     }
 
-    const existingPreferences = await this.matchingPreferencesRepository.findOne({ where: { user: { id: userId } } });
-    if (existingPreferences) {
-      throw new BadRequestException('이미 매칭 선호도를 설정하셨습니다.');
-    }
-
-    const preferences = this.matchingPreferencesRepository.create({
+    const preferences = await this.matchingPreferencesRepository.create({
       ...createMatchingPreferencesDto,
       user,
     });
@@ -34,25 +31,26 @@ export class MatchingPreferencesService {
     return this.matchingPreferencesRepository.save(preferences);
   }
 
-  async getPreferences(userId: number): Promise<MatchingPreferences> {
-    const preferences = await this.matchingPreferencesRepository.findOne({ where: { user: { id: userId } } });
-    if (!preferences) {
-      throw new NotFoundException(`매칭 선호도를 찾을 수 없습니다.`);
-    }
-    return preferences;
+  async getPreferences(userId: number) {
+    return this.matchingPreferencesRepository.findOne({ where: { user: { id: userId } } });
   }
 
-  async updatePreferences(
-    userId: number,
-    updateMatchingPreferencesDto: UpdateMatchingPreferencesDto,
-  ): Promise<MatchingPreferences> {
+  async updatePreferences(userId: number, updateMatchingPreferencesDto: UpdateMatchingPreferencesDto) {
     const preferences = await this.matchingPreferencesRepository.findOne({ where: { user: { id: userId } } });
     if (!preferences) {
-      throw new NotFoundException(`매칭 선호도를 찾을 수 없습니다.`);
+      throw new NotFoundException(`사용자 ID ${userId}의 매칭 선호도를 찾을 수 없습니다.`);
     }
 
-    // 직접 쿼리 조작을 피하기 위해 병합 및 저장을 사용하여 업데이트
-    Object.assign(preferences, updateMatchingPreferencesDto);
-    return this.matchingPreferencesRepository.save(preferences);
+    // 매칭 선호도 업데이트
+    this.matchingPreferencesRepository.merge(preferences, updateMatchingPreferencesDto);
+    await this.matchingPreferencesRepository.save(preferences);
+
+    // 기존 매칭 삭제
+    await this.matchingService.deleteAllMatchingsForUser(userId);
+
+    // 새로운 매칭 생성
+    await this.matchingService.createNewMatchings(userId);
+
+    return preferences;
   }
 }

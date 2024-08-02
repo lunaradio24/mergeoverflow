@@ -12,6 +12,7 @@ import { MatchingPreferences } from './entities/matching-preferences.entity';
 import { PreferredGender } from './types/preferred-gender.type';
 import { Gender } from '../users/types/Gender.type';
 import { PreferredAgeGap } from './types/preferred-age-gap.type';
+import { PreferredHeight } from './types/preferred-height.type';
 
 @Injectable()
 export class MatchingService {
@@ -27,7 +28,8 @@ export class MatchingService {
   ) {}
 
   // 새로운 매칭 상대를 생성하는 메서드
-  private async createNewMatchings(userId: number): Promise<Matching[]> {
+  public async createNewMatchings(userId: number): Promise<Matching[]> {
+    // private에서 public으로 변경
     // 사용자의 매칭 선호도 가져오기
     const preferences = await this.matchingPreferencesRepository.findOne({ where: { user: { id: userId } } });
     const user = await this.userRepository.findOne({ where: { id: userId } });
@@ -87,22 +89,40 @@ export class MatchingService {
           });
         }
       }
-
-      if (preferences.height) {
-        // Height에 대한 로직 추가 필요
+      //키차이 필터링
+      if (preferences.height && preferences.height !== PreferredHeight.NO_PREFERENCE) {
+        switch (preferences.height) {
+          case PreferredHeight.HEIGHT_150_160:
+            queryBuilder.andWhere('user.height BETWEEN 150 AND 160');
+            break;
+          case PreferredHeight.HEIGHT_160_170:
+            queryBuilder.andWhere('user.height BETWEEN 160 AND 170');
+            break;
+          case PreferredHeight.HEIGHT_170_180:
+            queryBuilder.andWhere('user.height BETWEEN 170 AND 180');
+            break;
+          case PreferredHeight.HEIGHT_180_PLUS:
+            queryBuilder.andWhere('user.height > 180');
+            break;
+        }
       }
+      //체형 필터링
       if (preferences.bodyShape) {
         queryBuilder.andWhere('user.bodyShape = :bodyShape', { bodyShape: preferences.bodyShape });
       }
+      //흡연빈도
       if (preferences.smokingFrequency) {
         queryBuilder.andWhere('user.smokingFreq = :smokingFreq', { smokingFreq: preferences.smokingFrequency });
       }
+      //움주빈도
       if (preferences.drinkingFrequency) {
         queryBuilder.andWhere('user.drinkingFreq = :drinkingFreq', { drinkingFreq: preferences.drinkingFrequency });
       }
+      //종교 필터링
       if (preferences.religion) {
         queryBuilder.andWhere('user.religion = :religion', { religion: preferences.religion });
       }
+      //코딩레벨 필터링
       if (preferences.codingLevel) {
         queryBuilder.andWhere('user.codingLevel = :codingLevel', { codingLevel: preferences.codingLevel });
       }
@@ -233,6 +253,11 @@ export class MatchingService {
     this.NotificationsGateway.server
       .to(targetUserId.toString())
       .emit('notify', { type: NotificationType.LIKE, userId: targetUserId });
+  }
+
+  // 모든 매칭 삭제 메서드 추가
+  async deleteAllMatchingsForUser(userId: number) {
+    await this.matchingRepository.delete({ userId });
   }
 
   // 좋아요를 처리하는 함수
