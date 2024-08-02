@@ -1,4 +1,14 @@
-import { IsString, IsNotEmpty, IsEnum, IsNumber, IsArray, ArrayNotEmpty, Validate, Matches } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsEnum,
+  IsNumber,
+  IsArray,
+  ArrayNotEmpty,
+  Validate,
+  Matches,
+  ArrayMaxSize,
+} from 'class-validator';
 import { Gender } from '../../users/types/Gender.type';
 import { Region } from '../../users/types/region.type';
 import { Pet } from '../../users/types/pet.type';
@@ -7,7 +17,8 @@ import { Mbti } from '../../users/types/mbti.type';
 import { Religion } from '../../users/types/religion.type';
 import { Frequency } from '../../users/types/frequency.type';
 import { IsPasswordMatchingConstraint } from 'src/utils/decorators/password-match.decorator';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
+import { IMAGE_LIMIT } from '../constants/auth.constants';
 
 export class SignUpDto {
   @IsNotEmpty()
@@ -54,7 +65,7 @@ export class SignUpDto {
 
   @IsNotEmpty()
   @IsNumber()
-  @Transform(({ value }) => parseFloat(value))
+  @Type(() => Number)
   height: number;
 
   @IsNotEmpty()
@@ -71,14 +82,17 @@ export class SignUpDto {
 
   @IsArray()
   @ArrayNotEmpty()
-  @Transform(({ value }) => JSON.parse(value))
+  @IsNumber({}, { each: true })
   interests: number[];
 
   @IsArray()
   @ArrayNotEmpty()
-  @Transform(({ value }) => JSON.parse(value))
+  @IsNumber({}, { each: true })
   techs: number[];
 
-  @IsString()
-  profileImage: string;
+  @IsArray()
+  @ArrayNotEmpty()
+  @ArrayMaxSize(IMAGE_LIMIT)
+  @IsString({ each: true })
+  profileImageUrls: string[];
 }

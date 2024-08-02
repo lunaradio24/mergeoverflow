@@ -19,9 +19,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { compare, hash } from 'bcrypt';
 import { SignInDto } from './dto/sign-in.dto';
-import { CODE_TTL, MAX_INTERESTS, MAX_TECHS, MIN_INTERESTS, MIN_TECHS } from './constants/auth.constants';
-import { formatPhoneNumber } from '../utils/phone.util';
-import { S3Service } from 'src/s3/s3.service';
+import { CODE_TTL, IMAGE_LIMIT, MAX_INTERESTS, MAX_TECHS, MIN_INTERESTS, MIN_TECHS } from './constants/auth.constants';
 import { ProfileImage } from 'src/users/entities/profile-image.entity';
 
 @Injectable()
@@ -34,45 +32,41 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly redisService: RedisService,
     private readonly connection: Connection,
-    private readonly s3Service: S3Service,
   ) {}
 
   async sendSmsForVerification(phoneNum: string) {
-    const formattedPhoneNum = formatPhoneNumber(phoneNum);
-    const foundAccount = await this.accountRepository.findOne({ where: { phoneNum: formattedPhoneNum } });
+    const foundAccount = await this.accountRepository.findOne({ where: { phoneNum } });
 
     if (foundAccount) {
       throw new ConflictException('이미 존재하는 전화번호입니다.');
     }
 
-    return await this.smsService.sendSmsForVerification(formattedPhoneNum);
+    return await this.smsService.sendSmsForVerification(phoneNum);
   }
 
   async verifyCode(phoneNum: string, code: string) {
-    const formattedPhoneNum = formatPhoneNumber(phoneNum);
     const storedPhoneNum = await this.redisService.get(code);
-    if (storedPhoneNum !== formattedPhoneNum) {
+    if (storedPhoneNum !== phoneNum) {
       throw new NotFoundException('잘못된 인증번호입니다.');
     }
 
     // 인증된 전화번호를 Redis에 저장 (유효기간 설정)
-    await this.redisService.setWithTTL(`verified_${formattedPhoneNum}`, formattedPhoneNum, CODE_TTL);
+    await this.redisService.setWithTTL(`verified_${phoneNum}`, phoneNum, CODE_TTL);
 
     return { message: '인증 성공' };
   }
 
-  async signUp(signUpDto: SignUpDto, profileImages: Express.Multer.File[]) {
-    let { phoneNum, password, interests, techs, ...userData } = signUpDto;
-    const formattedPhoneNum = formatPhoneNumber(phoneNum);
+  async signUp(signUpDto: SignUpDto) {
+    let { phoneNum, password, interests, techs, profileImageUrls, ...userData } = signUpDto;
 
     // 전화번호 인증 확인
-    const verifiedPhoneNum = await this.redisService.get(`verified_${formattedPhoneNum}`);
+    const verifiedPhoneNum = await this.redisService.get(`verified_${phoneNum}`);
     if (!verifiedPhoneNum) {
       throw new BadRequestException('전화번호 인증이 필요합니다.');
     }
 
     // 전화번호 중복 확인
-    const existingAccount = await this.accountRepository.findOne({ where: { phoneNum: formattedPhoneNum } });
+    const existingAccount = await this.accountRepository.findOne({ where: { phoneNum } });
     if (existingAccount) {
       throw new ConflictException('이미 존재하는 전화번호입니다.');
     }
@@ -83,6 +77,11 @@ export class AuthService {
     }
     if (typeof techs === 'string') {
       techs = JSON.parse(techs);
+    }
+
+    // profileImageUrls 검증
+    if (profileImageUrls.length > IMAGE_LIMIT) {
+      throw new BadRequestException(`이미지 URL은 최대 ${IMAGE_LIMIT}개까지 입력 가능합니다.`);
     }
 
     // 비밀번호 해싱
@@ -134,17 +133,16 @@ export class AuthService {
       await queryRunner.manager.save(userToTechs);
 
       // ProfileImage 생성
-      if (profileImages && profileImages.length > 0) {
-        for (const file of profileImages) {
-          const fileName = `${Date.now()}_${file.originalname}`;
-          const fileUrl = await this.s3Service.imageUploadToS3(fileName, file);
-
+      if (profileImageUrls && profileImageUrls.length > 0) {
+        const userProfileImages = profileImageUrls.map((url) => {
           const userProfileImage = new ProfileImage();
           userProfileImage.userId = savedUser.id;
-          userProfileImage.image = fileUrl;
-          await queryRunner.manager.save(userProfileImage);
-        }
+          userProfileImage.image = url;
+          return userProfileImage;
+        });
+        await queryRunner.manager.save(userProfileImages);
       }
+
       await queryRunner.commitTransaction();
       return { message: '회원가입 성공' };
     } catch (error) {
@@ -157,8 +155,7 @@ export class AuthService {
 
   async validateUser(signInDto: SignInDto) {
     const { phoneNum, password } = signInDto;
-    const formattedPhoneNum = formatPhoneNumber(phoneNum);
-    const account = await this.accountRepository.findOne({ where: { phoneNum: formattedPhoneNum } });
+    const account = await this.accountRepository.findOne({ where: { phoneNum } });
     if (account && (await compare(password, account.password))) {
       return account;
     }
