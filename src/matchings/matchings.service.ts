@@ -144,15 +144,15 @@ export class MatchingService {
       await this.chatRoomsService.createChatRoom(user1Id, user2Id);
       this.NotificationsGateway.server
         .to(user1Id.toString())
-        .emit('notify', { type: NotificationType.MERGED, userId: user1Id });
+        .emit('mergeNotify', { type: NotificationType.MERGED, userId: user1Id, targetUserId: user2Id });
 
       this.NotificationsGateway.server
         .to(user2Id.toString())
-        .emit('notify', { type: NotificationType.MERGED, userId: user2Id });
+        .emit('mergeNotify', { type: NotificationType.MERGED, userId: user2Id, targetUserId: user1Id });
     }
     this.NotificationsGateway.server
       .to(targetUserId.toString())
-      .emit('notify', { type: NotificationType.LIKE, userId: targetUserId });
+      .emit('likeNotify', { type: NotificationType.LIKE, userId: targetUserId, mergeRequesterId: userId });
   }
 
   // 좋아요를 처리하는 함수

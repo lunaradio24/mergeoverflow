@@ -29,32 +29,50 @@ export class NotificationsGateway
 
   handleConnection(@ConnectedSocket() socket: Socket) {
     const decoded = this.parseToken(socket);
-    const userNickname = this.notificationsService.findByUserId(decoded.id);
+    const userNickname = this.notificationsService.findNicknameByUserId(decoded.id);
     socket.data = { userId: decoded.id, nickname: userNickname };
     socket.join(socket.data.userId.toString());
     this.logger.log(`[알림 서버 연결] 소켓 ID : ${socket.id}`);
   }
 
-  @SubscribeMessage('notify')
-  async sendNotification(
+  @SubscribeMessage('mergeNotify')
+  async mergeNotificationHandler(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() data: { type: NotificationType; userId?: number },
+    @MessageBody() data: { type: NotificationType; userId: number; targetUserId: number },
   ) {
-    let message;
-    const { type, userId } = data;
-    switch (type) {
-      case NotificationType.CHAT:
-        message = '새로운 메세지가 왔습니다.';
-        break;
-      case NotificationType.LIKE:
-        message = '누군가가 당신에게 좋아요를 눌렀습니다.';
-        break;
-      case NotificationType.MERGED:
-        message = '새로운 이와 Merge 되었습니다 !';
-        break;
-    }
+    const { type, userId, targetUserId } = data;
+    const targetUserNickname = await this.notificationsService.findNicknameByUserId(targetUserId);
+    const message = `${targetUserNickname}님과 Merge 되었습니다!`;
     this.server.to(userId.toString()).emit('reception', { type, message });
     await this.notificationsService.saveNotification(userId, message, type);
+    this.logger.log(`[알림]${await socket.data.nickname}:[${type}]${message}`);
+  }
+
+  @SubscribeMessage('likeNotify')
+  async likeNotificationHandler(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: { type: NotificationType; userId: number; mergeRequesterId: number },
+  ) {
+    const { type, userId, mergeRequesterId } = data;
+    const mergeRequester = await this.notificationsService.findNicknameByUserId(mergeRequesterId);
+    const message = `${mergeRequester}님께서 당신에게 좋아요를 눌렀어요 !`;
+
+    this.server.to(userId.toString()).emit('reception', { type, message });
+    await this.notificationsService.saveNotification(userId, message, type);
+    this.logger.log(`[알림]${await socket.data.nickname}:[${type}]${message}`);
+  }
+
+  @SubscribeMessage('exitNotify')
+  async exitNotificationHandler(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: { relationId: { user1Id: number; user2Id: number }; type: NotificationType },
+  ) {
+    const { type, relationId } = data;
+    const partnerId = socket.data.userId === relationId.user1Id ? relationId.user2Id : relationId.user1Id;
+
+    const message = `[알림]${await socket.data.nickname}님과의 연결이 끊어졌습니다.`;
+    this.server.to(partnerId.toString()).emit('reception', { type, message });
+    await this.notificationsService.saveNotification(socket.data.userId, message, type);
     this.logger.log(`[알림]${await socket.data.nickname}:[${type}]${message}`);
   }
 }

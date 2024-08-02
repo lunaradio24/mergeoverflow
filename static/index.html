@@ -51,7 +51,7 @@
         const joinRoomButton = document.getElementById('joinRoomButton');
         const sendMessageButton = document.getElementById('sendMessageButton');
         const messagesList = document.getElementById('messages');
-        const notifsicationsList = document.getElementById('notifications');
+        const notificationsList = document.getElementById('notifications');
         let joinCheck = false;
 
         joinRoomButton.addEventListener('click', () => {
@@ -93,7 +93,7 @@
         })
 
         chatSocket.on('exit', (data) => {
-            const { roomId } = data
+            const { roomId, type } = data
             chatSocket.emit('exit', { roomId });
         })
 
@@ -103,15 +103,25 @@
             messagesList.appendChild(item);
         });
 
-        notifySocket.on('notify', (data) => {
-            const { type, userId } = data
-            notifySocket.emit('notify', { type, userId });
+        notifySocket.on('likeNotify', (data) => {
+            const { type, userId, mergeRequesterId } = data
+            notifySocket.emit('likeNotify', { type, userId, mergeRequesterId });
+        })
+
+        notifySocket.on('mergeNotify', (data) => {
+            const { type, userId, targetUserId } = data
+            notifySocket.emit('mergeNotify', { type, userId, targetUserId });
+        })
+
+        notifySocket.on('exitNotify', (data) => {
+            const { relationId, type } = data
+            notifySocket.emit('exitNotify', { type, relationId });
         })
 
         notifySocket.on('reception', (data) => {
             const { type, message } = data
             const item = document.createElement('li');
-            item.textContent = `Notification: ${type},${message}`;
+            item.textContent = `[알림]${type}:${message}`;
             notificationsList.appendChild(item);
         })
     </script>
