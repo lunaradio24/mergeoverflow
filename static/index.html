@@ -33,6 +33,7 @@
         <h2>Notifications</h2>
         <ul id="notifications"></ul>
     </div>
+
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script>
         const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjQsInBob25lTnVtIjoiMDEwLTM2NzItNzQyMiIsImlhdCI6MTcyMjU1ODM0NywiZXhwIjoxNzIzNDIyMzQ3fQ.HEknTL7lwkZNauyLAEu9o2YQxxY6bBk-1R9rYzu_fxw"
@@ -50,7 +51,7 @@
         const joinRoomButton = document.getElementById('joinRoomButton');
         const sendMessageButton = document.getElementById('sendMessageButton');
         const messagesList = document.getElementById('messages');
-        const notificationsList = document.getElementById('notifications');
+        const notifsicationsList = document.getElementById('notifications');
 
         joinRoomButton.addEventListener('click', () => {
             const roomId = document.getElementById('joinRoomId').value;
@@ -65,10 +66,17 @@
 
         chatSocket.on('join', (data) => {
             const item = document.createElement('h1');
-            item.textContent = `${data.roomId}번방`;
+            item.textContent = `${data.nickname}님이 입장했습니다.`;
             messagesList.appendChild(item);
         })
 
+        chatSocket.on('history', (data) => {
+            data.messages.forEach((msg) => {
+                const item = document.createElement('li');
+                item.textContent = `${msg.nickname}:${msg.text}`;
+                messagesList.appendChild(item);
+            });
+        });
 
         chatSocket.on('createChatRoom', (data) => {
             const { chatRoomId, user1Id, user2Id } = data
