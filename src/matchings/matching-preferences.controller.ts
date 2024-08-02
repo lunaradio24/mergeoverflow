@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, UseGuards, Req, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, UseGuards, Req } from '@nestjs/common';
 import { MatchingPreferencesService } from './matching-preferences.service';
 import { CreateMatchingPreferencesDto } from './dto/create-matching-preferences.dto';
 import { UpdateMatchingPreferencesDto } from './dto/update-matching-preferences.dto';
