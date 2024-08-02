@@ -12,8 +12,13 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, ApiResponse<T>
         const defaultStatusCode = HttpStatus.OK;
         const defaultMessage = '요청이 성공적으로 완료되었습니다.';
 
-        // response가 객체인지 확인
-        if (typeof response === 'object' && response !== null) {
+        // response가 객체이고, response.data도 존재하는 객체인 경우
+        if (
+          typeof response === 'object' &&
+          response !== null &&
+          'data' in response &&
+          typeof response.data === 'object'
+        ) {
           const { statusCode, message = defaultMessage, data = response, code, status } = response;
           const finalStatusCode = statusCode || code || status || defaultStatusCode;
           return { statusCode: finalStatusCode, message, data };
