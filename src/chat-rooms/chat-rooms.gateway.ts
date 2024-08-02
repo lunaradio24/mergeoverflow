@@ -41,13 +41,24 @@ export class ChatRoomsGateway extends SocketGateway implements OnGatewayInit, On
   }
 
   @SubscribeMessage('join')
-  async handleJoinChatRoom(@MessageBody() data: { roomId: number }, @ConnectedSocket() socket: Socket) {
+  async handleJoinChatRoom(
+    @MessageBody() data: { roomId: number; joinCheck: boolean },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    let { roomId, joinCheck } = data;
+    if (!joinCheck) {
+      socket.join(roomId.toString());
+      this.server.to(roomId.toString()).emit('join', { roomId, nickname: await socket.data.nickname });
+      this.logger.log(`${await socket.data.nickname}님께서 ${roomId}번 방에 입장했습니다.`);
+    }
+  }
+
+  @SubscribeMessage('requestHistory')
+  async handleRequestHistory(@MessageBody() data: { roomId: number }, @ConnectedSocket() socket: Socket) {
     const { roomId } = data;
     const messages = await this.chatRoomsService.getRoomMessage(roomId);
-    socket.join(roomId.toString());
-    console.log(messages);
-    this.server.to(roomId.toString()).emit('join', { nickname: await socket.data.nickname });
-    this.server.to(roomId.toString()).emit('history', { messages });
+    const checkhistory = true;
+    this.server.to(roomId.toString()).emit('history', { messages, roomId, checkhistory });
     this.logger.log(`${await socket.data.nickname}님께서 ${roomId}번 방에 입장했습니다.`);
   }
 

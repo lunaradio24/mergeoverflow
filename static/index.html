@@ -52,10 +52,11 @@
         const sendMessageButton = document.getElementById('sendMessageButton');
         const messagesList = document.getElementById('messages');
         const notifsicationsList = document.getElementById('notifications');
+        let joinCheck = false;
 
         joinRoomButton.addEventListener('click', () => {
             const roomId = document.getElementById('joinRoomId').value;
-            chatSocket.emit('join', { roomId: Number(roomId) });
+            chatSocket.emit('join', { roomId, joinCheck });
         });
 
         sendMessageButton.addEventListener('click', () => {
@@ -68,14 +69,19 @@
             const item = document.createElement('h1');
             item.textContent = `${data.nickname}님이 입장했습니다.`;
             messagesList.appendChild(item);
+            chatSocket.emit('requestHistory', { roomId: data.roomId });
+
         })
 
         chatSocket.on('history', (data) => {
-            data.messages.forEach((msg) => {
-                const item = document.createElement('li');
-                item.textContent = `${msg.nickname}:${msg.text}`;
-                messagesList.appendChild(item);
-            });
+            if (!joinCheck) {
+                data.messages.forEach((msg) => {
+                    const item = document.createElement('li');
+                    item.textContent = `${msg.nickname}:${msg.text}`;
+                    messagesList.appendChild(item);
+                });
+            }
+            joinCheck = true
         });
 
         chatSocket.on('createChatRoom', (data) => {
@@ -110,5 +116,3 @@
         })
     </script>
 </body>
-
-</html>

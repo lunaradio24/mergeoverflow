@@ -35,7 +35,7 @@
     </div>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script>
-        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjQsInBob25lTnVtIjoiMDEwLTM2NzItNzQyMiIsImlhdCI6MTcyMjU1ODM0NywiZXhwIjoxNzIzNDIyMzQ3fQ.HEknTL7lwkZNauyLAEu9o2YQxxY6bBk-1R9rYzu_fxw"
+        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzMsInBob25lTnVtIjoiMDEwLTMwMjItNTkzMSIsImlhdCI6MTcyMjUyMTQzNSwiZXhwIjoxNzIzMTI2MjM1fQ.vrfhtOP8VGx9Yf3fdH52C_RHjjYMSpLSRTsBda1Bc9Y"
         const chatSocket = io('ws://localhost:3000/chat', {
             auth: {
                 token
@@ -45,16 +45,17 @@
             auth: {
                 token
             }
-        });
 
+        });
         const joinRoomButton = document.getElementById('joinRoomButton');
         const sendMessageButton = document.getElementById('sendMessageButton');
         const messagesList = document.getElementById('messages');
-        const notificationsList = document.getElementById('notifications');
+        const notifsicationsList = document.getElementById('notifications');
+        let joinCheck = false;
 
         joinRoomButton.addEventListener('click', () => {
             const roomId = document.getElementById('joinRoomId').value;
-            chatSocket.emit('join', { roomId: Number(roomId) });
+            chatSocket.emit('join', { roomId, joinCheck });
         });
 
         sendMessageButton.addEventListener('click', () => {
@@ -67,15 +68,18 @@
             const item = document.createElement('h1');
             item.textContent = `${data.nickname}님이 입장했습니다.`;
             messagesList.appendChild(item);
+            chatSocket.emit('requestHistory', { roomId: data.roomId });
         })
 
         chatSocket.on('history', (data) => {
-            console.log(data)
-            data.messages.forEach((msg) => {
-                const item = document.createElement('li');
-                item.textContent = `${msg.nickname}:${msg.text}`;
-                messagesList.appendChild(item);
-            });
+            if (!joinCheck) {
+                data.messages.forEach((msg) => {
+                    const item = document.createElement('li');
+                    item.textContent = `${msg.nickname}:${msg.text}`;
+                    messagesList.appendChild(item);
+                });
+            }
+            joinCheck = true;
         });
 
         chatSocket.on('createChatRoom', (data) => {
@@ -90,8 +94,6 @@
             const { roomId } = data
             chatSocket.emit('exit', { roomId });
         })
-
-
 
         chatSocket.on('message', (message) => {
             const item = document.createElement('li');
