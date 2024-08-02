@@ -89,7 +89,7 @@ export class MatchingService {
           });
         }
       }
-      //키차이 필터링
+      //키 필터링
       if (preferences.height && preferences.height !== PreferredHeight.NO_PREFERENCE) {
         switch (preferences.height) {
           case PreferredHeight.HEIGHT_150_160:
@@ -122,10 +122,10 @@ export class MatchingService {
       if (preferences.religion) {
         queryBuilder.andWhere('user.religion = :religion', { religion: preferences.religion });
       }
-      //코딩레벨 필터링
-      if (preferences.codingLevel) {
-        queryBuilder.andWhere('user.codingLevel = :codingLevel', { codingLevel: preferences.codingLevel });
-      }
+      // //코딩레벨 필터링
+      // if (preferences.codingLevel) {
+      //   queryBuilder.andWhere('user.codingLevel = :codingLevel', { codingLevel: preferences.codingLevel });
+      // }
     }
 
     queryBuilder.orderBy('RAND()').take(bringSomeOne);
