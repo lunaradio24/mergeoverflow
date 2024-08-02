@@ -25,7 +25,7 @@ export class S3Service {
   }
 
   // 첨부파일, 프로필 이미지 업로드
-  async imageUploadToS3(fileName: string, file: Express.Multer.File) {
+  async uploadToS3(fileName: string, file: Express.Multer.File) {
     const command = new PutObjectCommand({
       Bucket: this.awsS3Bucket,
       Key: fileName,
@@ -38,7 +38,7 @@ export class S3Service {
   }
 
   // 첨부 파일 삭제
-  async deleteFileFromS3(fileUrl: string) {
+  async deleteFromS3(fileUrl: string) {
     const fileName = fileUrl.split('/').pop();
     const command = new DeleteObjectCommand({
       Bucket: this.awsS3Bucket,

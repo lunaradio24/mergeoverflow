@@ -19,6 +19,7 @@ import { TechModule } from './tech/tech.module';
 import { SmsModule } from './auth/sms/sms.module';
 import { S3Module } from './s3/s3.module';
 import { MatchingPreferencesModule } from './matchings/matching-preferences.module';
+import { ImageModule } from './images/image.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -44,6 +45,7 @@ import { MatchingPreferencesModule } from './matchings/matching-preferences.modu
     TechModule,
     SmsModule,
     S3Module,
+    ImageModule,
   ],
   controllers: [AppController],
   providers: [AppService],
