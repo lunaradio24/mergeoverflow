@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { PreferredGender } from '../types/preferred-gender.type';
 import { PreferredRegion } from '../types/preferred-region.type';
 import { PreferredBodyShape } from '../types/preferred-body-shape.type';
@@ -9,9 +9,8 @@ import { PreferredCodingLevel } from '../types/preferred-coding-level.type';
 import { PreferredHeight } from '../types/preferred-height.type';
 
 export class CreateMatchingPreferencesDto {
-  @IsOptional()
-  @IsEnum(PreferredCodingLevel)
-  codingLevel?: PreferredCodingLevel;
+  @IsInt()
+  userId: number;
 
   @IsOptional()
   @IsEnum(PreferredGender)
@@ -22,7 +21,9 @@ export class CreateMatchingPreferencesDto {
   region?: PreferredRegion;
 
   @IsOptional()
-  @IsEnum(PreferredAgeGap)
+  @IsEnum(PreferredAgeGap, {
+    message: 'ageGap은 3살이내, 5살이내, 10살이내, 상관없음 중에 선택해주세요',
+  })
   ageGap?: PreferredAgeGap;
 
   @IsOptional()

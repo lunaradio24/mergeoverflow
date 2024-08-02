@@ -10,6 +10,8 @@ import { NotificationsGateway } from 'src/notifications/notifications.gateway';
 import { NotificationType } from 'src/notifications/types/notification-type.type';
 import { MatchingPreferences } from './entities/matching-preferences.entity';
 import { PreferredGender } from './types/preferred-gender.type';
+import { Gender } from '../users/types/Gender.type';
+import { PreferredAgeGap } from './types/preferred-age-gap.type';
 
 @Injectable()
 export class MatchingService {
@@ -28,22 +30,64 @@ export class MatchingService {
   private async createNewMatchings(userId: number): Promise<Matching[]> {
     // 사용자의 매칭 선호도 가져오기
     const preferences = await this.matchingPreferencesRepository.findOne({ where: { user: { id: userId } } });
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException(`사용자 ID ${userId}를 찾을 수 없습니다.`);
+    }
 
     const queryBuilder = this.userRepository.createQueryBuilder('user');
     queryBuilder.where('user.id != :userId', { userId });
 
     // 매칭 선호도 필터링 적용
     if (preferences) {
+      //성별에 선호도 필터링
       if (preferences.gender && preferences.gender !== PreferredGender.NO_PREFERENCE) {
-        queryBuilder.andWhere('user.gender = :gender', { gender: preferences.gender });
+        if (preferences.gender === PreferredGender.ONLY_OPPOSITE) {
+          const oppositeGender = user.gender === Gender.MALE ? Gender.FEMALE : Gender.MALE;
+          queryBuilder.andWhere('user.gender = :gender', { gender: oppositeGender });
+        } else if (preferences.gender === PreferredGender.ONLY_SAME) {
+          queryBuilder.andWhere('user.gender = :gender', { gender: user.gender });
+        }
       }
+
+      //지역필터링
       if (preferences.region) {
         queryBuilder.andWhere('user.region = :region', { region: preferences.region });
       }
+
+      //나이차이 필터링
       if (preferences.ageGap) {
-        // AgeGap에 대한 로직 추가 필요
-        // 예시: 5살 이내 -> user.birthDate의 범위를 지정
+        const birthYear = new Date(user.birthDate).getFullYear();
+        let minBirthYear;
+        let maxBirthYear;
+
+        switch (preferences.ageGap) {
+          case PreferredAgeGap.WITHIN_3_YEARS:
+            minBirthYear = birthYear - 3;
+            maxBirthYear = birthYear + 3;
+            break;
+          case PreferredAgeGap.WITHIN_5_YEARS:
+            minBirthYear = birthYear - 5;
+            maxBirthYear = birthYear + 5;
+            break;
+          case PreferredAgeGap.WITHIN_10_YEARS:
+            minBirthYear = birthYear - 10;
+            maxBirthYear = birthYear + 10;
+            break;
+          default:
+            minBirthYear = null;
+            maxBirthYear = null;
+        }
+        if (minBirthYear && maxBirthYear) {
+          //SQL YEAR 함수 , 1991-01-01 이면 1991이라는 연도를 추출함
+          queryBuilder.andWhere('YEAR(user.birthDate) BETWEEN :minBirthYear AND :maxBirthYear', {
+            minBirthYear,
+            maxBirthYear,
+          });
+        }
       }
+
       if (preferences.height) {
         // Height에 대한 로직 추가 필요
       }
