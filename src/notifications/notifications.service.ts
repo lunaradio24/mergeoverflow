@@ -29,6 +29,11 @@ export class NotificationsService {
     return notifications;
   }
 
+  async readNotifications(userId: number): Promise<Notification[]> {
+    await this.notificationRepository.update({ userId }, { isRead: true });
+    return await this.getUserNotifications(userId);
+  }
+
   async saveNotification(userId: number, message: string, type: NotificationType): Promise<void> {
     await this.notificationRepository.save({ userId, message, type });
   }
