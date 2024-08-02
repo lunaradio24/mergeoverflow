@@ -78,4 +78,7 @@ export class SignUpDto {
   @ArrayNotEmpty()
   @Transform(({ value }) => JSON.parse(value))
   techs: number[];
+
+  @IsString()
+  profileImage: string;
 }

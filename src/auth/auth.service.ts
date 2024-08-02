@@ -61,7 +61,7 @@ export class AuthService {
     return { message: '인증 성공' };
   }
 
-  async signUp(signUpDto: SignUpDto, file: Express.Multer.File[]) {
+  async signUp(signUpDto: SignUpDto, profileImages: Express.Multer.File[]) {
     let { phoneNum, password, interests, techs, ...userData } = signUpDto;
     const formattedPhoneNum = formatPhoneNumber(phoneNum);
 
@@ -134,14 +134,17 @@ export class AuthService {
       await queryRunner.manager.save(userToTechs);
 
       // ProfileImage 생성
-      for (const image of file) {
-        const imageUrl = await this.s3Service.imageUploadToS3(image.originalname, image);
-        const profileImage = new ProfileImage();
-        profileImage.userId = savedUser.id;
-        profileImage.image = imageUrl;
-        await queryRunner.manager.save(profileImage);
-      }
+      if (profileImages && profileImages.length > 0) {
+        for (const file of profileImages) {
+          const fileName = `${Date.now()}_${file.originalname}`;
+          const fileUrl = await this.s3Service.imageUploadToS3(fileName, file);
 
+          const userProfileImage = new ProfileImage();
+          userProfileImage.userId = savedUser.id;
+          userProfileImage.image = fileUrl;
+          await queryRunner.manager.save(userProfileImage);
+        }
+      }
       await queryRunner.commitTransaction();
       return { message: '회원가입 성공' };
     } catch (error) {
