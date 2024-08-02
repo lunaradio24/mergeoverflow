@@ -27,6 +27,8 @@ export class AuthService {
   constructor(
     @InjectRepository(Account)
     private readonly accountRepository: Repository<Account>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly smsService: SmsService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -155,17 +157,17 @@ export class AuthService {
 
   async validateUser(signInDto: SignInDto) {
     const { phoneNum, password } = signInDto;
-    const account = await this.accountRepository.findOne({ where: { phoneNum } });
+    const account = await this.accountRepository.findOne({ where: { phoneNum }, relations: ['user'] });
     if (account && (await compare(password, account.password))) {
-      return account;
+      return account.user;
     }
     return null;
   }
 
   async validateUserById(userId: number) {
-    const account = await this.accountRepository.findOne({ where: { id: userId } });
-    if (account) {
-      return account;
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (user) {
+      return user;
     }
     return null;
   }

@@ -1,5 +1,5 @@
 import { Role } from '../types/role.type';
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { BadRequestException, CanActivate, ExecutionContext, Injectable, NotFoundException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -14,6 +14,7 @@ export class RolesGuard extends AuthGuard('access-token') implements CanActivate
   async canActivate(context: ExecutionContext) {
     const authenticated = await super.canActivate(context);
     if (!authenticated) {
+      // throw new NotFoundException("허가받지 않은 사용자입니다.")
       return false;
     }
 

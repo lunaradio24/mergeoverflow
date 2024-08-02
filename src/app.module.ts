@@ -19,10 +19,10 @@ import { TechModule } from './tech/tech.module';
 import { SmsModule } from './auth/sms/sms.module';
 import { S3Module } from './s3/s3.module';
 import { MatchingPreferencesModule } from './matchings/matching-preferences.module';
-import { ScheduleModule } from '@nestjs/schedule';
-import { HeartResetService } from './matchings/heart-reset.service';
-import { HeartResetController } from './matchings/heart-reset.controller';
 import { Heart } from './matchings/entities/heart.entity';
+import { HeartResetController } from './matchings/heart-reset.controller';
+import { HeartResetService } from './matchings/heart-reset.service';
+import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
     ConfigModule.forRoot({

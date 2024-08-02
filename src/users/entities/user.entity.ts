@@ -137,7 +137,7 @@ export class User {
   @OneToMany(() => ChatRoom, (chatRoom) => chatRoom.user2)
   chatRoomsAsUser2: ChatRoom[];
 
-  @OneToOne(() => Account, (account) => account.user)
+  @OneToOne(() => Account, (account) => account.user, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'account_id', referencedColumnName: 'id' })
   account: Account;
 
