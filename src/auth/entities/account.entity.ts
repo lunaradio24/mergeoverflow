@@ -32,8 +32,8 @@ export class Account {
 
   @IsOptional()
   @IsString()
-  @Column({ type: 'varchar', nullable: true })
-  provider?: string;
+  @Column({ type: 'varchar', default: 'local' })
+  provider: string;
 
   @IsOptional()
   @IsString()
