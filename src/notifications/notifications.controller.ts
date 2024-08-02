@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Patch } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { Notification } from './entities/notification.entity';
@@ -15,10 +15,17 @@ export class NotificationsController {
     return notificactions;
   }
 
-  @Get('late')
+  @Get('lates')
   async latestNotifications(@Request() req): Promise<Notification[]> {
     const userId = req.user.id;
     const notificactions = await this.notificationsService.latestNotifications(userId);
+    return notificactions;
+  }
+
+  @Patch()
+  async readNotifications(@Request() req): Promise<Notification[]> {
+    const userId = req.user.id;
+    const notificactions = await this.notificationsService.readNotifications(userId);
     return notificactions;
   }
 }
