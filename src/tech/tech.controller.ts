@@ -5,15 +5,15 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Role } from 'src/auth/types/role.type';
 import { Roles } from 'src/utils/decorators/roles.decorator';
 
-@Controller('tech')
+@Controller('techs')
 export class TechController {
   constructor(private readonly techService: TechService) {}
 
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN) // 관리자만 가능
   @Post()
-  async create(@Req() req: any, @Body() createTechDto: CreateTechDto) {
-    const data = await this.techService.create(req.user, createTechDto);
+  async create(@Body() createTechDto: CreateTechDto) {
+    const data = await this.techService.create(createTechDto);
     return {
       statusCode: HttpStatus.CREATED,
       message: '기술 생성에 성공했습니다.',
@@ -35,8 +35,8 @@ export class TechController {
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN) // 관리자만 가능
   @Patch(':id')
-  async update(@Req() req: any, @Param('id') id: number, @Body() createTechDto: CreateTechDto) {
-    const data = await this.techService.update(req.user, id, createTechDto); // req.user
+  async update(@Param('id') id: number, @Body() createTechDto: CreateTechDto) {
+    const data = await this.techService.update(id, createTechDto); // req.user
 
     return {
       statusCode: HttpStatus.OK,
@@ -48,8 +48,8 @@ export class TechController {
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN) // 관리자만 가능
   @Delete(':id')
-  async remove(@Req() req: any, @Param('id') id: number) {
-    await this.techService.remove(req.user, id);
+  async remove(@Param('id') id: number) {
+    await this.techService.remove(id);
 
     return {
       statusCode: HttpStatus.OK,
