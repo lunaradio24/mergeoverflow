@@ -13,10 +13,10 @@ export class HttpErrorFilter implements ExceptionFilter {
     const errorResponse = {
       errorCode: status || 500,
       errorStatus: exceptionResponse['error'],
-      timestamp: new Date().toISOString(),
       path: request.url,
       method: request.method,
       message: exceptionResponse['message'] || 'Internal Server Error',
+      timestamp: new Date().toISOString(),
     };
 
     response.status(status).json(errorResponse);
