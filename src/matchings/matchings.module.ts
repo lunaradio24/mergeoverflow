@@ -8,6 +8,7 @@ import { Matching } from './entities/matching.entity';
 import { ChatRoomsModule } from 'src/chat-rooms/chat-rooms.module';
 import { NotificationsModule } from 'src/notifications/notifications.module';
 import { MatchingPreferences } from './entities/matching-preferences.entity';
+import { HeartResetService } from './heart-reset.service';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { MatchingPreferences } from './entities/matching-preferences.entity';
     NotificationsModule,
   ],
   controllers: [MatchingController],
-  providers: [MatchingService],
+  providers: [MatchingService, HeartResetService],
   exports: [MatchingService],
 })
 export class MatchingModule {}
