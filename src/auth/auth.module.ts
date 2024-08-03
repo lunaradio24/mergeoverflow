@@ -10,12 +10,12 @@ import { AccessTokenStrategy } from './strategies/access-token.strategy';
 import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { RedisService } from '../redis/redis.service';
-import { RolesGuard } from './guards/roles.guard';
 import { UsersModule } from '../users/users.module';
 import { UserToInterest } from 'src/users/entities/user-to-interest.entity';
 import { UserToTech } from 'src/users/entities/user-to-tech.entity';
 import { SmsModule } from './sms/sms.module';
 import { ProfileImage } from 'src/users/entities/profile-image.entity';
+import { GithubPassportStrategy, GooglePassportStrategy } from './strategies/social.strategy';
 
 @Module({
   imports: [
@@ -33,7 +33,15 @@ import { ProfileImage } from 'src/users/entities/profile-image.entity';
     SmsModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, AccessTokenStrategy, RefreshTokenStrategy, LocalStrategy, RedisService, RolesGuard],
-  exports: [AuthService],
+  providers: [
+    AuthService,
+    AccessTokenStrategy,
+    RefreshTokenStrategy,
+    LocalStrategy,
+    RedisService,
+    GooglePassportStrategy,
+    GithubPassportStrategy,
+  ],
+  exports: [AuthService, AccessTokenStrategy, RefreshTokenStrategy],
 })
 export class AuthModule {}

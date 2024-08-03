@@ -4,6 +4,7 @@ import {
   ConflictException,
   BadRequestException,
   UnauthorizedException,
+  HttpStatus,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
@@ -21,6 +22,7 @@ import { compare, hash } from 'bcrypt';
 import { SignInDto } from './dto/sign-in.dto';
 import { CODE_TTL, IMAGE_LIMIT, MAX_INTERESTS, MAX_TECHS, MIN_INTERESTS, MIN_TECHS } from './constants/auth.constants';
 import { ProfileImage } from 'src/users/entities/profile-image.entity';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
@@ -73,6 +75,10 @@ export class AuthService {
       throw new ConflictException('이미 존재하는 전화번호입니다.');
     }
 
+    // 비밀번호 해싱
+    const hashRounds = Number(this.configService.get('HASH_ROUNDS'));
+    password = await hash(password, hashRounds);
+
     // interests와 techs가 문자열인 경우 배열로 변환
     if (typeof interests === 'string') {
       interests = JSON.parse(interests);
@@ -86,10 +92,6 @@ export class AuthService {
       throw new BadRequestException(`이미지 URL은 최대 ${IMAGE_LIMIT}개까지 입력 가능합니다.`);
     }
 
-    // 비밀번호 해싱
-    const hashRounds = Number(this.configService.get('HASH_ROUNDS'));
-    const hashedPassword = await hash(password, hashRounds);
-
     // 트랜잭션 시작
     const queryRunner = this.connection.createQueryRunner();
     await queryRunner.connect();
@@ -98,7 +100,7 @@ export class AuthService {
     try {
       // Account 생성 및 저장
       const account = new Account();
-      account.password = hashedPassword;
+      account.password = password;
       account.phoneNum = phoneNum;
 
       const savedAccount = await queryRunner.manager.save(account);
@@ -155,6 +157,122 @@ export class AuthService {
     }
   }
 
+  async socialSignIn(req: any, res: any): Promise<void> {
+    try {
+      const { provider, providerId } = req.user;
+
+      let account = await this.accountRepository.findOne({ where: { provider, providerId }, relations: ['user'] });
+
+      if (!account) {
+        // 계정 생성
+        account = new Account();
+        account.provider = provider;
+        account.providerId = providerId;
+        await this.accountRepository.save(account);
+
+        // 사용자 생성
+        const user = new User();
+        user.account = account;
+
+        await this.userRepository.save(user);
+      }
+
+      const payload = { id: account.user.id, provider: account.provider };
+      const accessToken = this.jwtService.sign(payload, {
+        secret: this.configService.get<string>('ACCESS_TOKEN_SECRET_KEY'),
+        expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRED_IN'),
+      });
+      const refreshToken = this.jwtService.sign(payload, {
+        secret: this.configService.get<string>('REFRESH_TOKEN_SECRET_KEY'),
+        expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRED_IN'),
+      });
+
+      res.json({ accessToken, refreshToken });
+    } catch (error) {
+      throw new UnauthorizedException('Login failed.');
+    }
+  }
+
+  async completeSignUp(signUpDto: SignUpDto) {
+    let { phoneNum, interests, techs, profileImageUrls, ...userData } = signUpDto;
+
+    // interests와 techs가 문자열인 경우 배열로 변환
+    if (typeof interests === 'string') {
+      interests = JSON.parse(interests);
+    }
+    if (typeof techs === 'string') {
+      techs = JSON.parse(techs);
+    }
+
+    // profileImageUrls 검증
+    if (profileImageUrls.length > IMAGE_LIMIT) {
+      throw new BadRequestException(`이미지 URL은 최대 ${IMAGE_LIMIT}개까지 입력 가능합니다.`);
+    }
+
+    // 트랜잭션 시작
+    const queryRunner = this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // Account 생성 및 저장
+      const account = new Account();
+      account.provider = 'social';
+
+      const savedAccount = await queryRunner.manager.save(account);
+
+      // User 데이터 생성
+      if (interests.length < MIN_INTERESTS || interests.length > MAX_INTERESTS) {
+        throw new BadRequestException(`관심사는 최소 ${MIN_INTERESTS}개, 최대 ${MAX_INTERESTS}개 선택해야 합니다.`);
+      }
+
+      if (techs.length < MIN_TECHS || techs.length > MAX_TECHS) {
+        throw new BadRequestException(`기술 스택은 최소 ${MIN_TECHS}개, 최대 ${MAX_TECHS}개 선택해야 합니다.`);
+      }
+
+      const user = plainToClass(User, userData);
+      user.accountId = savedAccount.id;
+      const savedUser = await queryRunner.manager.save(user);
+
+      // UserToInterest 생성
+      const userToInterests = interests.map((interestId) => {
+        const userToInterest = new UserToInterest();
+        userToInterest.userId = savedUser.id;
+        userToInterest.interestId = interestId;
+        return userToInterest;
+      });
+      await queryRunner.manager.save(userToInterests);
+
+      // UserToTech 생성
+      const userToTechs = techs.map((techId) => {
+        const userToTech = new UserToTech();
+        userToTech.userId = savedUser.id;
+        userToTech.techId = techId;
+        return userToTech;
+      });
+      await queryRunner.manager.save(userToTechs);
+
+      // ProfileImage 생성
+      if (profileImageUrls && profileImageUrls.length > 0) {
+        const userProfileImages = profileImageUrls.map((url) => {
+          const userProfileImage = new ProfileImage();
+          userProfileImage.userId = savedUser.id;
+          userProfileImage.image = url;
+          return userProfileImage;
+        });
+        await queryRunner.manager.save(userProfileImages);
+      }
+
+      await queryRunner.commitTransaction();
+      return { message: '추가 회원가입 성공' };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
   async validateUser(signInDto: SignInDto) {
     const { phoneNum, password } = signInDto;
     const account = await this.accountRepository.findOne({ where: { phoneNum }, relations: ['user'] });
@@ -170,6 +288,11 @@ export class AuthService {
       return user;
     }
     return null;
+  }
+
+  async validateSocialUser(provider: string, providerId: string) {
+    const account = await this.accountRepository.findOne({ where: { provider, providerId }, relations: ['user'] });
+    return account ? account.user : null;
   }
 
   async signIn(userId: number, phoneNum: string) {
