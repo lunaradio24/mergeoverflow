@@ -28,6 +28,8 @@ import InterestSeeder from './seeders/interest.seeder';
 import TechSeeder from './seeders/tech.seeder';
 import UserToInterestSeeder from './seeders/user-to-interest.seeder';
 import UserToTechSeeder from './seeders/user-to-tech.seeder';
+import HeartSeeder from './seeders/heart.seeder';
+import LocationSeeder from './seeders/location.seeder';
 
 (async () => {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -65,6 +67,8 @@ import UserToTechSeeder from './seeders/user-to-tech.seeder';
       TechSeeder,
       UserToInterestSeeder,
       UserToTechSeeder,
+      HeartSeeder,
+      LocationSeeder,
     ],
     factories: [accountFactory, userFactory, profileImageFactory],
   };
@@ -75,7 +79,7 @@ import UserToTechSeeder from './seeders/user-to-tech.seeder';
   // Run seeders in order
   await runSeeders(dataSource, { seeds: [AccountSeeder] });
   await runSeeders(dataSource, { seeds: [UserSeeder] });
-  await runSeeders(dataSource, { seeds: [ProfileImageSeeder] });
+  await runSeeders(dataSource, { seeds: [ProfileImageSeeder, HeartSeeder, LocationSeeder] });
   await runSeeders(dataSource, { seeds: [InterestSeeder, TechSeeder] });
   await runSeeders(dataSource, { seeds: [UserToInterestSeeder, UserToTechSeeder] });
 
