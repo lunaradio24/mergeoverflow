@@ -1,5 +1,5 @@
 import { Role } from '../types/role.type';
-import { BadRequestException, CanActivate, ExecutionContext, Injectable, NotFoundException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -27,6 +27,6 @@ export class RolesGuard extends AuthGuard('access-token') implements CanActivate
 
     //api를 요청한 사용자 정보를 추출. 필요한 역활과 일치하는지 확인
     const { user } = context.switchToHttp().getRequest();
-    return requiredRoles.some((role) => user.role === role);
+    return requiredRoles.some((role) => user.account.role === role);
   }
 }

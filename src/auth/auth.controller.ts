@@ -1,10 +1,12 @@
-import { Controller, Post, Body, UseGuards, Request, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { VerificationRequestDto } from './dto/verification-request.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { LocalAuthGuard } from './guards/local-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
+import { Request as ExpressRequest, Response as ExpressResponse } from 'express';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -42,10 +44,41 @@ export class AuthController {
     };
   }
 
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth(@Req() req: Request) {}
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
+    await this.authService.socialSignIn(req, res);
+    return res;
+  }
+
+  @Get('github')
+  @UseGuards(AuthGuard('github'))
+  async githubAuth(@Req() req: Request) {}
+
+  @Get('github/callback')
+  @UseGuards(AuthGuard('github'))
+  async githubAuthCallback(@Req() req: Request, @Res() res: Response) {
+    await this.authService.socialSignIn(req, res);
+    return res;
+  }
+
+  @Post('complete-sign-up')
+  async completeSignUp(@Body() signUpDto: SignUpDto) {
+    const newUser = await this.authService.completeSignUp(signUpDto);
+    return {
+      message: '추가 회원가입을 완료했습니다.',
+      data: newUser,
+    };
+  }
+
   /**로그인 */
   @Post('sign-in')
   @UseGuards(LocalAuthGuard)
-  async signIn(@Request() req: any) {
+  async signIn(@Req() req: any) {
     const { id: userId, phoneNum } = req.user;
     const tokens = await this.authService.signIn(userId, phoneNum);
     return {
@@ -58,7 +91,7 @@ export class AuthController {
   @Post('sign-out')
   @ApiBearerAuth()
   @UseGuards(RefreshTokenGuard)
-  async signOut(@Request() req: any) {
+  async signOut(@Req() req: any) {
     await this.authService.signOut(req.user.id);
     return {
       message: '로그아웃에 성공했습니다.',
@@ -69,7 +102,7 @@ export class AuthController {
   @Post('tokens/renew')
   @ApiBearerAuth()
   @UseGuards(RefreshTokenGuard)
-  async renewTokens(@Request() req: any) {
+  async renewTokens(@Req() req: any) {
     const refreshToken = req.headers.authorization.split(' ')[1];
     const tokens = await this.authService.renewTokens(refreshToken);
     return {

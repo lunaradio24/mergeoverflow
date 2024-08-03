@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy } from 'passport-jwt';
-import { Profile as GoogleProfile } from 'passport-google-oauth20';
+import { Profile as GoogleProfile, Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { Strategy as GithubStrategy } from 'passport-github2';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
-  constructor() {
+export class GooglePassportStrategy extends PassportStrategy(GoogleStrategy, 'google') {
+  constructor(configService: ConfigService) {
     super({
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
+      clientID: configService.get<string>('GOOGLE_CLIENT_ID'),
+      clientSecret: configService.get<string>('GOOGLE_CLIENT_SECRET'),
+      callbackURL: configService.get<string>('GOOGLE_CALLBACK_URL'),
       scope: ['profile'],
     });
   }
@@ -18,6 +19,26 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     const { id } = profile;
     return {
       provider: 'google',
+      providerId: id,
+    };
+  }
+}
+
+@Injectable()
+export class GithubPassportStrategy extends PassportStrategy(GithubStrategy, 'github') {
+  constructor(configService: ConfigService) {
+    super({
+      clientID: configService.get<string>('GITHUB_CLIENT_ID'),
+      clientSecret: configService.get<string>('GITHUB_CLIENT_SECRET'),
+      callbackURL: configService.get<string>('GITHUB_CALLBACK_URL'),
+      scope: ['profile'],
+    });
+  }
+
+  async validate(accessToken: string, refreshToken: string, profile: any) {
+    const { id } = profile;
+    return {
+      provider: 'github',
       providerId: id,
     };
   }
