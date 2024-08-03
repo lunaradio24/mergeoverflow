@@ -16,6 +16,7 @@ import { Account } from '../auth/entities/account.entity';
 import { Notification } from '../notifications/entities/notification.entity';
 import { S3Module } from 'src/s3/s3.module';
 import { MatchingPreferences } from 'src/matchings/entities/matching-preferences.entity';
+import { Location } from 'src/location/entities/location.entity';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { MatchingPreferences } from 'src/matchings/entities/matching-preferences
       ChatMessage,
       Account,
       MatchingPreferences,
+      Location,
     ]),
   ],
   controllers: [UsersController],
