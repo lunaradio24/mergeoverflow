@@ -23,7 +23,7 @@ import { SignInDto } from './dto/sign-in.dto';
 import { CODE_TTL, IMAGE_LIMIT, MAX_INTERESTS, MAX_TECHS, MIN_INTERESTS, MIN_TECHS } from './constants/auth.constants';
 import { ProfileImage } from 'src/images/entities/profile-image.entity';
 import { Heart } from 'src/matchings/entities/heart.entity';
-import { RESET_HEART_COUNT } from 'src/matchings/constants/constants';
+import { RESET_HEART_COUNT } from 'src/matchings/constants/heart.constant';
 
 @Injectable()
 export class AuthService {
@@ -264,7 +264,7 @@ export class AuthService {
         const userProfileImages = profileImageUrls.map((url) => {
           const userProfileImage = new ProfileImage();
           userProfileImage.userId = savedUser.id;
-          userProfileImage.image = url;
+          userProfileImage.imageUrl = url;
           return userProfileImage;
         });
         await queryRunner.manager.save(userProfileImages);

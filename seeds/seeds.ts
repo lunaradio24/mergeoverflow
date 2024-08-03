@@ -28,6 +28,8 @@ import InterestSeeder from './seeders/interest.seeder';
 import TechSeeder from './seeders/tech.seeder';
 import UserToInterestSeeder from './seeders/user-to-interest.seeder';
 import UserToTechSeeder from './seeders/user-to-tech.seeder';
+import HeartSeeder from './seeders/heart.seeder';
+import LocationSeeder from './seeders/location.seeder';
 
 (async () => {
   const app = await NestFactory.createApplicationContext(AppModule);

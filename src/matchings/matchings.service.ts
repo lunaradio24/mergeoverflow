@@ -4,7 +4,7 @@ import { Repository, In, IsNull } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { Matching } from './entities/matching.entity';
 import { InteractionType } from './types/interaction-type.type';
-import { BRING_SOMEONE } from '../matchings/constants/constants';
+import { BRING_SOMEONE } from './constants/matching.constants';
 import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
 import { NotificationsGateway } from 'src/notifications/notifications.gateway';
 import { NotificationType } from 'src/notifications/types/notification-type.type';

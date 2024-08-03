@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Cron } from '@nestjs/schedule';
 import { Heart } from './entities/heart.entity';
-import { RESET_HEART_COUNT } from './constants/constants';
+import { RESET_HEART_COUNT } from './constants/heart.constant';
 
 @Injectable()
 export class HeartResetService {
