@@ -62,7 +62,7 @@ export class AuthService {
   }
 
   async signUp(signUpDto: SignUpDto) {
-    let { phoneNum, password, profileImageUrls, interests, techs, ...userData } = signUpDto;
+    const { phoneNum, password, interests, techs, profileImageUrls, ...userData } = signUpDto;
 
     // 전화번호 인증 확인
     const verifiedPhoneNum = await this.redisService.get(`verified_${phoneNum}`);
@@ -78,15 +78,12 @@ export class AuthService {
 
     // 비밀번호 해싱
     const hashRounds = Number(this.configService.get('HASH_ROUNDS'));
-    password = await hash(password, hashRounds);
+    const hashedPassword = await hash(password, hashRounds);
 
-    // interests와 techs가 문자열인 경우 배열로 변환
-    if (typeof interests === 'string') {
-      interests = JSON.parse(interests);
-    }
-    if (typeof techs === 'string') {
-      techs = JSON.parse(techs);
-    }
+    // interests와 techs를 별도로 선언하여 문자열인 경우 배열로 변환
+    const parsedInterests =
+      typeof signUpDto.interests === 'string' ? JSON.parse(signUpDto.interests) : signUpDto.interests;
+    const parsedTechs = typeof signUpDto.techs === 'string' ? JSON.parse(signUpDto.techs) : signUpDto.techs;
 
     // profileImageUrls 검증
     if (profileImageUrls.length > IMAGE_LIMIT) {
@@ -101,17 +98,17 @@ export class AuthService {
     try {
       // Account 생성 및 저장
       const account = new Account();
-      account.password = password;
+      account.password = hashedPassword;
       account.phoneNum = phoneNum;
 
       const savedAccount = await queryRunner.manager.save(account);
 
       // User 데이터 생성
-      if (interests.length < MIN_INTERESTS || interests.length > MAX_INTERESTS) {
+      if (parsedInterests.length < MIN_INTERESTS || parsedInterests.length > MAX_INTERESTS) {
         throw new BadRequestException(`관심사는 최소 ${MIN_INTERESTS}개, 최대 ${MAX_INTERESTS}개 선택해야 합니다.`);
       }
 
-      if (techs.length < MIN_TECHS || techs.length > MAX_TECHS) {
+      if (parsedTechs.length < MIN_TECHS || parsedTechs.length > MAX_TECHS) {
         throw new BadRequestException(`기술 스택은 최소 ${MIN_TECHS}개, 최대 ${MAX_TECHS}개 선택해야 합니다.`);
       }
 
@@ -120,7 +117,7 @@ export class AuthService {
       const savedUser = await queryRunner.manager.save(user);
 
       // UserToInterest 생성
-      const userToInterests = interests.map((interestId) => {
+      const userToInterests = parsedInterests.map((interestId) => {
         const userToInterest = new UserToInterest();
         userToInterest.userId = savedUser.id;
         userToInterest.interestId = interestId;
@@ -129,7 +126,7 @@ export class AuthService {
       await queryRunner.manager.save(userToInterests);
 
       // UserToTech 생성
-      const userToTechs = techs.map((techId) => {
+      const userToTechs = parsedTechs.map((techId) => {
         const userToTech = new UserToTech();
         userToTech.userId = savedUser.id;
         userToTech.techId = techId;
@@ -203,13 +200,10 @@ export class AuthService {
   async completeSignUp(signUpDto: SignUpDto) {
     let { phoneNum, interests, techs, profileImageUrls, ...userData } = signUpDto;
 
-    // interests와 techs가 문자열인 경우 배열로 변환
-    if (typeof interests === 'string') {
-      interests = JSON.parse(interests);
-    }
-    if (typeof techs === 'string') {
-      techs = JSON.parse(techs);
-    }
+    // interests와 techs를 별도로 선언하여 문자열인 경우 배열로 변환
+    const parsedInterests =
+      typeof signUpDto.interests === 'string' ? JSON.parse(signUpDto.interests) : signUpDto.interests;
+    const parsedTechs = typeof signUpDto.techs === 'string' ? JSON.parse(signUpDto.techs) : signUpDto.techs;
 
     // profileImageUrls 검증
     if (profileImageUrls.length > IMAGE_LIMIT) {
@@ -229,11 +223,11 @@ export class AuthService {
       const savedAccount = await queryRunner.manager.save(account);
 
       // User 데이터 생성
-      if (interests.length < MIN_INTERESTS || interests.length > MAX_INTERESTS) {
+      if (parsedInterests.length < MIN_INTERESTS || parsedInterests.length > MAX_INTERESTS) {
         throw new BadRequestException(`관심사는 최소 ${MIN_INTERESTS}개, 최대 ${MAX_INTERESTS}개 선택해야 합니다.`);
       }
 
-      if (techs.length < MIN_TECHS || techs.length > MAX_TECHS) {
+      if (parsedTechs.length < MIN_TECHS || parsedTechs.length > MAX_TECHS) {
         throw new BadRequestException(`기술 스택은 최소 ${MIN_TECHS}개, 최대 ${MAX_TECHS}개 선택해야 합니다.`);
       }
 
@@ -242,7 +236,7 @@ export class AuthService {
       const savedUser = await queryRunner.manager.save(user);
 
       // UserToInterest 생성
-      const userToInterests = interests.map((interestId) => {
+      const userToInterests = parsedInterests.map((interestId) => {
         const userToInterest = new UserToInterest();
         userToInterest.userId = savedUser.id;
         userToInterest.interestId = interestId;
@@ -251,7 +245,7 @@ export class AuthService {
       await queryRunner.manager.save(userToInterests);
 
       // UserToTech 생성
-      const userToTechs = techs.map((techId) => {
+      const userToTechs = parsedTechs.map((techId) => {
         const userToTech = new UserToTech();
         userToTech.userId = savedUser.id;
         userToTech.techId = techId;
@@ -265,10 +259,17 @@ export class AuthService {
           const userProfileImage = new ProfileImage();
           userProfileImage.userId = savedUser.id;
           userProfileImage.imageUrl = url;
+          userProfileImage.imageUrl = url;
           return userProfileImage;
         });
         await queryRunner.manager.save(userProfileImages);
       }
+
+      // Heart 데이터 생성 및 저장
+      const heart = new Heart();
+      heart.userId = savedUser.id;
+      heart.remainHearts = RESET_HEART_COUNT;
+      await queryRunner.manager.save(heart);
 
       await queryRunner.commitTransaction();
       return { message: '추가 회원가입 성공' };
@@ -291,7 +292,6 @@ export class AuthService {
 
   async validateUserById(userId: number) {
     const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['account'] });
-    console.log(user);
     if (user) {
       return user;
     }

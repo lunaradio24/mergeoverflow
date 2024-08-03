@@ -100,12 +100,4 @@ export class SignUpDto {
   @ArrayMaxSize(IMAGE_LIMIT)
   @IsString({ each: true })
   profileImageUrls: string[];
-
-  @IsOptional()
-  @IsString()
-  provider?: string;
-
-  @IsOptional()
-  @IsString()
-  providerId?: string;
 }
