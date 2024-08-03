@@ -5,7 +5,7 @@ import { Heart } from 'src/matchings/entities/heart.entity';
 import { NUM_CREATING_ACCOUNTS } from 'seeds/constants/account.seed.constant';
 import { INITIAL_HEARTS } from 'seeds/constants/heart.seed.constant';
 
-export default class UserToInterestSeeder implements Seeder {
+export default class HeartSeeder implements Seeder {
   public async run(dataSource: DataSource): Promise<void> {
     const userRepository = dataSource.getRepository(User);
     const heartRepository = dataSource.getRepository(Heart);
@@ -24,7 +24,6 @@ export default class UserToInterestSeeder implements Seeder {
       newUsers.map(async (user) => {
         const hearts = new Heart();
         hearts.userId = user.id;
-        hearts.remainHearts = INITIAL_HEARTS;
         await heartRepository.save(hearts);
       }),
     );
