@@ -30,6 +30,7 @@ import UserToInterestSeeder from './seeders/user-to-interest.seeder';
 import UserToTechSeeder from './seeders/user-to-tech.seeder';
 import HeartSeeder from './seeders/heart.seeder';
 import LocationSeeder from './seeders/location.seeder';
+import { Location } from 'src/location/entities/location.entity';
 
 (async () => {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -58,6 +59,7 @@ import LocationSeeder from './seeders/location.seeder';
       Matching,
       Notification,
       MatchingPreferences,
+      Location,
     ],
     seeds: [
       AccountSeeder,
