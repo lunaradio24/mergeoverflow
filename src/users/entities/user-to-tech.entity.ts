@@ -15,11 +15,11 @@ export class UserToTech {
   @PrimaryColumn()
   techId: number;
 
-  @ManyToOne(() => User, (user) => user.userToTechs)
+  @ManyToOne(() => User, (user) => user.userToTechs, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: User;
 
-  @ManyToOne(() => Tech, (tech) => tech.userToTechs)
+  @ManyToOne(() => Tech, (tech) => tech.userToTechs, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'tech_id', referencedColumnName: 'id' })
   tech: Tech;
 }

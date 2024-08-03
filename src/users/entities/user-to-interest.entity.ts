@@ -15,11 +15,11 @@ export class UserToInterest {
   @PrimaryColumn()
   interestId: number;
 
-  @ManyToOne(() => User, (user) => user.userToInterests)
+  @ManyToOne(() => User, (user) => user.userToInterests, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: User;
 
-  @ManyToOne(() => Interest, (interest) => interest.userToInterests)
+  @ManyToOne(() => Interest, (interest) => interest.userToInterests, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'interest_id', referencedColumnName: 'id' })
   interest: Interest;
 }
