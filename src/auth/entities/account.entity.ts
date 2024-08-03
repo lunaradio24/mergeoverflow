@@ -19,7 +19,7 @@ export class Account {
   @IsOptional()
   @IsString()
   @Column({ type: 'varchar', nullable: true })
-  password?: string;
+  password: string;
 
   @IsEnum(Role)
   @Column({ type: 'enum', enum: Role, default: Role.USER })
@@ -28,7 +28,7 @@ export class Account {
   @IsOptional()
   @IsString()
   @Column({ type: 'varchar', nullable: true })
-  phoneNum?: string;
+  phoneNum: string;
 
   @IsOptional()
   @IsString()
@@ -38,7 +38,7 @@ export class Account {
   @IsOptional()
   @IsString()
   @Column({ type: 'varchar', nullable: true })
-  providerId?: string;
+  providerId: string;
 
   @CreateDateColumn()
   createdAt: Date;

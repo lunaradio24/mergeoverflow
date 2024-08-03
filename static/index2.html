@@ -33,10 +33,9 @@
         <h2>Notifications</h2>
         <ul id="notifications"></ul>
     </div>
-
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script>
-        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjQsInBob25lTnVtIjoiMDEwLTM2NzItNzQyMiIsImlhdCI6MTcyMjU1ODM0NywiZXhwIjoxNzIzNDIyMzQ3fQ.HEknTL7lwkZNauyLAEu9o2YQxxY6bBk-1R9rYzu_fxw"
+        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzMsInBob25lTnVtIjoiMDEwLTMwMjItNTkzMSIsImlhdCI6MTcyMjUyMTQzNSwiZXhwIjoxNzIzMTI2MjM1fQ.vrfhtOP8VGx9Yf3fdH52C_RHjjYMSpLSRTsBda1Bc9Y"
         const chatSocket = io('ws://localhost:3000/chat', {
             auth: {
                 token
@@ -47,7 +46,6 @@
                 token
             }
         });
-
         const joinRoomButton = document.getElementById('joinRoomButton');
         const sendMessageButton = document.getElementById('sendMessageButton');
         const messagesList = document.getElementById('messages');
@@ -70,7 +68,6 @@
             item.textContent = `${data.nickname}님이 입장했습니다.`;
             messagesList.appendChild(item);
             chatSocket.emit('requestHistory', { roomId: data.roomId });
-
         })
 
         chatSocket.on('history', (data) => {
@@ -81,7 +78,7 @@
                     messagesList.appendChild(item);
                 });
             }
-            joinCheck = true
+            joinCheck = true;
         });
 
         chatSocket.on('createChatRoom', (data) => {
@@ -93,7 +90,7 @@
         })
 
         chatSocket.on('exit', (data) => {
-            const { roomId, type } = data
+            const { roomId } = data
             chatSocket.emit('exit', { roomId });
         })
 
@@ -124,5 +121,8 @@
             item.textContent = `[알림]${type}:${message}`;
             notificationsList.appendChild(item);
         })
+
     </script>
 </body>
+
+</html>

@@ -20,6 +20,10 @@ import { SmsModule } from './auth/sms/sms.module';
 import { S3Module } from './s3/s3.module';
 import { MatchingPreferencesModule } from './matchings/matching-preferences.module';
 import { ImageModule } from './images/image.module';
+import { Heart } from './matchings/entities/heart.entity';
+import { HeartResetController } from './matchings/heart-reset.controller';
+import { HeartResetService } from './matchings/heart-reset.service';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -33,6 +37,7 @@ import { ImageModule } from './images/image.module';
     }),
     MailerModule.forRootAsync(mailerModuleOptions),
     TypeOrmModule.forRootAsync(typeOrmModuleOptions),
+    TypeOrmModule.forFeature([Heart]),
     AuthModule,
     UsersModule,
     MatchingModule,
@@ -43,9 +48,9 @@ import { ImageModule } from './images/image.module';
     TechModule,
     SmsModule,
     S3Module,
-    ImageModule,
+    ScheduleModule.forRoot(),
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, HeartResetController],
+  providers: [AppService, HeartResetService],
 })
 export class AppModule {}

@@ -1,17 +1,13 @@
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional } from 'class-validator';
 import { PreferredGender } from '../types/preferred-gender.type';
 import { PreferredRegion } from '../types/preferred-region.type';
 import { PreferredBodyShape } from '../types/preferred-body-shape.type';
 import { PreferredReligion } from '../types/preferred-religion.type';
 import { PreferredFrequency } from '../types/preferred-frequency.type';
 import { PreferredAgeGap } from '../types/preferred-age-gap.type';
-import { PreferredCodingLevel } from '../types/preferred-coding-level.type';
 import { PreferredHeight } from '../types/preferred-height.type';
 
 export class CreateMatchingPreferencesDto {
-  @IsInt()
-  userId: number;
-
   @IsOptional()
   @IsEnum(PreferredGender)
   gender?: PreferredGender;
