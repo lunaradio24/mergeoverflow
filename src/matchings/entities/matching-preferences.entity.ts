@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { PreferredGender } from '../types/preferred-gender.type';
@@ -58,7 +59,7 @@ export class MatchingPreferences {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.matchingPreferences, { onDelete: 'CASCADE' })
+  @OneToOne(() => User, (user) => user.matchingPreferences, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: User;
 }

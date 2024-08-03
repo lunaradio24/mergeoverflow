@@ -9,15 +9,18 @@ import { ChatRoomsModule } from 'src/chat-rooms/chat-rooms.module';
 import { NotificationsModule } from 'src/notifications/notifications.module';
 import { MatchingPreferences } from './entities/matching-preferences.entity';
 import { HeartResetService } from './heart-reset.service';
+import { Location } from '../location/entities/location.entity';
+import { LocationService } from '../location/location.service';
+import { LocationController } from '../location/location.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Heart, Matching, MatchingPreferences]),
+    TypeOrmModule.forFeature([User, Heart, Matching, MatchingPreferences, Location]),
     ChatRoomsModule,
     NotificationsModule,
   ],
-  controllers: [MatchingController],
-  providers: [MatchingService, HeartResetService],
+  controllers: [MatchingController, LocationController],
+  providers: [MatchingService, HeartResetService, LocationService],
   exports: [MatchingService],
 })
 export class MatchingModule {}
