@@ -4,16 +4,14 @@ import { ConfigService } from '@nestjs/config';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { runSeeders, SeederOptions } from 'typeorm-extension';
 import { AppModule } from '../src/app.module';
-import AccountSeeder from './seeders/account.seeder';
-import UserSeeder from './seeders/user.seeder';
 import { userFactory } from './factories/user.factory';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { User } from 'src/users/entities/user.entity';
 import { UserToInterest } from 'src/users/entities/user-to-interest.entity';
 import { UserToTech } from 'src/users/entities/user-to-tech.entity';
-import { Tech } from 'src/users/entities/tech.entity';
-import { Interest } from 'src/users/entities/interest.entity';
-import { ProfileImage } from 'src/users/entities/profile-image.entity';
+import { Tech } from 'src/tech/entities/tech.entity';
+import { Interest } from 'src/interest/entities/interest.entity';
+import { ProfileImage } from 'src/images/entities/profile-image.entity';
 import { Account } from 'src/auth/entities/account.entity';
 import { ChatMessage } from 'src/chat-rooms/entities/chat-message.entity';
 import { ChatRoom } from 'src/chat-rooms/entities/chat-room.entity';
@@ -21,8 +19,15 @@ import { Heart } from 'src/matchings/entities/heart.entity';
 import { Matching } from 'src/matchings/entities/matching.entity';
 import { Notification } from 'src/notifications/entities/notification.entity';
 import { accountFactory } from './factories/account.factory';
-import ProfileImageSeeder from './seeders/profile-image.seeder';
 import { profileImageFactory } from './factories/profile-image.factory';
+import { MatchingPreferences } from 'src/matchings/entities/matching-preferences.entity';
+import AccountSeeder from './seeders/account.seeder';
+import UserSeeder from './seeders/user.seeder';
+import ProfileImageSeeder from './seeders/profile-image.seeder';
+import InterestSeeder from './seeders/interest.seeder';
+import TechSeeder from './seeders/tech.seeder';
+import UserToInterestSeeder from './seeders/user-to-interest.seeder';
+import UserToTechSeeder from './seeders/user-to-tech.seeder';
 
 (async () => {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -50,8 +55,17 @@ import { profileImageFactory } from './factories/profile-image.factory';
       Heart,
       Matching,
       Notification,
+      MatchingPreferences,
     ],
-    seeds: [AccountSeeder, UserSeeder, ProfileImageSeeder],
+    seeds: [
+      AccountSeeder,
+      UserSeeder,
+      ProfileImageSeeder,
+      InterestSeeder,
+      TechSeeder,
+      UserToInterestSeeder,
+      UserToTechSeeder,
+    ],
     factories: [accountFactory, userFactory, profileImageFactory],
   };
 
@@ -62,6 +76,8 @@ import { profileImageFactory } from './factories/profile-image.factory';
   await runSeeders(dataSource, { seeds: [AccountSeeder] });
   await runSeeders(dataSource, { seeds: [UserSeeder] });
   await runSeeders(dataSource, { seeds: [ProfileImageSeeder] });
+  await runSeeders(dataSource, { seeds: [InterestSeeder, TechSeeder] });
+  await runSeeders(dataSource, { seeds: [UserToInterestSeeder, UserToTechSeeder] });
 
   console.log('Seeding completed');
   await app.close();
