@@ -19,7 +19,6 @@ export class TechService {
   async create(createTechDto: CreateTechDto) {
     // 입력한 tech 저장
     const saveTech = await this.techRepository.save(createTechDto);
-
     return saveTech;
   }
 

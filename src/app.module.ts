@@ -48,6 +48,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     TechModule,
     SmsModule,
     S3Module,
+    ImageModule,
     ScheduleModule.forRoot(),
   ],
   controllers: [AppController, HeartResetController],
