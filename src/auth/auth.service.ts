@@ -291,7 +291,6 @@ export class AuthService {
 
   async validateUserById(userId: number) {
     const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['account'] });
-    console.log(user);
     if (user) {
       return user;
     }
