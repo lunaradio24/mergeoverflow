@@ -12,18 +12,13 @@ export class HeartResetService {
     private readonly heartRepository: Repository<Heart>,
   ) {}
 
-  //   @Cron('0 0 9 * * *') // 매일 아침 9시에 실행
-  //   async resetHearts() {
-  //     await this.heartRepository.update({}, { remainHearts: RESET_HEART_COUNT });
-  //     console.log('All hearts have been reset to', RESET_HEART_COUNT);
-  //   }
-  // }
-  @Cron('0 0 9 * * *') // 매일 오전 9시에 실행
+  @Cron('0 0 9 * * *') // 매일 오전 9시에 초기화
   async handleCron() {
     await this.resetHearts();
   }
 
   async resetHearts() {
     await this.heartRepository.createQueryBuilder().update(Heart).set({ remainHearts: RESET_HEART_COUNT }).execute();
+    console.log(`모든 하트가 ${RESET_HEART_COUNT}개로 초기화되었습니다.`);
   }
 }
