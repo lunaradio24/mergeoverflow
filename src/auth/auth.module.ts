@@ -16,10 +16,11 @@ import { UserToInterest } from 'src/users/entities/user-to-interest.entity';
 import { UserToTech } from 'src/users/entities/user-to-tech.entity';
 import { SmsModule } from './sms/sms.module';
 import { ProfileImage } from 'src/users/entities/profile-image.entity';
+import { Heart } from 'src/matchings/entities/heart.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Account, User, UserToInterest, UserToTech, ProfileImage]),
+    TypeOrmModule.forFeature([Account, User, UserToInterest, UserToTech, ProfileImage, Heart]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

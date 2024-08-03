@@ -21,6 +21,8 @@ import { compare, hash } from 'bcrypt';
 import { SignInDto } from './dto/sign-in.dto';
 import { CODE_TTL, IMAGE_LIMIT, MAX_INTERESTS, MAX_TECHS, MIN_INTERESTS, MIN_TECHS } from './constants/auth.constants';
 import { ProfileImage } from 'src/users/entities/profile-image.entity';
+import { Heart } from 'src/matchings/entities/heart.entity';
+import { RESET_HEART_COUNT } from 'src/matchings/constants/constants';
 
 @Injectable()
 export class AuthService {
@@ -144,6 +146,12 @@ export class AuthService {
         });
         await queryRunner.manager.save(userProfileImages);
       }
+
+      // Heart 데이터 생성 및 저장
+      const heart = new Heart();
+      heart.userId = savedUser.id;
+      heart.remainHearts = RESET_HEART_COUNT;
+      await queryRunner.manager.save(heart);
 
       await queryRunner.commitTransaction();
       return { message: '회원가입 성공' };
