@@ -14,6 +14,8 @@ import { Gender } from '../users/types/Gender.type';
 import { PreferredAgeGap } from './types/preferred-age-gap.type';
 import { PreferredHeight } from './types/preferred-height.type';
 import { Heart } from './entities/heart.entity';
+import { LocationService } from 'src/location/location.service';
+import { PreferredDistance } from './types/preferred-distance.type';
 
 @Injectable()
 export class MatchingService {
@@ -28,6 +30,7 @@ export class MatchingService {
     private readonly heartRepository: Repository<Heart>,
     private readonly chatRoomsService: ChatRoomsService,
     private readonly NotificationsGateway: NotificationsGateway,
+    private readonly locationService: LocationService,
   ) {}
 
   // 새로운 매칭 상대를 생성하는 메서드
@@ -129,6 +132,45 @@ export class MatchingService {
       // if (preferences.codingLevel) {
       //   queryBuilder.andWhere('user.codingLevel = :codingLevel', { codingLevel: preferences.codingLevel });
       // }
+
+      // 거리 필터링
+      if (preferences.distance && preferences.distance !== PreferredDistance.NO_PREFERENCE) {
+        // 현재 사용자의 위치 정보 가져오기
+        const userLocation = await this.locationService.getLocationByUserId(userId);
+
+        // 거리 조건별 최대 거리 (단위: km)
+        const distanceInKm = {
+          [PreferredDistance.WITHIN_10_KM]: 10,
+          [PreferredDistance.WITHIN_20_KM]: 20,
+          [PreferredDistance.WITHIN_50_KM]: 50,
+          [PreferredDistance.WITHIN_100_KM]: 100,
+        };
+
+        // 매칭 후보자 목록 가져오기
+        const targetUsers = await this.userRepository.find();
+        const userIdsWithinDistance = [];
+
+        // 각 매칭 후보자의 위치 정보 가져오기 및 거리 계산
+        for (const targetUser of targetUsers) {
+          const targetLocation = await this.locationService.getLocationByUserId(targetUser.id);
+          if (targetLocation) {
+            const distance = this.locationService.calculateDistance(
+              userLocation.latitude,
+              userLocation.longitude,
+              targetLocation.latitude,
+              targetLocation.longitude,
+            );
+
+            // 거리가 설정된 조건 내에 있는 경우 매칭 대상 목록에 추가
+            if (distance <= distanceInKm[preferences.distance]) {
+              userIdsWithinDistance.push(targetUser.id);
+            }
+          }
+        }
+
+        // 거리 필터링 조건에 맞는 사용자만 쿼리 빌더에 추가
+        queryBuilder.andWhere('user.id IN (:...userIds)', { userIds: userIdsWithinDistance });
+      }
     }
 
     queryBuilder.orderBy('RAND()').take(BRING_SOMEONE);

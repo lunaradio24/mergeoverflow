@@ -17,6 +17,7 @@ import { PreferredFrequency } from '../types/preferred-frequency.type';
 import { PreferredAgeGap } from '../types/preferred-age-gap.type';
 import { PreferredCodingLevel } from '../types/preferred-coding-level.type';
 import { PreferredHeight } from '../types/preferred-height.type';
+import { PreferredDistance } from '../types/preferred-distance.type';
 
 @Entity({ name: 'matching_preferences' })
 export class MatchingPreferences {
@@ -52,6 +53,9 @@ export class MatchingPreferences {
 
   @Column({ type: 'enum', enum: PreferredReligion, nullable: true })
   religion: PreferredReligion;
+
+  @Column({ type: 'enum', enum: PreferredDistance, nullable: true })
+  distance: PreferredDistance;
 
   @CreateDateColumn()
   createdAt: Date;

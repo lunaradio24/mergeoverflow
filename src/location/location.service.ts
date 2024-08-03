@@ -62,4 +62,9 @@ export class LocationService {
 
     return distance;
   }
+
+  // 사용자 ID로 위치 가져오는 메서드 추가
+  async getLocationByUserId(userId: number): Promise<Location> {
+    return this.locationRepository.findOne({ where: { user: { id: userId } } });
+  }
 }
