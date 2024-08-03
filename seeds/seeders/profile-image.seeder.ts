@@ -1,5 +1,5 @@
-import { NUM_CREATING_ACCOUNTS } from 'seeds/constants/seeding-account.constant';
-import { NUM_CREATING_IMAGES } from 'seeds/constants/seeding-profile-image.constant';
+import { NUM_CREATING_ACCOUNTS } from 'seeds/constants/account.seed.constant';
+import { NUM_CREATING_IMAGES } from 'seeds/constants/profile-image.seed.constant';
 import { ProfileImage } from 'src/images/entities/profile-image.entity';
 import { User } from 'src/users/entities/user.entity';
 import { DataSource } from 'typeorm';

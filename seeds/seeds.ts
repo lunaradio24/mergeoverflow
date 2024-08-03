@@ -26,6 +26,8 @@ import UserSeeder from './seeders/user.seeder';
 import ProfileImageSeeder from './seeders/profile-image.seeder';
 import InterestSeeder from './seeders/interest.seeder';
 import TechSeeder from './seeders/tech.seeder';
+import UserToInterestSeeder from './seeders/user-to-interest.seeder';
+import UserToTechSeeder from './seeders/user-to-tech.seeder';
 
 (async () => {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -55,7 +57,15 @@ import TechSeeder from './seeders/tech.seeder';
       Notification,
       MatchingPreferences,
     ],
-    seeds: [AccountSeeder, UserSeeder, ProfileImageSeeder, InterestSeeder, TechSeeder],
+    seeds: [
+      AccountSeeder,
+      UserSeeder,
+      ProfileImageSeeder,
+      InterestSeeder,
+      TechSeeder,
+      UserToInterestSeeder,
+      UserToTechSeeder,
+    ],
     factories: [accountFactory, userFactory, profileImageFactory],
   };
 
@@ -67,6 +77,7 @@ import TechSeeder from './seeders/tech.seeder';
   await runSeeders(dataSource, { seeds: [UserSeeder] });
   await runSeeders(dataSource, { seeds: [ProfileImageSeeder] });
   await runSeeders(dataSource, { seeds: [InterestSeeder, TechSeeder] });
+  await runSeeders(dataSource, { seeds: [UserToInterestSeeder, UserToTechSeeder] });
 
   console.log('Seeding completed');
   await app.close();
