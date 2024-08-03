@@ -3,14 +3,13 @@ import {
   OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  WebSocketServer,
   SubscribeMessage,
   MessageBody,
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatRoomsService } from './chat-rooms.service';
-import { Inject, UnauthorizedException, forwardRef } from '@nestjs/common';
+import { Inject, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { SocketGateway } from 'src/common/sockets/gateway';
 
@@ -41,17 +40,32 @@ export class ChatRoomsGateway extends SocketGateway implements OnGatewayInit, On
   }
 
   @SubscribeMessage('join')
-  async handleJoinChatRoom(@MessageBody() data: { userId: number; roomId: number }, @ConnectedSocket() socket: Socket) {
-    const { userId, roomId } = data;
-    socket.join(roomId.toString());
-    this.logger.log(`${await socket.data.nickname}님께서 ${roomId}번 방에 입장했습니다.`);
+  async handleJoinChatRoom(
+    @MessageBody() data: { roomId: number; joinCheck: boolean },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    let { roomId, joinCheck } = data;
+    await this.chatRoomsService.isUserInChatRoom(socket.data.userId, roomId);
+    if (!joinCheck) {
+      socket.join(roomId.toString());
+      this.server.to(roomId.toString()).emit('join', { roomId, nickname: await socket.data.nickname });
+      this.logger.log(`${await socket.data.nickname}님께서 ${roomId}번 방에 입장했습니다.`);
+    }
+  }
+
+  @SubscribeMessage('requestHistory')
+  async handleRequestHistory(@MessageBody() data: { roomId: number }, @ConnectedSocket() socket: Socket) {
+    const { roomId } = data;
+    const messages = await this.chatRoomsService.getRoomMessage(roomId);
+    const checkhistory = true;
+    this.server.to(roomId.toString()).emit('history', { messages, roomId, checkhistory });
   }
 
   @SubscribeMessage('exit')
   async handleExitChatRoom(@MessageBody() data: { roomId: number }, @ConnectedSocket() socket: Socket) {
     const { roomId } = data;
     socket.leave(roomId.toString());
-    this.logger.log(`${await socket.data.nickname}님께서  ${roomId}번 방에서 퇴장하셨습니다.`);
+    this.logger.log(`${await socket.data.nickname}님께서 ${roomId}번 방에서 퇴장하셨습니다.`);
   }
 
   @SubscribeMessage('message')

@@ -6,9 +6,10 @@ import { User } from '../users/entities/user.entity';
 import { Notification } from './entities/notification.entity';
 import { NotificationsGateway } from './notifications.gateway';
 import { JwtModule } from '@nestjs/jwt';
+import { ChatRoom } from 'src/chat-rooms/entities/chat-room.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Notification]), JwtModule],
+  imports: [TypeOrmModule.forFeature([User, Notification, ChatRoom]), JwtModule],
   controllers: [NotificationsController],
   providers: [NotificationsService, NotificationsGateway],
   exports: [NotificationsService, NotificationsGateway],
