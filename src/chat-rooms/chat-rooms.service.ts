@@ -84,7 +84,7 @@ export class ChatRoomsService {
     });
   }
 
-  async findNicknameByUserId(userId: number): Promise<String> {
+  async findNicknameByUserId(userId: number): Promise<string> {
     const user = await this.userRepository.findOne({ where: { id: userId }, select: ['nickname'] });
     if (!user) {
       throw new UnauthorizedException('존재하지 않는 유저입니다.');
