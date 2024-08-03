@@ -6,6 +6,7 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { swaggerBuilder, swaggerOptions } from './configs/swagger.config';
 import { LoggingInterceptor } from './common/interceptors/logging/logging.interceptor';
 import { HttpErrorFilter } from './common/exception-filters/http-error.filter';
+import { ResponseInterceptor } from './common/interceptors/response/response.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,6 +16,7 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.useGlobalInterceptors(new LoggingInterceptor());
+  app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalFilters(new HttpErrorFilter());
   app.enableCors();
 
