@@ -62,8 +62,7 @@ export class AuthService {
   }
 
   async signUp(signUpDto: SignUpDto) {
-    const { phoneNum, password, profileImageUrls, ...userData } = signUpDto;
-    let { interests, techs } = signUpDto;
+    let { phoneNum, password, profileImageUrls, interests, techs, ...userData } = signUpDto;
 
     // 전화번호 인증 확인
     const verifiedPhoneNum = await this.redisService.get(`verified_${phoneNum}`);
