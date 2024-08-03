@@ -42,4 +42,24 @@ export class LocationService {
 
     return this.locationRepository.save(location);
   }
+
+  // 거리 계산 테스트를 위한 메서드 추가
+  async testCalculateDistance(userId1: number, userId2: number): Promise<number> {
+    const location1 = await this.locationRepository.findOne({ where: { user: { id: userId1 } } });
+    const location2 = await this.locationRepository.findOne({ where: { user: { id: userId2 } } });
+
+    if (!location1 || !location2) {
+      throw new Error('One or both users not found');
+    }
+
+    const distance = this.calculateDistance(
+      location1.latitude,
+      location1.longitude,
+      location2.latitude,
+      location2.longitude,
+    );
+    console.log(`User ${userId1}와 User ${userId2} 간의 거리: ${distance} km`);
+
+    return distance;
+  }
 }
