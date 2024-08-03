@@ -23,6 +23,7 @@ import { Heart } from './matchings/entities/heart.entity';
 import { HeartResetController } from './matchings/heart-reset.controller';
 import { HeartResetService } from './matchings/heart-reset.service';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ImageModule } from './images/image.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -49,6 +50,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     TechModule,
     SmsModule,
     S3Module,
+    ImageModule,
     ScheduleModule.forRoot(),
   ],
   controllers: [AppController, HeartResetController],
