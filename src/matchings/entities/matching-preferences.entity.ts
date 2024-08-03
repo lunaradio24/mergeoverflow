@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+} from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { PreferredGender } from '../types/preferred-gender.type';
 import { PreferredRegion } from '../types/preferred-region.type';
@@ -13,6 +21,9 @@ import { PreferredHeight } from '../types/preferred-height.type';
 export class MatchingPreferences {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({ type: 'int', nullable: false })
+  userId: number;
 
   @Column({ type: 'enum', enum: PreferredCodingLevel, nullable: true })
   codingLevel: PreferredCodingLevel;
@@ -47,6 +58,7 @@ export class MatchingPreferences {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.matchingPreferences, { nullable: false })
+  @ManyToOne(() => User, (user) => user.matchingPreferences, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: User;
 }

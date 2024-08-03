@@ -1,15 +1,15 @@
-import { setSeederFactory } from 'typeorm-extension';
-import { User } from '../../src/users/entities/user.entity';
 import { Faker } from '@faker-js/faker';
-import { getRandomInt } from 'src/utils/functions/get-random-int.function';
+import { MAX_BIRTH_YEAR, MAX_HEIGHT, MIN_BIRTH_YEAR, MIN_HEIGHT } from 'seeds/constants/user.seed.constant';
+import { setSeederFactory } from 'typeorm-extension';
+
+import { User } from '../../src/users/entities/user.entity';
 import { Gender } from '../../src/users/types/Gender.type';
-import { Frequency } from '../../src/users/types/frequency.type';
-import { Religion } from '../../src/users/types/religion.type';
-import { Mbti } from '../../src/users/types/mbti.type';
 import { BodyShape } from '../../src/users/types/bodyshape.type';
+import { Frequency } from '../../src/users/types/frequency.type';
+import { Mbti } from '../../src/users/types/mbti.type';
 import { Pet } from '../../src/users/types/pet.type';
 import { Region } from '../../src/users/types/region.type';
-import { MIN_BIRTH_YEAR, MAX_BIRTH_YEAR, MIN_HEIGHT, MAX_HEIGHT } from 'seeds/constants/seeding-user.constant';
+import { Religion } from '../../src/users/types/religion.type';
 
 export const userFactory = setSeederFactory(User, (faker: Faker) => {
   const user = new User();

@@ -33,14 +33,14 @@ export class ChatRoom {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.chatRoomsAsUser1)
+  @ManyToOne(() => User, (user) => user.chatRoomsAsUser1, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user1_id' })
   user1: User;
 
-  @ManyToOne(() => User, (user) => user.chatRoomsAsUser2)
+  @ManyToOne(() => User, (user) => user.chatRoomsAsUser2, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user2_id' })
   user2: User;
 
-  @OneToMany(() => ChatMessage, (message) => message.room)
+  @OneToMany(() => ChatMessage, (message) => message.room, { cascade: true })
   messages: ChatMessage[];
 }
