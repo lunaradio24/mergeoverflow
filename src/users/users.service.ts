@@ -7,7 +7,7 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 import { Account } from 'src/auth/entities/account.entity';
 import { CheckNicknameDto } from './dto/check-nickname.dto';
 import { compare, hash } from 'bcrypt';
-import { ProfileImage } from './entities/profile-image.entity';
+import { ProfileImage } from '../images/entities/profile-image.entity';
 import { S3Service } from 'src/s3/s3.service';
 import { ImageService } from 'src/images/image.service';
 

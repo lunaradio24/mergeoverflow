@@ -3,9 +3,6 @@ import { UsersService } from './users.service';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { CheckNicknameDto } from './dto/check-nickname.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Roles } from 'src/utils/decorators/roles.decorator';
-import { Role } from 'src/auth/types/role.type';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 
 @Controller('users')

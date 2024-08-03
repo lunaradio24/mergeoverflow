@@ -30,7 +30,7 @@ export class Heart {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToOne(() => User, (user) => user.hearts)
+  @OneToOne(() => User, (user) => user.hearts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: User;
 }

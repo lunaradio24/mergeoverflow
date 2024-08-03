@@ -1,5 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { UserToTech } from './user-to-tech.entity';
+import { UserToTech } from '../../users/entities/user-to-tech.entity';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 @Entity({ name: 'techs' })
@@ -12,6 +12,6 @@ export class Tech {
   @Column({ unique: true })
   techName: string;
 
-  @OneToMany(() => UserToTech, (userToTech) => userToTech.tech)
+  @OneToMany(() => UserToTech, (userToTech) => userToTech.tech, { cascade: true })
   userToTechs: UserToTech[];
 }

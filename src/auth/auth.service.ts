@@ -20,7 +20,7 @@ import { ConfigService } from '@nestjs/config';
 import { compare, hash } from 'bcrypt';
 import { SignInDto } from './dto/sign-in.dto';
 import { CODE_TTL, IMAGE_LIMIT, MAX_INTERESTS, MAX_TECHS, MIN_INTERESTS, MIN_TECHS } from './constants/auth.constants';
-import { ProfileImage } from 'src/users/entities/profile-image.entity';
+import { ProfileImage } from 'src/images/entities/profile-image.entity';
 
 @Injectable()
 export class AuthService {
@@ -59,7 +59,8 @@ export class AuthService {
   }
 
   async signUp(signUpDto: SignUpDto) {
-    let { phoneNum, password, interests, techs, profileImageUrls, ...userData } = signUpDto;
+    const { phoneNum, password, profileImageUrls, ...userData } = signUpDto;
+    let { interests, techs } = signUpDto;
 
     // 전화번호 인증 확인
     const verifiedPhoneNum = await this.redisService.get(`verified_${phoneNum}`);
@@ -139,7 +140,7 @@ export class AuthService {
         const userProfileImages = profileImageUrls.map((url) => {
           const userProfileImage = new ProfileImage();
           userProfileImage.userId = savedUser.id;
-          userProfileImage.image = url;
+          userProfileImage.imageUrl = url;
           return userProfileImage;
         });
         await queryRunner.manager.save(userProfileImages);

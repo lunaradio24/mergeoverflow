@@ -32,7 +32,7 @@ export class Account {
 
   @IsOptional()
   @IsString()
-  @Column({ type: 'varchar', default: 'local'})
+  @Column({ type: 'varchar', default: 'local' })
   provider: string;
 
   @IsOptional()
@@ -49,6 +49,6 @@ export class Account {
   @DeleteDateColumn()
   deletedAt: Date;
 
-  @OneToOne(() => User, (user) => user.account, { onDelete: 'CASCADE' })
+  @OneToOne(() => User, (user) => user.account, { cascade: true })
   user: User;
 }
