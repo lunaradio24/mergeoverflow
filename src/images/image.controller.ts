@@ -37,14 +37,13 @@ export class ImageController {
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   async createImage(@Request() req: any, @UploadedFile() file: Express.MulterS3.File) {
-    const userId = req.user;
-
-    const imageUrl = await this.imageService.createImage(userId, file);
+    const userId = req.user.id;
+    const savedImage = await this.imageService.createImage(userId, file);
 
     return {
       statusCode: HttpStatus.CREATED,
       message: '이미지 생성이 성공적으로 완료되었습니다.',
-      imageUrl,
+      data: { userId, imageId: savedImage.id, imageUrl: savedImage.imageUrl },
     };
   }
 
@@ -63,7 +62,7 @@ export class ImageController {
     return {
       statusCode: HttpStatus.OK,
       message: '이미지 변경이 성공적으로 완료되었습니다.',
-      imageUrl,
+      data: { userId, imageId, imageUrl },
     };
   }
 
@@ -73,12 +72,11 @@ export class ImageController {
   async deleteImage(@Request() req: any, @Param('imageId') imageId: number) {
     const userId = req.user.id;
 
-    const deleteUrl = await this.imageService.deleteImage(userId, imageId);
+    await this.imageService.deleteImage(userId, imageId);
 
     return {
       statusCode: HttpStatus.OK,
       message: '삭제가 성공적으로 완료되었습니다.',
-      deleteUrl,
     };
   }
 }

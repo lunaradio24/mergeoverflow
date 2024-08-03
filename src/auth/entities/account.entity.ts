@@ -49,6 +49,6 @@ export class Account {
   @DeleteDateColumn()
   deletedAt: Date;
 
-  @OneToOne(() => User, (user) => user.account, { onDelete: 'CASCADE' })
+  @OneToOne(() => User, (user) => user.account, { cascade: true })
   user: User;
 }

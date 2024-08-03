@@ -14,7 +14,7 @@ import { UsersModule } from '../users/users.module';
 import { UserToInterest } from 'src/users/entities/user-to-interest.entity';
 import { UserToTech } from 'src/users/entities/user-to-tech.entity';
 import { SmsModule } from './sms/sms.module';
-import { ProfileImage } from 'src/users/entities/profile-image.entity';
+import { ProfileImage } from 'src/images/entities/profile-image.entity';
 import { Heart } from 'src/matchings/entities/heart.entity';
 import { GithubPassportStrategy, GooglePassportStrategy } from './strategies/social.strategy';
 

@@ -111,14 +111,14 @@
         })
 
         notifySocket.on('exitNotify', (data) => {
-            const { relationId, type } = data
-            notifySocket.emit('exitNotify', { type, relationId });
+            const { partnerId, type, partnerNickname } = data
+            notifySocket.emit('exitNotify', { type, partnerId, partnerNickname });
         })
 
         notifySocket.on('reception', (data) => {
             const { type, message } = data
             const item = document.createElement('li');
-            item.textContent = `[알림]${type}:${message}`;
+            item.textContent = `[알림][${type}] ${message}`;
             notificationsList.appendChild(item);
         })
 

@@ -37,7 +37,7 @@ export class Matching {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.matchings)
+  @ManyToOne(() => User, (user) => user.matchings, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: User;
 }
