@@ -40,17 +40,23 @@ export class LocationService {
       longitude,
     });
 
+    console.log(`User ID: ${userId}, Latitude: ${latitude}, Longitude: ${longitude}`); // 로그 출력
+
     return this.locationRepository.save(location);
+  }
+
+  async getLocationByUserId(userId: number): Promise<Location> {
+    const location = await this.locationRepository.findOne({ where: { user: { id: userId } } });
+    if (!location) {
+      throw new Error('Location not found for user');
+    }
+    return location;
   }
 
   // 거리 계산 테스트를 위한 메서드 추가
   async testCalculateDistance(userId1: number, userId2: number): Promise<number> {
-    const location1 = await this.locationRepository.findOne({ where: { user: { id: userId1 } } });
-    const location2 = await this.locationRepository.findOne({ where: { user: { id: userId2 } } });
-
-    if (!location1 || !location2) {
-      throw new Error('One or both users not found');
-    }
+    const location1 = await this.getLocationByUserId(userId1);
+    const location2 = await this.getLocationByUserId(userId2);
 
     const distance = this.calculateDistance(
       location1.latitude,
@@ -61,10 +67,5 @@ export class LocationService {
     console.log(`User ${userId1}와 User ${userId2} 간의 거리: ${distance} km`);
 
     return distance;
-  }
-
-  // 사용자 ID로 위치 가져오는 메서드 추가
-  async getLocationByUserId(userId: number): Promise<Location> {
-    return this.locationRepository.findOne({ where: { user: { id: userId } } });
   }
 }

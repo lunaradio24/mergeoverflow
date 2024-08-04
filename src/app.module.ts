@@ -24,6 +24,7 @@ import { Heart } from './matchings/entities/heart.entity';
 import { HeartResetController } from './matchings/heart-reset.controller';
 import { HeartResetService } from './matchings/heart-reset.service';
 import { ScheduleModule } from '@nestjs/schedule';
+import { LocationModule } from './location/location.module';
 
 @Module({
   imports: [
@@ -32,7 +33,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       validationSchema: validationSchema,
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'static'), // 프로젝트 루트 디렉토리를 가리키도록 설정
+      rootPath: join(__dirname, '..', 'static'), // static 폴더를 가리키도록 설정
       serveRoot: '/', // 정적 파일의 접근 경로 설정
     }),
     MailerModule.forRootAsync(mailerModuleOptions),
@@ -49,6 +50,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     SmsModule,
     S3Module,
     ImageModule,
+    LocationModule,
     ScheduleModule.forRoot(),
   ],
   controllers: [AppController, HeartResetController],
