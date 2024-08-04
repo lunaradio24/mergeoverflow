@@ -30,7 +30,12 @@ export class ChatRoomsService {
   async exitChatRoom(userId: number, roomId: number): Promise<void> {
     await this.isUserInChatRoom(userId, roomId);
     const relationId = await this.findPartnerUserId(roomId);
-    this.notificationsGateway.server.emit('exitNotify', { relationId, type: NotificationType.EXIT });
+    const partnerId = userId === relationId.user1Id ? relationId.user2Id : relationId.user1Id;
+
+    const partnerNickname = await this.findNicknameByUserId(partnerId);
+    this.notificationsGateway.server
+      .to(userId.toString())
+      .emit('exitNotify', { partnerId, type: NotificationType.EXIT, partnerNickname });
     this.chatRoomsGateway.server.emit('exit', { roomId });
     await this.chatRoomRepository.delete({ id: roomId });
   }
