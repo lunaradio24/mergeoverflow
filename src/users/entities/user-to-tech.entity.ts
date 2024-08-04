@@ -1,5 +1,5 @@
 import { JoinColumn, ManyToOne, PrimaryColumn, Entity } from 'typeorm';
-import { Tech } from '../../tech/entities/tech.entity';
+import { Tech } from '../../techs/entities/tech.entity';
 import { User } from './user.entity';
 import { IsInt, IsNotEmpty } from 'class-validator';
 

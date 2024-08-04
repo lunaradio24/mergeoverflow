@@ -9,8 +9,8 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { User } from 'src/users/entities/user.entity';
 import { UserToInterest } from 'src/users/entities/user-to-interest.entity';
 import { UserToTech } from 'src/users/entities/user-to-tech.entity';
-import { Tech } from 'src/tech/entities/tech.entity';
-import { Interest } from 'src/interest/entities/interest.entity';
+import { Tech } from 'src/techs/entities/tech.entity';
+import { Interest } from 'src/interests/entities/interest.entity';
 import { ProfileImage } from 'src/images/entities/profile-image.entity';
 import { Account } from 'src/auth/entities/account.entity';
 import { ChatMessage } from 'src/chat-rooms/entities/chat-message.entity';
@@ -30,7 +30,8 @@ import UserToInterestSeeder from './seeders/user-to-interest.seeder';
 import UserToTechSeeder from './seeders/user-to-tech.seeder';
 import HeartSeeder from './seeders/heart.seeder';
 import LocationSeeder from './seeders/location.seeder';
-import { Location } from 'src/location/entities/location.entity';
+import { Location } from 'src/locations/entities/location.entity';
+import { locationFactory } from './factories/location.factory';
 
 (async () => {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -72,7 +73,7 @@ import { Location } from 'src/location/entities/location.entity';
       HeartSeeder,
       LocationSeeder,
     ],
-    factories: [accountFactory, userFactory, profileImageFactory],
+    factories: [accountFactory, userFactory, profileImageFactory, locationFactory],
   };
 
   const dataSource = new DataSource(options);
