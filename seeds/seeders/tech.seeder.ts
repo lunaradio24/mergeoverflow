@@ -1,4 +1,4 @@
-import { Tech } from 'src/tech/entities/tech.entity';
+import { Tech } from 'src/techs/entities/tech.entity';
 import { DataSource } from 'typeorm';
 import { Seeder } from 'typeorm-extension';
 
