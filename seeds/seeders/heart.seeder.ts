@@ -3,7 +3,6 @@ import { DataSource } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Heart } from 'src/matchings/entities/heart.entity';
 import { NUM_CREATING_ACCOUNTS } from 'seeds/constants/account.seed.constant';
-import { INITIAL_HEARTS } from 'seeds/constants/heart.seed.constant';
 
 export default class HeartSeeder implements Seeder {
   public async run(dataSource: DataSource): Promise<void> {

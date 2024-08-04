@@ -1,4 +1,4 @@
-import { Interest } from 'src/interest/entities/interest.entity';
+import { Interest } from 'src/interests/entities/interest.entity';
 import { DataSource } from 'typeorm';
 import { Seeder } from 'typeorm-extension';
 

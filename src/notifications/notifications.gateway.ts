@@ -65,14 +65,18 @@ export class NotificationsGateway
   @SubscribeMessage('exitNotify')
   async exitNotificationHandler(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() data: { relationId: { user1Id: number; user2Id: number }; type: NotificationType },
+    @MessageBody() data: { partnerId: number; type: NotificationType; partnerNickname: string },
   ) {
-    const { type, relationId } = data;
-    const partnerId = socket.data.userId === relationId.user1Id ? relationId.user2Id : relationId.user1Id;
+    const { type, partnerId, partnerNickname } = data;
 
-    const message = `[알림]${await socket.data.nickname}님과의 연결이 끊어졌습니다.`;
+    let message = `${await socket.data.nickname}님과의 연결이 끊어졌습니다.`;
     this.server.to(partnerId.toString()).emit('reception', { type, message });
+    await this.notificationsService.saveNotification(partnerId, message, type);
+
+    message = `${partnerNickname}님과의 연결이 끊어졌습니다.`;
+    this.server.to(socket.data.userId.toString()).emit('reception', { type, message });
     await this.notificationsService.saveNotification(socket.data.userId, message, type);
-    this.logger.log(`[알림]${await socket.data.nickname}:[${type}]${message}`);
+
+    this.logger.log(`[알림][${type}]${await socket.data.nickname}님께서 ${partnerNickname}님과의 연결을 끊으셨습니다.`);
   }
 }

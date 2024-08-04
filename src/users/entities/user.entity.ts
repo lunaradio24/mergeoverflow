@@ -26,7 +26,7 @@ import { ChatRoom } from '../../chat-rooms/entities/chat-room.entity';
 import { Account } from '../../auth/entities/account.entity';
 import { IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { MatchingPreferences } from 'src/matchings/entities/matching-preferences.entity';
-import { Location } from 'src/location/entities/location.entity';
+import { Location } from 'src/locations/entities/location.entity';
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn()

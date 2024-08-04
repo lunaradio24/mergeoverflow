@@ -9,9 +9,9 @@ import { ChatRoomsModule } from 'src/chat-rooms/chat-rooms.module';
 import { NotificationsModule } from 'src/notifications/notifications.module';
 import { MatchingPreferences } from './entities/matching-preferences.entity';
 import { HeartResetService } from './heart-reset.service';
-import { Location } from '../location/entities/location.entity';
-import { LocationService } from '../location/location.service';
-import { LocationController } from '../location/location.controller';
+import { Location } from '../locations/entities/location.entity';
+import { LocationService } from '../locations/location.service';
+import { LocationController } from '../locations/location.controller';
 
 @Module({
   imports: [
