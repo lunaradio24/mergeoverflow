@@ -6,6 +6,7 @@ import { PreferredReligion } from '../types/preferred-religion.type';
 import { PreferredFrequency } from '../types/preferred-frequency.type';
 import { PreferredAgeGap } from '../types/preferred-age-gap.type';
 import { PreferredHeight } from '../types/preferred-height.type';
+import { PreferredDistance } from '../types/preferred-distance.type';
 
 export class UpdateMatchingPreferencesDto {
   @IsOptional()
@@ -41,4 +42,10 @@ export class UpdateMatchingPreferencesDto {
   @IsOptional()
   @IsEnum(PreferredReligion)
   religion?: PreferredReligion;
+
+  @IsOptional()
+  @IsEnum(PreferredDistance, {
+    message: 'distance은 10km 이내, 20km 이내, 50km 이내, 100km 이내, 상관 없음 중에 선택해주세요',
+  })
+  distance?: PreferredDistance;
 }
