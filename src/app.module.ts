@@ -24,7 +24,7 @@ import { Heart } from './matchings/entities/heart.entity';
 import { HeartResetController } from './matchings/heart-reset.controller';
 import { HeartResetService } from './matchings/heart-reset.service';
 import { ScheduleModule } from '@nestjs/schedule';
-import { LocationModule } from './location/location.module';
+import { LocationModule } from './locations/location.module';
 
 @Module({
   imports: [
