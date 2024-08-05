@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { runSeeders, SeederOptions } from 'typeorm-extension';
 import { AppModule } from '../src/app.module';
-import { userFactory } from './factories/user.factory';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { User } from 'src/users/entities/user.entity';
 import { UserToInterest } from 'src/users/entities/user-to-interest.entity';
@@ -18,9 +17,13 @@ import { ChatRoom } from 'src/chat-rooms/entities/chat-room.entity';
 import { Heart } from 'src/matchings/entities/heart.entity';
 import { Matching } from 'src/matchings/entities/matching.entity';
 import { Notification } from 'src/notifications/entities/notification.entity';
-import { accountFactory } from './factories/account.factory';
-import { profileImageFactory } from './factories/profile-image.factory';
+import { Location } from 'src/locations/entities/location.entity';
 import { MatchingPreferences } from 'src/matchings/entities/matching-preferences.entity';
+import { accountFactory } from './factories/account.factory';
+import { userFactory } from './factories/user.factory';
+import { profileImageFactory } from './factories/profile-image.factory';
+import { locationFactory } from './factories/location.factory';
+import { matchingPreferenceFactory } from './factories/matching-preference.factory';
 import AccountSeeder from './seeders/account.seeder';
 import UserSeeder from './seeders/user.seeder';
 import ProfileImageSeeder from './seeders/profile-image.seeder';
@@ -30,8 +33,7 @@ import UserToInterestSeeder from './seeders/user-to-interest.seeder';
 import UserToTechSeeder from './seeders/user-to-tech.seeder';
 import HeartSeeder from './seeders/heart.seeder';
 import LocationSeeder from './seeders/location.seeder';
-import { Location } from 'src/locations/entities/location.entity';
-import { locationFactory } from './factories/location.factory';
+import MatchingPreferenceSeeder from './seeders/matching-preference.seeder';
 
 (async () => {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -72,8 +74,9 @@ import { locationFactory } from './factories/location.factory';
       UserToTechSeeder,
       HeartSeeder,
       LocationSeeder,
+      MatchingPreferenceSeeder,
     ],
-    factories: [accountFactory, userFactory, profileImageFactory, locationFactory],
+    factories: [accountFactory, userFactory, profileImageFactory, locationFactory, matchingPreferenceFactory],
   };
 
   const dataSource = new DataSource(options);
@@ -82,7 +85,7 @@ import { locationFactory } from './factories/location.factory';
   // Run seeders in order
   await runSeeders(dataSource, { seeds: [AccountSeeder] });
   await runSeeders(dataSource, { seeds: [UserSeeder] });
-  await runSeeders(dataSource, { seeds: [ProfileImageSeeder, HeartSeeder, LocationSeeder] });
+  await runSeeders(dataSource, { seeds: [ProfileImageSeeder, HeartSeeder, LocationSeeder, MatchingPreferenceSeeder] });
   await runSeeders(dataSource, { seeds: [InterestSeeder, TechSeeder] });
   await runSeeders(dataSource, { seeds: [UserToInterestSeeder, UserToTechSeeder] });
 
