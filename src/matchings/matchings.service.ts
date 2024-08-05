@@ -14,7 +14,7 @@ import { Gender } from '../users/types/Gender.type';
 import { PreferredAgeGap } from './types/preferred-age-gap.type';
 import { PreferredHeight } from './types/preferred-height.type';
 import { Heart } from './entities/heart.entity';
-import { LocationService } from 'src/location/location.service';
+import { LocationService } from '../locations/location.service';
 import { PreferredDistance } from './types/preferred-distance.type';
 
 @Injectable()

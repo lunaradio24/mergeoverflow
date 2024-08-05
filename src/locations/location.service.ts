@@ -34,29 +34,37 @@ export class LocationService {
       throw new Error('User not found');
     }
 
-    const location = this.locationRepository.create({
-      user,
-      latitude,
-      longitude,
-    });
+    // 기존 위치 정보가 있는지 확인
+    let location = await this.locationRepository.findOne({ where: { userId } });
 
-    console.log(`User ID: ${userId}, Latitude: ${latitude}, Longitude: ${longitude}`); // 로그 출력
+    if (location) {
+      // 기존 위치 정보 업데이트
+      location.latitude = latitude;
+      location.longitude = longitude;
+    } else {
+      // 새로운 위치 정보 생성
+      location = this.locationRepository.create({
+        user,
+        latitude,
+        longitude,
+      });
+    }
 
     return this.locationRepository.save(location);
   }
 
   async getLocationByUserId(userId: number): Promise<Location> {
-    const location = await this.locationRepository.findOne({ where: { user: { id: userId } } });
-    if (!location) {
-      throw new Error('Location not found for user');
-    }
-    return location;
+    return this.locationRepository.findOne({ where: { userId } });
   }
 
   // 거리 계산 테스트를 위한 메서드 추가
   async testCalculateDistance(userId1: number, userId2: number): Promise<number> {
-    const location1 = await this.getLocationByUserId(userId1);
-    const location2 = await this.getLocationByUserId(userId2);
+    const location1 = await this.locationRepository.findOne({ where: { user: { id: userId1 } } });
+    const location2 = await this.locationRepository.findOne({ where: { user: { id: userId2 } } });
+
+    if (!location1 || !location2) {
+      throw new Error('One or both users not found');
+    }
 
     const distance = this.calculateDistance(
       location1.latitude,
