@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from './user.entity';
+import { User } from '../../users/entities/user.entity';
 import { IsInt, IsNotEmpty, IsString } from 'class-validator';
 
 @Entity({ name: 'profile_images' })
@@ -23,7 +23,7 @@ export class ProfileImage {
   @IsNotEmpty()
   @IsString()
   @Column({ type: 'varchar' })
-  image: string;
+  imageUrl: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -31,7 +31,7 @@ export class ProfileImage {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.images)
+  @ManyToOne(() => User, (user) => user.images, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: User;
 }

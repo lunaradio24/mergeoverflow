@@ -1,13 +1,11 @@
 import {
   Column,
-  CreateDateColumn,
   Entity,
   JoinColumn,
-  JoinTable,
-  ManyToMany,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Gender } from '../types/gender.type';
@@ -17,10 +15,9 @@ import { BodyShape } from '../types/bodyshape.type';
 import { Mbti } from '../types/mbti.type';
 import { Religion } from '../types/religion.type';
 import { Frequency } from '../types/frequency.type';
-import { Interest } from './interest.entity';
 import { UserToInterest } from './user-to-interest.entity';
 import { UserToTech } from './user-to-tech.entity';
-import { ProfileImage } from './profile-image.entity';
+import { ProfileImage } from '../../images/entities/profile-image.entity';
 import { Notification } from '../../notifications/entities/notification.entity';
 import { Matching } from '../../matchings/entities/matching.entity';
 import { Heart } from '../../matchings/entities/heart.entity';
@@ -28,7 +25,8 @@ import { ChatMessage } from '../../chat-rooms/entities/chat-message.entity';
 import { ChatRoom } from '../../chat-rooms/entities/chat-room.entity';
 import { Account } from '../../auth/entities/account.entity';
 import { IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
-
+import { MatchingPreferences } from 'src/matchings/entities/matching-preferences.entity';
+import { Location } from 'src/locations/entities/location.entity';
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn()
@@ -109,34 +107,40 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => UserToInterest, (userToInterest) => userToInterest.user)
+  @OneToMany(() => UserToInterest, (userToInterest) => userToInterest.user, { cascade: true })
   userToInterests: UserToInterest[];
 
-  @OneToMany(() => UserToTech, (userToTech) => userToTech.user)
+  @OneToMany(() => UserToTech, (userToTech) => userToTech.user, { cascade: true })
   userToTechs: UserToTech[];
 
-  @OneToMany(() => ProfileImage, (image) => image.user)
+  @OneToMany(() => ProfileImage, (image) => image.user, { cascade: true })
   images: ProfileImage[];
 
-  @OneToMany(() => Notification, (notification) => notification.user)
+  @OneToMany(() => Notification, (notification) => notification.user, { cascade: true })
   notifications: Notification[];
 
-  @OneToMany(() => Matching, (matching) => matching.user)
+  @OneToMany(() => Matching, (matching) => matching.user, { cascade: true })
   matchings: Matching[];
 
-  @OneToOne(() => Heart, (heart) => heart.user)
+  @OneToOne(() => Heart, (heart) => heart.user, { cascade: true })
   hearts: Heart;
 
-  @OneToMany(() => ChatMessage, (message) => message.sender)
+  @OneToMany(() => ChatMessage, (message) => message.sender, { cascade: true })
   messages: ChatMessage[];
 
-  @OneToMany(() => ChatRoom, (chatRoom) => chatRoom.user1)
+  @OneToMany(() => ChatRoom, (chatRoom) => chatRoom.user1, { cascade: true })
   chatRoomsAsUser1: ChatRoom[];
 
-  @OneToMany(() => ChatRoom, (chatRoom) => chatRoom.user2)
+  @OneToMany(() => ChatRoom, (chatRoom) => chatRoom.user2, { cascade: true })
   chatRoomsAsUser2: ChatRoom[];
 
-  @OneToOne(() => Account, (account) => account.user)
+  @OneToOne(() => Account, (account) => account.user, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'account_id', referencedColumnName: 'id' })
   account: Account;
+
+  @OneToOne(() => MatchingPreferences, (matchingPreferences) => matchingPreferences.user, { cascade: true })
+  matchingPreferences: MatchingPreferences;
+
+  @OneToOne(() => Location, (location) => location.user, { cascade: true })
+  location: Location;
 }

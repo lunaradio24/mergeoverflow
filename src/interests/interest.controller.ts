@@ -5,10 +5,11 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/utils/decorators/roles.decorator';
 import { Role } from 'src/auth/types/role.type';
 
-@Controller('interest')
+@Controller('interests')
 export class InterestController {
   constructor(private readonly interestService: InterestService) {}
 
+  // 관심사 등록
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN) // 관리자만
   @Post()
@@ -22,6 +23,7 @@ export class InterestController {
     };
   }
 
+  // 관심사 목록 조회
   @Get()
   async findAll() {
     const data = await this.interestService.findAll();
@@ -33,6 +35,7 @@ export class InterestController {
     };
   }
 
+  // 관심사 수정
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN) // 관리자만
   @Patch(':id')
@@ -45,6 +48,7 @@ export class InterestController {
     };
   }
 
+  // 관심사 삭제
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN) // 관리자만
   @Delete(':id')

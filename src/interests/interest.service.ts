@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { InjectRepository } from '@nestjs/typeorm';
-import { Interest } from '../users/entities/interest.entity';
+import { Interest } from './entities/interest.entity';
 import { Repository } from 'typeorm';
 import { InterestDto } from 'src/users/dto/interest.dto';
 import { Account } from 'src/auth/entities/account.entity';
@@ -75,7 +75,7 @@ export class InterestService {
       throw new BadRequestException('존재하지 않는 Id입니다.');
     }
 
-    await this.interestRepository.update({ id }, { interest: interestDto.interest });
+    await this.interestRepository.update({ id }, { interestName: interestDto.interestName });
 
     const updateInterest = await this.interestRepository.findOne({
       where: { id },

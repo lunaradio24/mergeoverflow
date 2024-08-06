@@ -12,12 +12,6 @@ export class ChatRoomsController {
     return await this.chatRoomsService.getUserChatRooms(userId);
   }
 
-  @Post(':roomId')
-  async joinChatRoom(@Param('roomId') roomId: number, @Request() req) {
-    const userId = req.user.id;
-    return await this.chatRoomsService.joinChatRoom(userId, roomId);
-  }
-
   @Delete(':roomId')
   async exitChatRoom(@Param('roomId') roomId: number, @Request() req) {
     const userId = req.user.id;

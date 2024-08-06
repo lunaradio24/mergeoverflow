@@ -41,7 +41,7 @@ export class Notification {
   @UpdateDateColumn({ name: 'read_at' })
   readAt: Date;
 
-  @ManyToOne(() => User, (user) => user.notifications)
+  @ManyToOne(() => User, (user) => user.notifications, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: User;
 }

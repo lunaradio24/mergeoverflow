@@ -9,7 +9,13 @@
 
 <body>
     <h1>WebSocket Chat</h1>
-
+    <!-- Join Section -->
+    <div>
+        <label for="joinRoomId">JoinRoom ID:</label>
+        <input type="number" id="joinRoomId">
+    </div>
+    <button id="joinRoomButton">JoinRoom</button>
+    <!-- Message Section -->
     <div>
         <label for="sendRoomId">Room ID:</label>
         <input type="number" id="sendRoomId">
@@ -19,7 +25,7 @@
         <input type="text" id="message">
     </div>
     <button id="sendMessageButton">Send Message</button>
-    <div>
+    <div id>
         <ul id="messages"></ul>
     </div>
     <!-- Notification Section -->
@@ -30,7 +36,7 @@
 
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script>
-        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjQsInBob25lTnVtIjoiMDEwLTM2NzItNzQyMiIsImlhdCI6MTcyMjUwNzY2NiwiZXhwIjoxNzIyNTUwODY2fQ.cS6tpKnjiafH-O6O7sedKFU33H07mX3J0usRqf5HgOk"
+        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAxLCJpYXQiOjE3MjI2Nzc4MDUsImV4cCI6MTcyMzU0MTgwNX0.HlPts__mCr6kths1JKHyJKnyp9Vk2FvkMxNxi7s5DlE"
         const chatSocket = io('ws://localhost:3000/chat', {
             auth: {
                 token
@@ -42,21 +48,41 @@
             }
         });
 
+        const joinRoomButton = document.getElementById('joinRoomButton');
         const sendMessageButton = document.getElementById('sendMessageButton');
         const messagesList = document.getElementById('messages');
         const notificationsList = document.getElementById('notifications');
+        let joinCheck = false;
+
+        joinRoomButton.addEventListener('click', () => {
+            const roomId = document.getElementById('joinRoomId').value;
+            chatSocket.emit('join', { roomId, joinCheck });
+        });
 
         sendMessageButton.addEventListener('click', () => {
             const roomId = document.getElementById('sendRoomId').value;
             const message = document.getElementById('message').value;
             chatSocket.emit('message', { roomId: Number(roomId), message: message });
-            notifySocket.emit('notify', { message, type: 'message' })
         });
 
         chatSocket.on('join', (data) => {
-            const { userId, roomId } = data
-            chatSocket.emit('join', { userId, roomId });
+            const item = document.createElement('h1');
+            item.textContent = `${data.nickname}님이 입장했습니다.`;
+            messagesList.appendChild(item);
+            chatSocket.emit('requestHistory', { roomId: data.roomId });
+
         })
+
+        chatSocket.on('history', (data) => {
+            if (!joinCheck) {
+                data.messages.forEach((msg) => {
+                    const item = document.createElement('li');
+                    item.textContent = `${msg.nickname}:${msg.text}`;
+                    messagesList.appendChild(item);
+                });
+            }
+            joinCheck = true
+        });
 
         chatSocket.on('createChatRoom', (data) => {
             const { chatRoomId, user1Id, user2Id } = data
@@ -67,7 +93,7 @@
         })
 
         chatSocket.on('exit', (data) => {
-            const { roomId } = data
+            const { roomId, type } = data
             chatSocket.emit('exit', { roomId });
         })
 
@@ -77,18 +103,28 @@
             messagesList.appendChild(item);
         });
 
-        notifySocket.on('notify', (data) => {
-            const { type, userId } = data
-            notifySocket.emit('notify', { type, userId });
+        notifySocket.on('likeNotify', (data) => {
+            const { type, userId, mergeRequesterId } = data
+            notifySocket.emit('likeNotify', { type, userId, mergeRequesterId });
+        })
+
+        notifySocket.on('mergeNotify', (data) => {
+            const { type, userId, targetUserId } = data
+            notifySocket.emit('mergeNotify', { type, userId, targetUserId });
+        })
+
+        notifySocket.on('exitNotify', (data) => {
+            const { partnerId, type, partnerNickname } = data
+            notifySocket.emit('exitNotify', { type, partnerId, partnerNickname });
+            // item.textContent = `[알림]${type}:${message}`;
+            // notificationsList.appendChild(item);
         })
 
         notifySocket.on('reception', (data) => {
             const { type, message } = data
             const item = document.createElement('li');
-            item.textContent = `Notification: ${type},${message}`;
+            item.textContent = `[알림][${type}]:${message}`;
             notificationsList.appendChild(item);
         })
     </script>
 </body>
-
-</html>

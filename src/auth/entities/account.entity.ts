@@ -9,26 +9,36 @@ import {
 } from 'typeorm';
 import { Role } from '../types/role.type';
 import { User } from '../../users/entities/user.entity';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 @Entity({ name: 'accounts' })
 export class Account {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   password: string;
 
   @IsEnum(Role)
   @Column({ type: 'enum', enum: Role, default: Role.USER })
   role: Role;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   phoneNum: string;
+
+  @IsOptional()
+  @IsString()
+  @Column({ type: 'varchar', default: 'local' })
+  provider: string;
+
+  @IsOptional()
+  @IsString()
+  @Column({ type: 'varchar', nullable: true })
+  providerId: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -39,6 +49,6 @@ export class Account {
   @DeleteDateColumn()
   deletedAt: Date;
 
-  @OneToOne(() => User, (user) => user.account)
+  @OneToOne(() => User, (user) => user.account, { cascade: true })
   user: User;
 }

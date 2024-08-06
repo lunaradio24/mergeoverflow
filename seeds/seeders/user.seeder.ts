@@ -2,7 +2,7 @@ import { Account } from 'src/auth/entities/account.entity';
 import { User } from '../../src/users/entities/user.entity';
 import { DataSource } from 'typeorm';
 import { Seeder, SeederFactoryManager } from 'typeorm-extension';
-import { NUM_CREATING_ACCOUNTS } from 'seeds/constants/seeding-account.constant';
+import { NUM_CREATING_ACCOUNTS } from 'seeds/constants/account.seed.constant';
 
 export default class UserSeeder implements Seeder {
   public async run(dataSource: DataSource, factoryManager: SeederFactoryManager): Promise<void> {
