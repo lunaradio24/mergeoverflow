@@ -2,7 +2,7 @@ import { setSeederFactory } from 'typeorm-extension';
 import { User } from '../../src/users/entities/user.entity';
 import { Faker } from '@faker-js/faker';
 import { getRandomInt } from 'src/utils/functions/get-random-int.function';
-import { Gender } from '../../src/users/types/Gender.type';
+import { Gender } from '../../src/users/types/gender.type';
 import { Frequency } from '../../src/users/types/frequency.type';
 import { Religion } from '../../src/users/types/religion.type';
 import { Mbti } from '../../src/users/types/mbti.type';
