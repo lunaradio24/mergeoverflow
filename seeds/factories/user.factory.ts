@@ -3,7 +3,7 @@ import { MAX_BIRTH_YEAR, MAX_HEIGHT, MIN_BIRTH_YEAR, MIN_HEIGHT } from 'seeds/co
 import { setSeederFactory } from 'typeorm-extension';
 
 import { User } from '../../src/users/entities/user.entity';
-import { Gender } from '../../src/users/types/Gender.type';
+import { Gender } from '../../src/users/types/gender.type';
 import { BodyShape } from '../../src/users/types/bodyshape.type';
 import { Frequency } from '../../src/users/types/frequency.type';
 import { Mbti } from '../../src/users/types/mbti.type';

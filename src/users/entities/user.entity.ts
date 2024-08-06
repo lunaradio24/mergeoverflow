@@ -8,7 +8,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Gender } from '../types/Gender.type';
+import { Gender } from '../types/gender.type';
 import { Region } from '../types/region.type';
 import { Pet } from '../types/pet.type';
 import { BodyShape } from '../types/bodyshape.type';

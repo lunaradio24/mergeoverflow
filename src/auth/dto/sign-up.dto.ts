@@ -12,7 +12,7 @@ import {
   MaxLength,
   IsOptional,
 } from 'class-validator';
-import { Gender } from '../../users/types/Gender.type';
+import { Gender } from '../../users/types/gender.type';
 import { Region } from '../../users/types/region.type';
 import { Pet } from '../../users/types/pet.type';
 import { BodyShape } from '../../users/types/bodyshape.type';
