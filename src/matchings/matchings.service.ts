@@ -10,7 +10,7 @@ import { NotificationsGateway } from 'src/notifications/notifications.gateway';
 import { NotificationType } from 'src/notifications/types/notification-type.type';
 import { MatchingPreferences } from './entities/matching-preferences.entity';
 import { PreferredGender } from './types/preferred-gender.type';
-import { Gender } from '../users/types/Gender.type';
+import { Gender } from '../users/types/gender.type';
 import { PreferredAgeGap } from './types/preferred-age-gap.type';
 import { PreferredHeight } from './types/preferred-height.type';
 import { Heart } from './entities/heart.entity';
