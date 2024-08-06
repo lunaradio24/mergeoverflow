@@ -5,7 +5,10 @@ on:
   workflow_run: # 특정 workflow가 실행됐을 때
     workflows: ['Last Project Nest.js CI'] # CI workflow
     types: [completed] # 완료 되었을 때
-    branches: [main] # main 브랜치
+    branches: [dev] # main 브랜치
+
+env:
+  PROJECT_DIR: /home/ubuntu/SP-last-Project
 
 jobs:
   deploy:
@@ -13,9 +16,29 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     # 작업을 실행 할 VM의 OS 지정
     runs-on: ubuntu-24.04
+    timeout-minutes: 3
 
     # 작업 내의 단위 작업(step)을 정의
     steps:
+      # 소스 코드 가져오기
+      - name: Checkout source code # step의 이름 지정 (선택 사항)
+        uses: actions/checkout@v4 # 소스 복사를 위해 미리 정의 된 workflow를 불러와서 사용
+
+      # VM에 Node.js 설치하기
+      - name: Setup Node.js environment # step의 이름 지정 (선택 사항)
+        uses: actions/setup-node@v4 # Node.js 설치를 위해 미리 정의 된 workflow를 불러와서 사용
+        with:
+          node-version: 20 # 설치 할 Node.js 버전 지정
+          cache: 'yarn' # npm 사용 시 'npm'
+
+      # 의존성 패키지 설치하기
+      - name: Install dependencies # step의 이름 지정 (선택 사항)
+        run: |
+
+          # package-lock.json 파일에 저장 된 버전 정보와 동일하게 설치
+          yarn --frozen-lockfile
+          yarn build
+
       # SSH 접속 후 명령을 통해서 배포 진행
       - name: Configure SSH
         run: |
@@ -34,5 +57,11 @@ jobs:
           SSH_KEY: ${{ secrets.AWS_EC2_PEM_KEY }}
           SSH_HOST: ${{ secrets.AWS_EC2_HOST }}
 
-      - name: Deploy to EC2
-        run: ssh ec2 'cd /home/ubuntu/SP-last-Project && git switch main && git pull && echo "${{ secrets.ENV }}" > .env && ./scripts/run.sh'
+      - name: Prepare to deploy
+        run: ssh ec2 'cd ${{ env.PROJECT_DIR }} && git switch dev && git pull && echo "${{ secrets.ENV }}" > .env'
+
+      - name: Copy file to EC2
+        run: rsync -avzP -e ssh ./dist ec2:${{ env.PROJECT_DIR }}/
+
+      - name: Restart PM2
+        run: ssh ec2 'cd ${{ env.PROJECT_DIR }} && ./scripts/run.sh'
