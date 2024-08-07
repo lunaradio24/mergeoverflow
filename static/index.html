@@ -1,130 +1,85 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebSocket Chat</title>
-</head>
-
-<body>
-    <h1>WebSocket Chat</h1>
-    <!-- Join Section -->
-    <div>
-        <label for="joinRoomId">JoinRoom ID:</label>
-        <input type="number" id="joinRoomId">
-    </div>
-    <button id="joinRoomButton">JoinRoom</button>
-    <!-- Message Section -->
-    <div>
-        <label for="sendRoomId">Room ID:</label>
-        <input type="number" id="sendRoomId">
-    </div>
-    <div>
-        <label for="message">Message:</label>
-        <input type="text" id="message">
-    </div>
-    <button id="sendMessageButton">Send Message</button>
-    <div id>
-        <ul id="messages"></ul>
-    </div>
-    <!-- Notification Section -->
-    <div>
-        <h2>Notifications</h2>
-        <ul id="notifications"></ul>
-    </div>
-
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Merge Overflow</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="grid">
+          <div id="item-1"></div>
+          <div id="item-2">
+            <a href="index.html" class="logo">Merge Overflow</a>
+          </div>
+          <div id="item-3"></div>
+        </div>
+      </nav>
+    </header>
+    <main>
+      <div class="grid">
+        <div id="item-1"></div>
+        <div id="item-2">
+          <div id="img-container">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Cat_November_2010-1a.jpg/300px-Cat_November_2010-1a.jpg"
+              id="img-cat"
+            />
+          </div>
+        </div>
+        <div id="item-3"></div>
+      </div>
+    </main>
+    <footer>
+      <div class="grid">
+        <div id="item-1"></div>
+        <div id="item-2">
+          <button class="notification-btn" id="notification-btn">알림</button>
+          <button class="chat-btn" id="chat-btn">채팅</button>
+          <button class="home-btn" id="home-btn">home</button>
+          <button class="profile-btn" id="profile-btn">내 프로필</button>
+          <button class="login-btn" id="login-btn">로그인</button>
+          <button class="logout-btn" id="logout-btn" style="display: none">로그아웃</button>
+        </div>
+        <div id="item-3"></div>
+      </div>
+    </footer>
     <script>
-        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAxLCJpYXQiOjE3MjI2Nzc4MDUsImV4cCI6MTcyMzU0MTgwNX0.HlPts__mCr6kths1JKHyJKnyp9Vk2FvkMxNxi7s5DlE"
-        const chatSocket = io('ws://localhost:3000/chat', {
-            auth: {
-                token
-            }
-        });
-        const notifySocket = io('ws://localhost:3000/notifications', {
-            auth: {
-                token
-            }
-        });
+      const accessToken = localStorage.getItem('access-token');
+      const profileBtn = document.getElementById('profile-btn');
+      const signupBtn = document.getElementById('signup-btn');
+      const loginBtn = document.getElementById('login-btn');
+      const logoutBtn = document.getElementById('logout-btn');
+      const homeBtn = document.getElementById('home-btn');
+      const notificationBtn = document.getElementById('notification-btn');
+      const chatBtn = document.getElementById('chat-btn');
 
-        const joinRoomButton = document.getElementById('joinRoomButton');
-        const sendMessageButton = document.getElementById('sendMessageButton');
-        const messagesList = document.getElementById('messages');
-        const notificationsList = document.getElementById('notifications');
-        let joinCheck = false;
-
-        joinRoomButton.addEventListener('click', () => {
-            const roomId = document.getElementById('joinRoomId').value;
-            chatSocket.emit('join', { roomId, joinCheck });
-        });
-
-        sendMessageButton.addEventListener('click', () => {
-            const roomId = document.getElementById('sendRoomId').value;
-            const message = document.getElementById('message').value;
-            chatSocket.emit('message', { roomId: Number(roomId), message: message });
-        });
-
-        chatSocket.on('join', (data) => {
-            const item = document.createElement('h1');
-            item.textContent = `${data.nickname}님이 입장했습니다.`;
-            messagesList.appendChild(item);
-            chatSocket.emit('requestHistory', { roomId: data.roomId });
-
-        })
-
-        chatSocket.on('history', (data) => {
-            if (!joinCheck) {
-                data.messages.forEach((msg) => {
-                    const item = document.createElement('li');
-                    item.textContent = `${msg.nickname}:${msg.text}`;
-                    messagesList.appendChild(item);
-                });
-            }
-            joinCheck = true
-        });
-
-        chatSocket.on('createChatRoom', (data) => {
-            const { chatRoomId, user1Id, user2Id } = data
-            chatSocket.emit('createChatRoom', { chatRoomId, user1Id, user2Id });
-            const item = document.createElement('li');
-            item.textContent = `Chat room created with ID ${chatRoom.id}`;
-            messagesList.appendChild(item);
-        })
-
-        chatSocket.on('exit', (data) => {
-            const { roomId, type } = data
-            chatSocket.emit('exit', { roomId });
-        })
-
-        chatSocket.on('message', (message) => {
-            const item = document.createElement('li');
-            item.textContent = `${message.nickname}: ${message.text}`;
-            messagesList.appendChild(item);
-        });
-
-        notifySocket.on('likeNotify', (data) => {
-            const { type, userId, mergeRequesterId } = data
-            notifySocket.emit('likeNotify', { type, userId, mergeRequesterId });
-        })
-
-        notifySocket.on('mergeNotify', (data) => {
-            const { type, userId, targetUserId } = data
-            notifySocket.emit('mergeNotify', { type, userId, targetUserId });
-        })
-
-        notifySocket.on('exitNotify', (data) => {
-            const { partnerId, type, partnerNickname } = data
-            notifySocket.emit('exitNotify', { type, partnerId, partnerNickname });
-            // item.textContent = `[알림]${type}:${message}`;
-            // notificationsList.appendChild(item);
-        })
-
-        notifySocket.on('reception', (data) => {
-            const { type, message } = data
-            const item = document.createElement('li');
-            item.textContent = `[알림][${type}]:${message}`;
-            notificationsList.appendChild(item);
-        })
+      // 이벤트 리스너 등록
+      profileBtn?.addEventListener('click', () => {
+        if (!accessToken) alert('로그인이 필요합니다');
+        else window.location.href = 'profile.html';
+      });
+      homeBtn?.addEventListener('click', () => {
+        window.location.href = 'index.html';
+      });
+      loginBtn?.addEventListener('click', () => {
+        window.location.href = 'login.html';
+      });
+      logoutBtn?.addEventListener('click', () => {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = 'login.html';
+      });
+      chatBtn?.addEventListener('click', () => {
+        if (!accessToken) alert('로그인이 필요합니다');
+        else window.location.href = 'chat.html';
+      });
+      notificationBtn?.addEventListener('click', () => {
+        if (!accessToken) alert('로그인이 필요합니다');
+        else window.location.href = 'notification.html';
+      });
     </script>
-</body>
+  </body>
+</html>

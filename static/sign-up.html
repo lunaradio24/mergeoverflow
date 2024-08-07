@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Merge Overflow</title>
+    <link rel="stylesheet" href="sign-up.css" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="grid">
+          <div id="item-1"></div>
+          <div id="item-2">
+            <a href="index.html" class="logo">Merge Overflow</a>
+          </div>
+          <div id="item-3"></div>
+        </div>
+      </nav>
+    </header>
+    <main>
+      <div class="grid">
+        <div id="item-1"></div>
+        <div id="item-2">
+          <form id="signup-form">
+            <h2>회원가입</h2>
+            <label for="phone-num">휴대폰 번호:</label>
+            <input type="phone-num" id="phone-num" name="phone-num" required />
+            <button type="button" id="send-sms-btn">인증번호 발송</button>
+            <button type="button" id="verify-sms-btn">휴대폰 인증</button>
+            <label for="password">비밀번호:</label>
+            <input type="password" id="password" name="password" required />
+            <label for="passwordConfirm">비밀번호 확인:</label>
+            <input type="password" id="passwordConfirm" name="passwordConfirm" required />
+            <button type="submit">회원가입</button>
+            <div id="message"></div>
+          </form>
+        </div>
+        <div id="item-3"></div>
+      </div>
+    </main>
+    <footer>
+      <div class="grid">
+        <div id="item-1"></div>
+        <div id="item-2">
+          <button class="notification-btn" id="notification-btn">알림</button>
+          <button class="chat-btn" id="chat-btn">채팅</button>
+          <button class="home-btn" id="home-btn">home</button>
+          <button class="profile-btn" id="profile-btn">내 프로필</button>
+          <button class="login-btn" id="login-btn">로그인</button>
+          <button class="logout-btn" id="logout-btn" style="display: none">로그아웃</button>
+        </div>
+        <div id="item-3"></div>
+      </div>
+    </footer>
+    <script>
+      const profileBtn = document.getElementById('profile-btn');
+      const signupBtn = document.getElementById('signup-btn');
+      const loginBtn = document.getElementById('login-btn');
+      const logoutBtn = document.getElementById('logout-btn');
+      const homeBtn = document.getElementById('home-btn');
+      const notificationBtn = document.getElementById('notification-btn');
+      const chatBtn = document.getElementById('chat-btn');
+      const sendSmsBtn = document.getElementById('send-sms-btn');
+      const verifySmsBtn = document.getElementById('verify-sms-btn');
+
+      // 로그인 화면이 로드되면
+      document.addEventListener('DOMContentLoaded', () => {
+        const signupBtn = document.getElementById('sign-up');
+
+        // 이벤트 리스너 등록
+        signupBtn?.addEventListener('click', () => {
+          window.location.href = 'signup.html';
+        });
+        profileBtn?.addEventListener('click', () => {
+          if (!accessToken) alert('로그인이 필요합니다');
+          else window.location.href = 'profile.html';
+        });
+        homeBtn?.addEventListener('click', () => {
+          window.location.href = 'index.html';
+        });
+        loginBtn?.addEventListener('click', () => {
+          window.location.href = 'login.html';
+        });
+        logoutBtn?.addEventListener('click', () => {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          window.location.href = 'login.html';
+        });
+        chatBtn?.addEventListener('click', () => {
+          if (!accessToken) alert('로그인이 필요합니다');
+          else window.location.href = 'chat.html';
+        });
+        notificationBtn?.addEventListener('click', () => {
+          if (!accessToken) alert('로그인이 필요합니다');
+          else window.location.href = 'notification.html';
+        });
+      });
+
+      const signupForm = document.getElementById('signup-form');
+      signupForm?.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const mobile = document.getElementById('mobile').value;
+        const password = document.getElementById('password').value;
+        const passwordConfirm = document.getElementById('passwordConfirm').value;
+
+        const data = {
+          username,
+          email,
+          password,
+          confirmPassword,
+          introduction,
+        };
+        document.getElementById('message').innerText = '로딩중.....';
+        try {
+          const response = await fetch('/auth/sign-up', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            document.getElementById('message').innerText = '회원가입에 성공했습니다. 이메일 인증을 완료해주세요.';
+            // 로그인 성공 메시지를 2초 동안 표시한 후 메인 페이지로 리디렉션
+            setTimeout(() => {
+              window.location.href = '/login.html';
+            }, 2000);
+          } else {
+            document.getElementById('message').innerText = result.message || '회원가입에 실패했습니다.';
+          }
+        } catch (error) {
+          console.error('Error:', error); // 클라이언트 측 오류 로그 기록
+          document.getElementById('message').innerText = '서버 오류가 발생했습니다.';
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -14,7 +14,7 @@ import { ProfileImage } from 'src/images/entities/profile-image.entity';
 import { Account } from 'src/auth/entities/account.entity';
 import { ChatMessage } from 'src/chat-rooms/entities/chat-message.entity';
 import { ChatRoom } from 'src/chat-rooms/entities/chat-room.entity';
-import { Heart } from 'src/matchings/entities/heart.entity';
+import { Heart } from 'src/hearts/entities/heart.entity';
 import { Matching } from 'src/matchings/entities/matching.entity';
 import { Notification } from 'src/notifications/entities/notification.entity';
 import { Location } from 'src/locations/entities/location.entity';

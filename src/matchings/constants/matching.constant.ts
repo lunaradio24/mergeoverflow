@@ -1,0 +1,1 @@
+export const NUM_MATCHING_CREATION = 10;

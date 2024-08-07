@@ -4,14 +4,13 @@ import {
   ConflictException,
   BadRequestException,
   UnauthorizedException,
-  HttpStatus,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Connection } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Account } from './entities/account.entity';
-import { SmsService } from './sms/sms.service';
+import { SmsService } from 'src/sms/sms.service';
 import { RedisService } from '../redis/redis.service';
-import { SignUpDto } from './dto/sign-up.dto';
+import { LocalSignUpDto } from './dto/local-sign-up.dto';
 import { User } from '../users/entities/user.entity';
 import { UserToInterest } from '../users/entities/user-to-interest.entity';
 import { UserToTech } from '../users/entities/user-to-tech.entity';
@@ -19,79 +18,100 @@ import { plainToClass } from 'class-transformer';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { compare, hash } from 'bcrypt';
-import { SignInDto } from './dto/sign-in.dto';
-import { CODE_TTL, IMAGE_LIMIT, MAX_INTERESTS, MAX_TECHS, MIN_INTERESTS, MIN_TECHS } from './constants/auth.constants';
+import { LocalSignInDto } from './dto/local-sign-in.dto';
+import { CODE_TTL_IN_SECONDS } from './constants/auth.constant';
+import { MAX_NUM_INTERESTS, MIN_NUM_INTERESTS } from 'src/interests/constants/interest.constant';
+import { MAX_NUM_TECHS, MIN_NUM_TECHS } from 'src/techs/constants/tech.constant';
+import { MAX_NUM_IMAGES } from 'src/images/constants/image.constant';
 import { ProfileImage } from 'src/images/entities/profile-image.entity';
-import { Heart } from 'src/matchings/entities/heart.entity';
-import { RESET_HEART_COUNT } from 'src/matchings/constants/heart.constant';
+import { Heart } from 'src/hearts/entities/heart.entity';
+import { RESET_HEART_COUNT } from 'src/hearts/constants/heart.constant';
+import { AUTH_MESSAGES } from './constants/auth.message.constant';
+import { IMAGE_MESSAGES } from 'src/images/constants/image.message.constant';
+import { INTEREST_MESSAGES } from 'src/interests/constants/interest.message.constant';
+import { TECH_MESSAGES } from 'src/techs/constants/tech.message.constant';
+import { LocalPayload } from './interfaces/local-payload.interface';
+import { SocialPayload } from './interfaces/social-payload.interface';
+import { Location } from 'src/locations/entities/location.entity';
+import { MatchingPreferences } from 'src/matchings/entities/matching-preferences.entity';
+import { TokensRO } from './ro/tokens.ro';
+import { SocialSignInDto } from './dto/social-sign-in.dto';
+import { SocialSignUpDto } from './dto/social-sign-up.dto';
 
 @Injectable()
 export class AuthService {
+  private readonly accessKey: string;
+  private readonly accessExp: string;
+  private readonly refreshKey: string;
+  private readonly refreshExp: string;
+
   constructor(
     @InjectRepository(Account)
     private readonly accountRepository: Repository<Account>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
     private readonly smsService: SmsService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly redisService: RedisService,
-    private readonly connection: Connection,
-  ) {}
-
-  async sendSmsForVerification(phoneNum: string) {
-    const foundAccount = await this.accountRepository.findOne({ where: { phoneNum } });
-
-    if (foundAccount) {
-      throw new ConflictException('이미 존재하는 전화번호입니다.');
-    }
-
-    return await this.smsService.sendSmsForVerification(phoneNum);
+    private readonly dataSource: DataSource,
+  ) {
+    this.accessKey = this.configService.get<string>('ACCESS_TOKEN_SECRET_KEY');
+    this.accessExp = this.configService.get<string>('ACCESS_TOKEN_EXPIRED_IN');
+    this.refreshKey = this.configService.get<string>('REFRESH_TOKEN_SECRET_KEY');
+    this.refreshExp = this.configService.get<string>('REFRESH_TOKEN_EXPIRED_IN');
   }
 
-  async verifyCode(phoneNum: string, code: string) {
+  async sendSmsForVerification(phoneNum: string): Promise<boolean> {
+    const existingAccount = await this.accountRepository.findOne({ where: { phoneNum } });
+
+    if (existingAccount) {
+      throw new ConflictException(AUTH_MESSAGES.SMS_SEND.FAILURE.DUPLICATED);
+    }
+
+    await this.smsService.sendSmsForVerification(phoneNum);
+    return true;
+  }
+
+  async verifyCode(phoneNum: string, code: string): Promise<boolean> {
     const storedPhoneNum = await this.redisService.get(code);
     if (storedPhoneNum !== phoneNum) {
-      throw new NotFoundException('잘못된 인증번호입니다.');
+      throw new UnauthorizedException(AUTH_MESSAGES.SMS_VERIFY.FAILURE.WRONG_CODE);
     }
 
     // 인증된 전화번호를 Redis에 저장 (유효기간 설정)
-    await this.redisService.setWithTTL(`verified_${phoneNum}`, phoneNum, CODE_TTL);
+    await this.redisService.setWithTTL(`verified_${phoneNum}`, phoneNum, CODE_TTL_IN_SECONDS);
 
-    return { message: '인증 성공' };
+    return true;
   }
 
-  async signUp(signUpDto: SignUpDto) {
+  async signUp(signUpDto: LocalSignUpDto): Promise<boolean> {
     const { phoneNum, password, interests, techs, profileImageUrls, ...userData } = signUpDto;
 
     // 전화번호 인증 확인
     const verifiedPhoneNum = await this.redisService.get(`verified_${phoneNum}`);
     if (!verifiedPhoneNum) {
-      throw new BadRequestException('전화번호 인증이 필요합니다.');
+      throw new BadRequestException(AUTH_MESSAGES.SIGN_UP.FAILURE.REQUIRE_SMS_VERIFICATION);
     }
 
     // 전화번호 중복 확인
-    const existingAccount = await this.accountRepository.findOne({ where: { phoneNum } });
-    if (existingAccount) {
-      throw new ConflictException('이미 존재하는 전화번호입니다.');
+    const isDuplicate = await this.checkDuplicatePhoneNum(phoneNum);
+    if (isDuplicate) {
+      throw new ConflictException(AUTH_MESSAGES.COMMON.PHONE_NUM.DUPLICATED);
     }
 
     // 비밀번호 해싱
     const hashRounds = Number(this.configService.get('HASH_ROUNDS'));
     const hashedPassword = await hash(password, hashRounds);
 
-    // interests와 techs를 별도로 선언하여 문자열인 경우 배열로 변환
-    const parsedInterests =
-      typeof signUpDto.interests === 'string' ? JSON.parse(signUpDto.interests) : signUpDto.interests;
-    const parsedTechs = typeof signUpDto.techs === 'string' ? JSON.parse(signUpDto.techs) : signUpDto.techs;
-
     // profileImageUrls 검증
-    if (profileImageUrls.length > IMAGE_LIMIT) {
-      throw new BadRequestException(`이미지 URL은 최대 ${IMAGE_LIMIT}개까지 입력 가능합니다.`);
+    if (profileImageUrls.length > MAX_NUM_IMAGES) {
+      throw new BadRequestException(IMAGE_MESSAGES.CREATE.FAILURE.UPPER_LIMIT);
     }
 
     // 트랜잭션 시작
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
@@ -104,12 +124,20 @@ export class AuthService {
       const savedAccount = await queryRunner.manager.save(account);
 
       // User 데이터 생성
-      if (parsedInterests.length < MIN_INTERESTS || parsedInterests.length > MAX_INTERESTS) {
-        throw new BadRequestException(`관심사는 최소 ${MIN_INTERESTS}개, 최대 ${MAX_INTERESTS}개 선택해야 합니다.`);
+      if (interests.length < MIN_NUM_INTERESTS) {
+        throw new BadRequestException(INTEREST_MESSAGES.CREATE.FAILURE.LOWER_LIMIT);
       }
 
-      if (parsedTechs.length < MIN_TECHS || parsedTechs.length > MAX_TECHS) {
-        throw new BadRequestException(`기술 스택은 최소 ${MIN_TECHS}개, 최대 ${MAX_TECHS}개 선택해야 합니다.`);
+      if (interests.length > MAX_NUM_INTERESTS) {
+        throw new BadRequestException(INTEREST_MESSAGES.CREATE.FAILURE.UPPER_LIMIT);
+      }
+
+      if (techs.length < MIN_NUM_TECHS) {
+        throw new BadRequestException(TECH_MESSAGES.CREATE.FAILURE.LOWER_LIMIT);
+      }
+
+      if (techs.length > MAX_NUM_TECHS) {
+        throw new BadRequestException(TECH_MESSAGES.CREATE.FAILURE.UPPER_LIMIT);
       }
 
       const user = plainToClass(User, userData);
@@ -117,7 +145,7 @@ export class AuthService {
       const savedUser = await queryRunner.manager.save(user);
 
       // UserToInterest 생성
-      const userToInterests = parsedInterests.map((interestId) => {
+      const userToInterests = interests.map((interestId) => {
         const userToInterest = new UserToInterest();
         userToInterest.userId = savedUser.id;
         userToInterest.interestId = interestId;
@@ -126,7 +154,7 @@ export class AuthService {
       await queryRunner.manager.save(userToInterests);
 
       // UserToTech 생성
-      const userToTechs = parsedTechs.map((techId) => {
+      const userToTechs = techs.map((techId) => {
         const userToTech = new UserToTech();
         userToTech.userId = savedUser.id;
         userToTech.techId = techId;
@@ -151,8 +179,19 @@ export class AuthService {
       heart.remainHearts = RESET_HEART_COUNT;
       await queryRunner.manager.save(heart);
 
+      // Location 데이터 생성 및 저장
+      const location = new Location();
+      location.userId = savedUser.id;
+      await queryRunner.manager.save(location);
+
+      // MatchingPreferences 데이터 생성 및 저장
+      const matchingPreferences = new MatchingPreferences();
+      matchingPreferences.userId = savedUser.id;
+      await queryRunner.manager.save(matchingPreferences);
+
+      // 트랜잭션 종료
       await queryRunner.commitTransaction();
-      return { message: '회원가입 성공' };
+      return true;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
@@ -161,57 +200,59 @@ export class AuthService {
     }
   }
 
-  async socialSignIn(req: any, res: any): Promise<void> {
+  async socialSignIn(socialSignInDto: SocialSignInDto): Promise<TokensRO> {
     try {
-      const { provider, providerId } = req.user;
+      const { provider, providerId } = socialSignInDto;
 
       let account = await this.accountRepository.findOne({ where: { provider, providerId }, relations: ['user'] });
 
       if (!account) {
-        // 계정 생성
-        account = new Account();
-        account.provider = provider;
-        account.providerId = providerId;
-        await this.accountRepository.save(account);
+        // 트랜잭션 시작
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
 
-        // 사용자 생성
-        const user = new User();
-        user.account = account;
+        try {
+          // 계정 생성
+          account = new Account();
+          account.provider = provider;
+          account.providerId = providerId;
+          await queryRunner.manager.save(account);
 
-        await this.userRepository.save(user);
+          // 사용자 생성
+          const user = new User();
+          user.accountId = account.id;
+          user.account = account;
+          await queryRunner.manager.save(user);
+
+          // 트랜잭션 종료
+          await queryRunner.commitTransaction();
+        } catch (error) {
+          await queryRunner.rollbackTransaction();
+          throw error;
+        } finally {
+          await queryRunner.release();
+        }
       }
 
-      const payload = { id: account.user.id, provider: account.provider };
-      const accessToken = this.jwtService.sign(payload, {
-        secret: this.configService.get<string>('ACCESS_TOKEN_SECRET_KEY'),
-        expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRED_IN'),
-      });
-      const refreshToken = this.jwtService.sign(payload, {
-        secret: this.configService.get<string>('REFRESH_TOKEN_SECRET_KEY'),
-        expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRED_IN'),
-      });
-
-      res.json({ accessToken, refreshToken });
+      const payload = { userId: account.user.id, provider, providerId };
+      const tokens = await this.issueTokens(payload);
+      return tokens;
     } catch (error) {
-      throw new UnauthorizedException('Login failed.');
+      throw new UnauthorizedException(AUTH_MESSAGES.SIGN_IN.FAILURE);
     }
   }
 
-  async completeSignUp(signUpDto: SignUpDto) {
-    let { phoneNum, interests, techs, profileImageUrls, ...userData } = signUpDto;
-
-    // interests와 techs를 별도로 선언하여 문자열인 경우 배열로 변환
-    const parsedInterests =
-      typeof signUpDto.interests === 'string' ? JSON.parse(signUpDto.interests) : signUpDto.interests;
-    const parsedTechs = typeof signUpDto.techs === 'string' ? JSON.parse(signUpDto.techs) : signUpDto.techs;
+  async socialSignUp(socialSignUpDto: SocialSignUpDto): Promise<boolean> {
+    const { provider, providerId, interests, techs, profileImageUrls, ...userData } = socialSignUpDto;
 
     // profileImageUrls 검증
-    if (profileImageUrls.length > IMAGE_LIMIT) {
-      throw new BadRequestException(`이미지 URL은 최대 ${IMAGE_LIMIT}개까지 입력 가능합니다.`);
+    if (profileImageUrls.length > MAX_NUM_IMAGES) {
+      throw new BadRequestException(IMAGE_MESSAGES.CREATE.FAILURE.UPPER_LIMIT);
     }
 
     // 트랜잭션 시작
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
@@ -223,12 +264,20 @@ export class AuthService {
       const savedAccount = await queryRunner.manager.save(account);
 
       // User 데이터 생성
-      if (parsedInterests.length < MIN_INTERESTS || parsedInterests.length > MAX_INTERESTS) {
-        throw new BadRequestException(`관심사는 최소 ${MIN_INTERESTS}개, 최대 ${MAX_INTERESTS}개 선택해야 합니다.`);
+      if (interests.length < MIN_NUM_INTERESTS) {
+        throw new BadRequestException(INTEREST_MESSAGES.CREATE.FAILURE.LOWER_LIMIT);
       }
 
-      if (parsedTechs.length < MIN_TECHS || parsedTechs.length > MAX_TECHS) {
-        throw new BadRequestException(`기술 스택은 최소 ${MIN_TECHS}개, 최대 ${MAX_TECHS}개 선택해야 합니다.`);
+      if (interests.length > MAX_NUM_INTERESTS) {
+        throw new BadRequestException(INTEREST_MESSAGES.CREATE.FAILURE.UPPER_LIMIT);
+      }
+
+      if (techs.length < MIN_NUM_TECHS) {
+        throw new BadRequestException(TECH_MESSAGES.CREATE.FAILURE.LOWER_LIMIT);
+      }
+
+      if (techs.length > MAX_NUM_TECHS) {
+        throw new BadRequestException(TECH_MESSAGES.CREATE.FAILURE.UPPER_LIMIT);
       }
 
       const user = plainToClass(User, userData);
@@ -236,7 +285,7 @@ export class AuthService {
       const savedUser = await queryRunner.manager.save(user);
 
       // UserToInterest 생성
-      const userToInterests = parsedInterests.map((interestId) => {
+      const userToInterests = interests.map((interestId) => {
         const userToInterest = new UserToInterest();
         userToInterest.userId = savedUser.id;
         userToInterest.interestId = interestId;
@@ -245,7 +294,7 @@ export class AuthService {
       await queryRunner.manager.save(userToInterests);
 
       // UserToTech 생성
-      const userToTechs = parsedTechs.map((techId) => {
+      const userToTechs = techs.map((techId) => {
         const userToTech = new UserToTech();
         userToTech.userId = savedUser.id;
         userToTech.techId = techId;
@@ -271,8 +320,19 @@ export class AuthService {
       heart.remainHearts = RESET_HEART_COUNT;
       await queryRunner.manager.save(heart);
 
+      // Location 데이터 생성 및 저장
+      const location = new Location();
+      location.userId = savedUser.id;
+      await queryRunner.manager.save(location);
+
+      // MatchingPreferences 데이터 생성 및 저장
+      const matchingPreferences = new MatchingPreferences();
+      matchingPreferences.userId = savedUser.id;
+      await queryRunner.manager.save(matchingPreferences);
+
+      // 트랜잭션 종료
       await queryRunner.commitTransaction();
-      return { message: '추가 회원가입 성공' };
+      return true;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
@@ -281,30 +341,30 @@ export class AuthService {
     }
   }
 
-  async validateUser(signInDto: SignInDto) {
+  async validateUserBySignInDto(signInDto: LocalSignInDto): Promise<LocalPayload | null> {
     const { phoneNum, password } = signInDto;
     const account = await this.accountRepository.findOne({ where: { phoneNum }, relations: ['user'] });
     if (account && (await compare(password, account.password))) {
-      return account.user;
+      return { userId: account.user.id, phoneNum: account.phoneNum };
     }
     return null;
   }
 
-  async validateUserById(userId: number) {
-    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['account'] });
+  async findUserByUserId(userId: number): Promise<User | null> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
     if (user) {
       return user;
     }
     return null;
   }
 
-  async validateSocialUser(provider: string, providerId: string) {
+  async validateSocialUser(provider: string, providerId: string): Promise<User | null> {
     const account = await this.accountRepository.findOne({ where: { provider, providerId }, relations: ['user'] });
     return account ? account.user : null;
   }
 
-  async signIn(userId: number, phoneNum: string) {
-    const payload = { id: userId, phoneNum };
+  async signIn(payload: LocalPayload): Promise<TokensRO> {
+    const { userId } = payload;
 
     // 토큰 발급
     const tokens = await this.issueTokens(payload);
@@ -317,51 +377,64 @@ export class AuthService {
     return tokens;
   }
 
-  async signOut(userId: number) {
+  async signOut(userId: number): Promise<boolean> {
     // redis에서 로그인 여부 확인
     const token = await this.redisService.get(`refresh_token_${userId}`);
     if (!token) {
-      throw new NotFoundException('로그인한 기록이 없습니다.');
+      throw new NotFoundException(AUTH_MESSAGES.SIGN_OUT.FAILURE.ALREADY_SIGNED_OUT);
     }
 
     // Redis에서 Refresh Token 삭제
     await this.redisService.del(`refresh_token_${userId}`);
+    return true;
   }
 
-  async renewTokens(refreshToken: string) {
-    const decoded = this.jwtService.verify(refreshToken, {
-      secret: this.configService.get<string>('REFRESH_TOKEN_SECRET_KEY'),
-    });
+  async renewTokens(refreshToken: string): Promise<TokensRO> {
+    // Refresh Token에서 payload 추출
+    const decoded = await this.jwtService.verify(refreshToken, { secret: this.refreshKey });
+    const { iat, exp, ...payload } = decoded;
+    const { userId } = payload;
 
-    // Redis에서 Refresh Token 확인
-    const storedHash = await this.redisService.get(`refresh_token_${decoded.id}`);
-    if (!storedHash) {
-      throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.');
-    }
-
-    const isMatch = await compare(refreshToken, storedHash);
-    if (!isMatch) {
-      throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.');
+    // 유효한 Refresh Token인지 검증
+    const isValidToken = await this.compareRefreshToken(userId, refreshToken);
+    if (!isValidToken) {
+      throw new UnauthorizedException(AUTH_MESSAGES.COMMON.JWT.INVALID);
     }
 
     // 토큰 재발급
-    const payload = { id: decoded.id, phoneNum: decoded.phoneNum };
     const tokens = await this.issueTokens(payload);
-    await this.redisService.set(`refresh_token_${decoded.id}`, tokens.refreshToken);
+    await this.redisService.set(`refresh_token_${userId}`, tokens.refreshToken);
     return tokens;
   }
 
-  private async issueTokens(payload: any) {
-    const accessToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.get<string>('ACCESS_TOKEN_SECRET_KEY'),
-      expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRED_IN'),
-    });
-
-    const refreshToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.get<string>('REFRESH_TOKEN_SECRET_KEY'),
-      expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRED_IN'),
-    });
+  private async issueTokens(payload: LocalPayload | SocialPayload): Promise<TokensRO> {
+    const accessToken = this.jwtService.sign(payload, { secret: this.accessKey, expiresIn: this.accessExp });
+    const refreshToken = this.jwtService.sign(payload, { secret: this.refreshKey, expiresIn: this.refreshExp });
 
     return { accessToken, refreshToken };
+  }
+
+  private async compareRefreshToken(userId: number, refreshToken: string): Promise<boolean> {
+    // Redis에서 Refresh Token 확인
+    const storedToken = await this.redisService.get(`refresh_token_${userId}`);
+    if (!storedToken) {
+      return false;
+    }
+
+    // Redis에 저장된 Refresh Token과 비교
+    const isMatch = await compare(refreshToken, storedToken);
+    if (!isMatch) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private async checkDuplicatePhoneNum(phoneNum: string): Promise<boolean> {
+    const existingAccount = await this.accountRepository.findOne({ where: { phoneNum } });
+    if (existingAccount) {
+      return true;
+    }
+    return false;
   }
 }

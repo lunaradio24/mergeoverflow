@@ -20,7 +20,7 @@ import { UserToTech } from './user-to-tech.entity';
 import { ProfileImage } from '../../images/entities/profile-image.entity';
 import { Notification } from '../../notifications/entities/notification.entity';
 import { Matching } from '../../matchings/entities/matching.entity';
-import { Heart } from '../../matchings/entities/heart.entity';
+import { Heart } from '../../hearts/entities/heart.entity';
 import { ChatMessage } from '../../chat-rooms/entities/chat-message.entity';
 import { ChatRoom } from '../../chat-rooms/entities/chat-room.entity';
 import { Account } from '../../auth/entities/account.entity';

@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { IsInt, IsNotEmpty } from 'class-validator';
+import { IsDecimal, IsInt, IsNotEmpty, IsOptional } from 'class-validator';
 
 @Entity()
 export class Location {
@@ -20,11 +20,15 @@ export class Location {
   @Column({ type: 'int' })
   userId: number;
 
-  @Column('decimal', { precision: 10, scale: 4 })
-  latitude: number;
+  @IsOptional()
+  @IsDecimal()
+  @Column('decimal', { precision: 6, scale: 4, nullable: true })
+  latitude: number | null;
 
-  @Column('decimal', { precision: 11, scale: 4 })
-  longitude: number;
+  @IsOptional()
+  @IsDecimal()
+  @Column('decimal', { precision: 7, scale: 4, nullable: true })
+  longitude: number | null;
 
   @CreateDateColumn()
   createdAt: Date;

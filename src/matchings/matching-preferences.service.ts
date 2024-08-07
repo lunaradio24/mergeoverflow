@@ -5,7 +5,7 @@ import { MatchingPreferences } from './entities/matching-preferences.entity';
 import { CreateMatchingPreferencesDto } from './dto/create-matching-preferences.dto';
 import { UpdateMatchingPreferencesDto } from './dto/update-matching-preferences.dto';
 import { User } from '../users/entities/user.entity';
-import { MatchingService } from './matchings.service';
+import { MatchingService } from './matching.service';
 
 @Injectable()
 export class MatchingPreferencesService {
@@ -23,7 +23,7 @@ export class MatchingPreferencesService {
       throw new NotFoundException(`사용자 ID ${userId}를 찾을 수 없습니다.`);
     }
 
-    const preferences = await this.matchingPreferencesRepository.create({
+    const preferences = this.matchingPreferencesRepository.create({
       ...createMatchingPreferencesDto,
       user,
     });

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Update Location</title>
+  </head>
+
+  <body>
+    <button id="update-location-button">Update Location</button>
+    <script>
+      const token =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEwMDQsInBob25lTnVtIjoiMDEwLTY0OTgtNjg0OCIsImlhdCI6MTcyMzA1MDQxMywiZXhwIjoxNzIzMDkzNjEzfQ.jbO4KBe9UIFI2qknrtGMAnzSH1SA4UzoNr0NTu8IQ30';
+      const updateLocationButton = document.getElementById('update-location-button');
+      updateLocationButton.addEventListener('click', () => {
+        updateLocation();
+      });
+
+      function updateLocation() {
+        navigator.geolocation.getCurrentPosition((position) => {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+
+          // 서버로 위치 정보를 전송
+          fetch('http://localhost:3000/locations', {
+            method: 'POST',
+            headers: {
+              authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ latitude, longitude }),
+          })
+            .then((response) => response.json())
+            .then((data) => console.log(data))
+            .catch((error) => console.error('Error:', error));
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -3,7 +3,8 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../auth.service';
-import { JwtPayload } from '../interfaces/jwt-payload.interface';
+import { LocalPayload } from '../interfaces/local-payload.interface';
+import { AUTH_MESSAGES } from '../constants/auth.message.constant';
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(Strategy, 'access-token') {
@@ -18,10 +19,11 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, 'access-toke
     });
   }
 
-  async validate(payload: JwtPayload) {
-    const user = await this.authService.validateUserById(payload.id);
+  async validate(payload: LocalPayload) {
+    const userId = payload.userId;
+    const user = await this.authService.findUserByUserId(userId);
     if (!user) {
-      throw new NotFoundException('해당하는 사용자를 찾을 수 없습니다.');
+      throw new NotFoundException(AUTH_MESSAGES.COMMON.JWT.NO_USER);
     }
 
     return user;
