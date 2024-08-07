@@ -10,13 +10,14 @@ import { AccessTokenStrategy } from './strategies/access-token.strategy';
 import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { RedisService } from '../redis/redis.service';
-import { UsersModule } from '../users/users.module';
+import { UserModule } from '../users/user.module';
 import { UserToInterest } from 'src/users/entities/user-to-interest.entity';
 import { UserToTech } from 'src/users/entities/user-to-tech.entity';
-import { SmsModule } from './sms/sms.module';
+import { SmsModule } from 'src/sms/sms.module';
 import { ProfileImage } from 'src/images/entities/profile-image.entity';
-import { Heart } from 'src/matchings/entities/heart.entity';
-import { GithubPassportStrategy, GooglePassportStrategy } from './strategies/social.strategy';
+import { Heart } from 'src/hearts/entities/heart.entity';
+import { GithubStrategy } from './strategies/github.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import { GithubPassportStrategy, GooglePassportStrategy } from './strategies/soc
       inject: [ConfigService],
     }),
     ConfigModule,
-    UsersModule,
+    UserModule,
     SmsModule,
   ],
   controllers: [AuthController],
@@ -40,8 +41,8 @@ import { GithubPassportStrategy, GooglePassportStrategy } from './strategies/soc
     RefreshTokenStrategy,
     LocalStrategy,
     RedisService,
-    GooglePassportStrategy,
-    GithubPassportStrategy,
+    GoogleStrategy,
+    GithubStrategy,
   ],
   exports: [AuthService, AccessTokenStrategy, RefreshTokenStrategy],
 })

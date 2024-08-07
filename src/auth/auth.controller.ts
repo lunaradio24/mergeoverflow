@@ -1,88 +1,113 @@
-import { Controller, Post, Body, UseGuards, Get, Req, Res } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { RefreshTokenGuard } from './guards/refresh-token.guard';
-import { VerificationRequestDto } from './dto/verification-request.dto';
-import { SignUpDto } from './dto/sign-up.dto';
+import { Controller, Post, Body, UseGuards, Get, Req, HttpStatus } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { LocalAuthGuard } from './guards/local-auth.guard';
-import { AuthGuard } from '@nestjs/passport';
-import { Request as ExpressRequest, Response as ExpressResponse } from 'express';
+import { AuthService } from './auth.service';
+import { UserService } from 'src/users/user.service';
+import { AUTH_MESSAGES } from './constants/auth.message.constant';
+import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { SendSmsCodeDto } from './dto/send-sms-code.dto';
+import { LocalSignUpDto } from './dto/local-sign-up.dto';
+import { SocialSignUpDto } from './dto/social-sign-up.dto';
+import { VerifySmsCodeDto } from './dto/verify-sms-code.dto';
+import { LocalAuthGuard } from './guards/local.guard';
+import { GoogleAuthGuard } from './guards/google.guard';
+import { GithubAuthGuard } from './guards/github.guard';
+import { ApiResponse } from 'src/common/interceptors/response/response.interface';
+import { TokensRO } from './ro/tokens.ro';
+import { UserInfo } from 'src/utils/decorators/user-info.decorator';
+import { User } from 'src/users/entities/user.entity';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
 
-  /**sms 인증 코드 발송 */
+  /**휴대폰 인증 코드 SMS 발송 */
   @Post('sms/send')
-  async sendSmsForVerification(@Body() verificationRequestDto: VerificationRequestDto) {
-    const { phoneNum } = verificationRequestDto;
+  async sendSmsForVerification(@Body() { phoneNum }: SendSmsCodeDto): Promise<ApiResponse<boolean>> {
     const isSuccess = await this.authService.sendSmsForVerification(phoneNum);
     return {
-      message: 'sms 전송에 성공했습니다.',
-      data: { isSuccess },
+      statusCode: HttpStatus.OK,
+      message: AUTH_MESSAGES.SMS_SEND.SUCCEED,
+      data: isSuccess,
     };
   }
 
-  /**sms 인증 코드 확인 */
+  /**휴대폰 인증 코드 확인 */
   @Post('sms/verify')
-  async verifyCode(@Body() { phoneNum, code }: { phoneNum: string; code: string }) {
+  async verifyCode(@Body() { phoneNum, code }: VerifySmsCodeDto): Promise<ApiResponse<boolean>> {
     const isVerifiedCode = await this.authService.verifyCode(phoneNum, code);
     return {
-      message: 'sms 인증에 성공했습니다.',
-      data: { isVerifiedCode },
+      statusCode: HttpStatus.OK,
+      message: AUTH_MESSAGES.SMS_VERIFY.SUCCEED,
+      data: isVerifiedCode,
     };
   }
 
   /**회원가입 */
-  @Post('sign-up')
-  async signUp(@Body() signUpDto: SignUpDto) {
-    const newUser = await this.authService.signUp(signUpDto);
+  @Post('sign-up/local')
+  async signUp(@Body() signUpDto: LocalSignUpDto): Promise<ApiResponse<boolean>> {
+    const isSuccess = await this.authService.signUp(signUpDto);
     return {
-      message: '회원가입을 완료했습니다.',
-      data: newUser,
+      statusCode: HttpStatus.CREATED,
+      message: AUTH_MESSAGES.SIGN_UP.SUCCEED,
+      data: isSuccess,
     };
   }
 
-  @Get('google')
-  @UseGuards(AuthGuard('google'))
+  @Get('sign-in/google')
+  @UseGuards(GoogleAuthGuard)
   async googleAuth(@Req() req: Request) {}
 
-  @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
-  async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
-    await this.authService.socialSignIn(req, res);
-    return res;
+  @Get('sign-in/google/callback')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuthCallback(@Req() req: any): Promise<ApiResponse<TokensRO>> {
+    const socialLoginDto = req.user;
+    const tokens = await this.authService.socialSignIn(socialLoginDto);
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: AUTH_MESSAGES.SIGN_IN.SUCCEED,
+      data: tokens,
+    };
   }
 
-  @Get('github')
-  @UseGuards(AuthGuard('github'))
+  @Get('sign-in/github')
+  @UseGuards(GithubAuthGuard)
   async githubAuth(@Req() req: Request) {}
 
-  @Get('github/callback')
-  @UseGuards(AuthGuard('github'))
-  async githubAuthCallback(@Req() req: Request, @Res() res: Response) {
-    await this.authService.socialSignIn(req, res);
-    return res;
+  @Get('sign-in/github/callback')
+  @UseGuards(GithubAuthGuard)
+  async githubAuthCallback(@Req() req: any): Promise<ApiResponse<TokensRO>> {
+    const socialLoginDto = req.user;
+    const tokens = await this.authService.socialSignIn(socialLoginDto);
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: AUTH_MESSAGES.SIGN_IN.SUCCEED,
+      data: tokens,
+    };
   }
 
-  @Post('complete-sign-up')
-  async completeSignUp(@Body() signUpDto: SignUpDto) {
-    const newUser = await this.authService.completeSignUp(signUpDto);
+  @Post('sign-up/social')
+  async socialSignUp(@Body() socialSignUpDto: SocialSignUpDto): Promise<ApiResponse<boolean>> {
+    const newUser = await this.authService.socialSignUp(socialSignUpDto);
     return {
-      message: '추가 회원가입을 완료했습니다.',
+      statusCode: HttpStatus.CREATED,
+      message: AUTH_MESSAGES.SIGN_UP.SUCCEED,
       data: newUser,
     };
   }
 
   /**로그인 */
-  @Post('sign-in')
+  @Post('sign-in/local')
   @UseGuards(LocalAuthGuard)
-  async signIn(@Req() req: any) {
-    const { id: userId, phoneNum } = req.user;
-    const tokens = await this.authService.signIn(userId, phoneNum);
+  async signIn(@Req() req: any): Promise<ApiResponse<TokensRO>> {
+    const localPayload = req.user;
+    const tokens = await this.authService.signIn(localPayload);
     return {
-      message: '로그인에 성공했습니다.',
+      statusCode: HttpStatus.OK,
+      message: AUTH_MESSAGES.SIGN_IN.SUCCEED,
       data: tokens,
     };
   }
@@ -91,10 +116,13 @@ export class AuthController {
   @Post('sign-out')
   @ApiBearerAuth()
   @UseGuards(RefreshTokenGuard)
-  async signOut(@Req() req: any) {
-    await this.authService.signOut(req.user.id);
+  async signOut(@UserInfo() user: User): Promise<ApiResponse<null>> {
+    const userId = user.id;
+    await this.authService.signOut(userId);
     return {
-      message: '로그아웃에 성공했습니다.',
+      statusCode: HttpStatus.OK,
+      message: AUTH_MESSAGES.SIGN_OUT.SUCCEED,
+      data: null,
     };
   }
 
@@ -102,11 +130,12 @@ export class AuthController {
   @Post('tokens/renew')
   @ApiBearerAuth()
   @UseGuards(RefreshTokenGuard)
-  async renewTokens(@Req() req: any) {
+  async renewTokens(@Req() req: any): Promise<ApiResponse<TokensRO>> {
     const refreshToken = req.headers.authorization.split(' ')[1];
     const tokens = await this.authService.renewTokens(refreshToken);
     return {
-      message: '토큰 재발급에 성공했습니다.',
+      statusCode: HttpStatus.OK,
+      message: AUTH_MESSAGES.RENEW_TOKENS.SUCCEED,
       data: tokens,
     };
   }

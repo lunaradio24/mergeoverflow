@@ -6,12 +6,14 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   OneToOne,
+  Unique,
 } from 'typeorm';
 import { Role } from '../types/role.type';
 import { User } from '../../users/entities/user.entity';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 @Entity({ name: 'accounts' })
+@Unique(['provider', 'providerId'])
 export class Account {
   @PrimaryGeneratedColumn()
   id: number;

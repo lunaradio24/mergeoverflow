@@ -1042,7 +1042,7 @@
       "parentId": "fld_37698f8e6bdd4bfeabcb6368b3f6fc6a",
       "modified": 1722681663386,
       "created": 1722514761522,
-      "url": "{{ _.BASE_URL }}/notifications/lates",
+      "url": "{{ _.BASE_URL }}/notifications/latest",
       "name": "알림 최근 목록 보기",
       "description": "",
       "method": "GET",

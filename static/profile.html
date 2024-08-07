@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>프로필조회</title>
+    <link rel="stylesheet" href="profile.css" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="index.html" class="logo">Merge Overflow</a>
+      </nav>
+    </header>
+    <div class="profile-container">
+      <img src="assets/empty-profile-image.png" alt="Profile Image" class="profile-image" id="profile-image" />
+      <h1 class="nickname" id="nickname"></h1>
+      <p class="bio" id="bio"></p>
+      <p class="email" id="email"></p>
+      <button class="edit-button" id="edit">프로필 수정</button>
+      <p class="followers" id="followers">팔로우 수:</p>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', async () => {
+        // 로컬 스토리지에서 Access Token을 가져옴
+        const accessToken = localStorage.getItem('accessToken');
+
+        // Access Token을 이용해 프로필 데이터를 가져오는 API 요청
+        try {
+          const response = await fetch('/users/me', {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+
+          if (!response.ok) throw new Error('Network response was not ok');
+
+          const data = await response.json();
+          const user = data.user;
+
+          document.getElementById('nickname').innerText = user.username;
+          document.getElementById('email').innerText = user.email;
+          document.getElementById('bio').innerText = user.introduction;
+          document.getElementById('followers').innerText = `팔로워 수: ${user.followerCount}`;
+
+          // profileImage가 null이면 기본 이미지 사용, not null이면 해당 이미지 사용
+          const profileImage = document.getElementById('profile-image');
+          if (user.profileImage) profileImage.src = user.profileImage;
+
+          // 에러 처리
+        } catch (error) {
+          console.error('Error fetching profile data:', error);
+        }
+      });
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const edit = document.getElementById('edit');
+        if (edit) {
+          edit.addEventListener('click', () => {
+            window.location.href = 'edit-profile.html';
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,7 +1,7 @@
 import { Seeder } from 'typeorm-extension';
 import { DataSource } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
-import { Heart } from 'src/matchings/entities/heart.entity';
+import { Heart } from 'src/hearts/entities/heart.entity';
 import { NUM_CREATING_ACCOUNTS } from 'seeds/constants/account.seed.constant';
 
 export default class HeartSeeder implements Seeder {

@@ -1,6 +1,5 @@
 import { IsEnum, IsOptional } from 'class-validator';
 import { PreferredGender } from '../types/preferred-gender.type';
-import { PreferredRegion } from '../types/preferred-region.type';
 import { PreferredBodyShape } from '../types/preferred-body-shape.type';
 import { PreferredReligion } from '../types/preferred-religion.type';
 import { PreferredFrequency } from '../types/preferred-frequency.type';
@@ -12,10 +11,6 @@ export class UpdateMatchingPreferencesDto {
   @IsOptional()
   @IsEnum(PreferredGender)
   gender?: PreferredGender;
-
-  @IsOptional()
-  @IsEnum(PreferredRegion)
-  region?: PreferredRegion;
 
   @IsOptional()
   @IsEnum(PreferredAgeGap, {

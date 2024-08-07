@@ -1,0 +1,93 @@
+html {
+  /* 스크롤시 부드럽게 내려감 */
+  scroll-behavior: smooth;
+}
+
+button:hover {
+  cursor: pointer;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f0f0;
+  height: 100%;
+  width: 100%;
+}
+
+nav {
+  height: 5vh;
+}
+
+main {
+  height: 90vh;
+}
+
+footer {
+  width: 100%;
+  height: 5vh;
+  position: absolute;
+  bottom: 0;
+}
+
+.grid {
+  display: grid;
+
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
+
+  gap: 0px;
+  height: 100%;
+  width: 100%;
+}
+
+#item-1 {
+  background-color: aquamarine;
+  grid-row-start: 1;
+  grid-column-start: 1;
+
+  grid-row-end: 2;
+  grid-column-end: 2;
+}
+
+#item-2 {
+  background-color: blueviolet;
+
+  grid-row-start: 1;
+  grid-column-start: 2;
+
+  grid-row-end: 2;
+  grid-column-end: 3;
+}
+
+#item-3 {
+  background-color: burlywood;
+  grid-row-start: 1;
+  grid-column-start: 3;
+
+  grid-row-end: 2;
+  grid-column-end: 4;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.logo {
+  color: white;
+}
+
+#signup-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1vh;
+}

@@ -9,7 +9,6 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { PreferredGender } from '../types/preferred-gender.type';
-import { PreferredRegion } from '../types/preferred-region.type';
 import { PreferredBodyShape } from '../types/preferred-body-shape.type';
 import { PreferredReligion } from '../types/preferred-religion.type';
 import { PreferredFrequency } from '../types/preferred-frequency.type';
@@ -32,9 +31,6 @@ export class MatchingPreferences {
   @Column({ type: 'enum', enum: PreferredGender, nullable: true })
   gender: PreferredGender;
 
-  @Column({ type: 'enum', enum: PreferredRegion, nullable: true })
-  region: PreferredRegion;
-
   @Column({ type: 'enum', enum: PreferredAgeGap, nullable: true })
   ageGap: PreferredAgeGap;
 
@@ -49,9 +45,6 @@ export class MatchingPreferences {
 
   @Column({ type: 'enum', enum: PreferredFrequency, nullable: true })
   drinkingFrequency: PreferredFrequency;
-
-  @Column({ type: 'enum', enum: PreferredReligion, nullable: true })
-  religion: PreferredReligion;
 
   @Column({ type: 'enum', enum: PreferredDistance, nullable: true })
   distance: PreferredDistance;

@@ -11,10 +11,9 @@ export class RolesGuard extends AuthGuard('access-token') implements CanActivate
   }
 
   //기본 JWT인증. 인증 실패하면 false 반환
-  async canActivate(context: ExecutionContext) {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const authenticated = await super.canActivate(context);
     if (!authenticated) {
-      // throw new NotFoundException("허가받지 않은 사용자입니다.")
       return false;
     }
 
@@ -27,6 +26,7 @@ export class RolesGuard extends AuthGuard('access-token') implements CanActivate
 
     //api를 요청한 사용자 정보를 추출. 필요한 역활과 일치하는지 확인
     const { user } = context.switchToHttp().getRequest();
-    return requiredRoles.some((role) => user.account.role === role);
+    const isAdmitted = requiredRoles.includes(user.account.role);
+    return isAdmitted;
   }
 }

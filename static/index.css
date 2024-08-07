@@ -1,0 +1,130 @@
+html {
+  /* 스크롤시 부드럽게 내려감 */
+  scroll-behavior: smooth;
+}
+
+button:hover {
+  cursor: pointer;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f0f0;
+}
+
+.grid {
+  display: grid;
+
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
+
+  gap: 0px;
+  height: 100%;
+  width: 100%;
+}
+
+#item-1 {
+  background-color: aquamarine;
+  grid-row-start: 1;
+  grid-column-start: 1;
+
+  grid-row-end: 2;
+  grid-column-end: 2;
+}
+
+#item-2 {
+  background-color: blueviolet;
+
+  grid-row-start: 1;
+  grid-column-start: 2;
+
+  grid-row-end: 2;
+  grid-column-end: 3;
+}
+
+#item-3 {
+  background-color: burlywood;
+  grid-row-start: 1;
+  grid-column-start: 3;
+
+  grid-row-end: 2;
+  grid-column-end: 4;
+}
+
+#img-container {
+  height: 90vh;
+}
+
+#img-container > #img-cat {
+  width: 100%;
+  object-fit: cover;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+nav {
+  height: 5vh;
+}
+
+.logo {
+  color: white;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+footer {
+  width: 100vw;
+  height: 5vh;
+  position: absolute;
+  bottom: 0;
+}
+
+/*****     cards + arrows in a list     *****/
+.cards-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  /* width = 4 cards * (card width 18vw + gap 2vw) */
+  width: 80vw;
+  height: 28vw;
+  /* 넘치는 카드 가리기 */
+  overflow: hidden;
+}
+/*****     슬라이드 버튼     *****/
+.prev,
+.next {
+  all: unset;
+  color: #007bff;
+  opacity: 70%;
+  font-size: 4vw;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 4;
+  cursor: pointer;
+}
+.prev {
+  left: 2vw;
+}
+.next {
+  right: 2vw;
+}
+.prev:hover,
+.next:hover {
+  opacity: 100%;
+  transform: scale(1.1) translateY(-50%);
+}
