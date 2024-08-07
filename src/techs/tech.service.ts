@@ -34,19 +34,7 @@ export class TechService {
   }
 
   // 기술 수정
-  async update(user: any, id: number, createTechDto: CreateTechDto) {
-    // 1. 내가 관리자인지 확인
-    const userId = user.id;
-
-    // 2. 관리자가 아니라면 권한 없음으로 에러 발생
-    const checkedAdmin = await this.accountRepository.findOne({
-      where: { id: userId },
-    });
-
-    if (!checkedAdmin) {
-      throw new NotFoundException('허가 받지 않은 사용자입니다.');
-    }
-
+  async update(id: number, createTechDto: CreateTechDto) {
     // 기술의 기술의 ID 검색
     const findTech = await this.techRepository.findOne({
       where: { id },

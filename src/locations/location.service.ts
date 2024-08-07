@@ -43,14 +43,10 @@ export class LocationService {
       location.longitude = longitude;
     } else {
       // 새로운 위치 정보 생성
-      location = this.locationRepository.create({
-        user,
-        latitude,
-        longitude,
-      });
+      location = this.locationRepository.create({ user, latitude, longitude });
     }
 
-    return this.locationRepository.save(location);
+    return await this.locationRepository.save(location);
   }
 
   async getLocationByUserId(userId: number): Promise<Location> {

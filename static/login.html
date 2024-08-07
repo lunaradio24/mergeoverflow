@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Merge Overflow</title>
+    <link rel="stylesheet" href="login.css" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="grid">
+          <div id="item-1"></div>
+          <div id="item-2">
+            <a href="index.html" class="logo">Merge Overflow</a>
+          </div>
+          <div id="item-3"></div>
+        </div>
+      </nav>
+    </header>
+    <main>
+      <div class="grid">
+        <div id="item-1"></div>
+        <div id="item-2">
+          <form id="login-form">
+            <h2>로그인</h2>
+            <label for="mobile">휴대폰 번호:</label>
+            <input type="mobile" id="mobile" name="mobile" required />
+            <label for="password">비밀번호:</label>
+            <input type="password" id="password" name="password" required />
+            <button type="submit">로그인</button>
+            <button type="button" class="secondary-btn" id="sign-up">휴대폰 번호로 회원가입</button>
+            <button type="button" id="google-btn">Google 로그인</button>
+            <button type="button" id="github-btn">Github 로그인</button>
+            <div id="message"></div>
+          </form>
+        </div>
+        <div id="item-3"></div>
+      </div>
+    </main>
+    <footer>
+      <div class="grid">
+        <div id="item-1"></div>
+        <div id="item-2">
+          <button class="notification-btn" id="notification-btn">알림</button>
+          <button class="chat-btn" id="chat-btn">채팅</button>
+          <button class="home-btn" id="home-btn">home</button>
+          <button class="profile-btn" id="profile-btn">내 프로필</button>
+          <button class="login-btn" id="login-btn">로그인</button>
+          <button class="logout-btn" id="logout-btn" style="display: none">로그아웃</button>
+        </div>
+        <div id="item-3"></div>
+      </div>
+    </footer>
+    <script>
+      const accessToken = localStorage.getItem('access-token');
+      const profileBtn = document.getElementById('profile-btn');
+      const signupBtn = document.getElementById('signup-btn');
+      const loginBtn = document.getElementById('login-btn');
+      const logoutBtn = document.getElementById('logout-btn');
+      const homeBtn = document.getElementById('home-btn');
+      const notificationBtn = document.getElementById('notification-btn');
+      const chatBtn = document.getElementById('chat-btn');
+      const googleBtn = document.getElementById('google-btn');
+      const githubBtn = document.getElementById('github-btn');
+
+      // 이벤트 리스너 등록
+      profileBtn?.addEventListener('click', () => {
+        if (!accessToken) alert('로그인이 필요합니다');
+        else window.location.href = 'profile.html';
+      });
+      homeBtn?.addEventListener('click', () => {
+        window.location.href = 'index.html';
+      });
+      loginBtn?.addEventListener('click', () => {
+        window.location.href = 'login.html';
+      });
+      logoutBtn?.addEventListener('click', () => {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = 'login.html';
+      });
+      chatBtn?.addEventListener('click', () => {
+        if (!accessToken) alert('로그인이 필요합니다');
+        else window.location.href = 'chat.html';
+      });
+      notificationBtn?.addEventListener('click', () => {
+        if (!accessToken) alert('로그인이 필요합니다');
+        else window.location.href = 'notification.html';
+      });
+      googleBtn?.addEventListener('click', () => {
+        redirectToGoogle();
+      });
+      githubBtn?.addEventListener('click', () => {
+        redirectToGithub();
+      });
+
+      const redirectToGoogle = async () => {
+        window.location.href = 'http://localhost:3000/auth/google';
+      };
+
+      const redirectToGithub = async () => {
+        window.location.href = 'http://localhost:3000/auth/github';
+      };
+
+      // 로그인 화면이 로드되면
+      document.addEventListener('DOMContentLoaded', () => {
+        const signupBtn = document.getElementById('sign-up');
+
+        signupBtn?.addEventListener('click', () => {
+          window.location.href = 'sign-up.html';
+        });
+      });
+
+      const loginForm = document.getElementById('login-form');
+      if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const phoneNum = document.getElementById('mobile').value;
+          const password = document.getElementById('password').value;
+          const requestBody = { phoneNum, password };
+
+          try {
+            const response = await fetch('/auth/sign-in', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(requestBody),
+            });
+
+            const result = await response.json();
+
+            // response를 받아오는 데 성공하면
+            if (response.ok) {
+              // result에서 access token 받아옴
+              const accessToken = result.data.accessToken;
+              const refreshToken = result.data.refreshToken;
+
+              // access token, refresh token이 모두 있으면
+              if (accessToken && refreshToken) {
+                // 토큰을 로컬스토리지에 저장
+                localStorage.setItem('accessToken', accessToken);
+                localStorage.setItem('refreshToken', refreshToken);
+                document.getElementById('message').innerText = '로그인에 성공했습니다.';
+
+                // 0.5초 후 홈화면(index.html)으로 리다이렉트
+                setTimeout(() => {
+                  window.location.href = '/index.html';
+                }, 500);
+              }
+              // access token, refresh token 둘 중 하나라도 받아오지 못하면
+              else {
+                document.getElementById('message').innerText = '토큰을 받아오지 못했습니다.';
+              }
+            }
+            // response를 받아오는 데 실패하면
+            else {
+              document.getElementById('message').innerText = result.message || '로그인에 실패했습니다.';
+            }
+            // 에러 처리
+          } catch (error) {
+            document.getElementById('message').innerText = '서버 오류가 발생했습니다.';
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
