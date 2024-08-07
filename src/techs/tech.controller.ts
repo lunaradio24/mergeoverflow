@@ -35,8 +35,8 @@ export class TechController {
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN) // 관리자만 가능
   @Patch(':id')
-  async update(@Param('id') id: number, @Body() createTechDto: CreateTechDto) {
-    const data = await this.techService.update(id, createTechDto); // req.user
+  async update(@Req() req: any, @Param('id') id: number, @Body() createTechDto: CreateTechDto) {
+    const data = await this.techService.update(req.user, id, createTechDto); // req.user
 
     return {
       statusCode: HttpStatus.OK,
