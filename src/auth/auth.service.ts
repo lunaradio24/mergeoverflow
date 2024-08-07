@@ -343,7 +343,12 @@ export class AuthService {
 
   async validateUserBySignInDto(signInDto: LocalSignInDto): Promise<LocalPayload | null> {
     const { phoneNum, password } = signInDto;
-    const account = await this.accountRepository.findOne({ where: { phoneNum }, relations: ['user'] });
+    const account = await this.accountRepository.findOne({
+      where: { phoneNum },
+      relations: ['user'],
+      select: ['id', 'phoneNum', 'password', 'user'],
+    });
+
     if (account && (await compare(password, account.password))) {
       return { userId: account.user.id, phoneNum: account.phoneNum };
     }
@@ -351,7 +356,10 @@ export class AuthService {
   }
 
   async findUserByUserId(userId: number): Promise<User | null> {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['account'],
+    });
     if (user) {
       return user;
     }

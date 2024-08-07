@@ -1,119 +1,74 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Interest } from './entities/interest.entity';
+
 import { Repository } from 'typeorm';
-import { InterestDto } from 'src/users/dto/interest.dto';
-import { Account } from 'src/auth/entities/account.entity';
+import { Interest } from './entities/interest.entity';
+import { InterestDto } from './dto/interest.dto';
+import { INTEREST_MESSAGES } from './constants/interest.message.constant';
 
 @Injectable()
 export class InterestService {
   constructor(
     @InjectRepository(Interest)
     private readonly interestRepository: Repository<Interest>,
-    @InjectRepository(Account)
-    private readonly accountRepository: Repository<Account>,
   ) {}
 
-  // 관심사 DB 등록
-  async create(user: any, interestDto: InterestDto) {
-    // 1. 내가 관리자인지 확인
-    const userId = user.id;
+  // 관심사 목록 생성
+  async create(interestDto: InterestDto): Promise<boolean> {
+    // 이미 존재하는 관심사 이름인지 확인
+    await this.checkDuplicateInterestName(interestDto.interestName);
 
-    // 2. 관리자가 아니라면 권한 없음으로 에러 발생
-    const checkedAdmin = await this.accountRepository.findOne({
-      where: { id: userId },
-    });
-
-    if (!checkedAdmin) {
-      throw new NotFoundException('허가 받지 않은 사용자입니다.');
-    }
-
-    // 3. DTO에서 입력 받은 데이터 입력
-    try {
-      const createdInterest = await this.interestRepository.save(interestDto);
-
-      return createdInterest;
-    } catch (error) {
-      if (error.code === 'ER_DUP_ENTRY') {
-        throw new Error('중복된 관심사가 있습니다.');
-      }
-      throw new Error('관심사를 저장하는 중에 오류가 발생했습니다.');
-    }
+    // 입력한 interest 저장
+    await this.interestRepository.save(interestDto);
+    return true;
   }
 
-  // 관심사 DB조회 관리자 x
+  // 관심사 ID로 조회
+  async findOneById(id: number): Promise<Interest> {
+    const interest = await this.interestRepository.findOne({ where: { id } });
+    if (!interest) {
+      throw new NotFoundException(INTEREST_MESSAGES.READ_ONE.FAILURE.NOT_FOUND);
+    }
+    return interest;
+  }
+
+  // 관심사 전체 목록 조회
   async findAll(): Promise<Interest[]> {
-    const findInterest = await this.interestRepository.find({
-      order: {
-        id: 'ASC',
-      },
-    });
-
-    return findInterest;
+    const interestList = await this.interestRepository.find({ order: { id: 'ASC' } });
+    return interestList;
   }
 
-  // 관심사 업데이트
-  async update(user: any, id: number, interestDto: InterestDto) {
-    // 1. 내가 관리자인지 확인
-    const userId = user.id;
+  // 관심사 수정
+  async update(id: number, interestDto: InterestDto): Promise<boolean> {
+    // 존재하는 관심사 ID인지 확인
+    await this.findOneById(id);
 
-    // 2. 관리자가 아니라면 권한 없음으로 에러 발생
-    const checkedAdmin = await this.accountRepository.findOne({
-      where: { id: userId },
-    });
+    // 이미 존재하는 관심사 이름인지 확인
+    await this.checkDuplicateInterestName(interestDto.interestName);
 
-    if (!checkedAdmin) {
-      throw new NotFoundException('허가 받지 않은 사용자입니다.');
-    }
+    // 관심사 이름 업데이트
+    await this.interestRepository.update({ id }, interestDto);
 
-    const findInterestId = await this.interestRepository.findOne({
-      where: { id: id },
-    });
-
-    if (!findInterestId) {
-      throw new BadRequestException('존재하지 않는 Id입니다.');
-    }
-
-    await this.interestRepository.update({ id }, { interestName: interestDto.interestName });
-
-    const updateInterest = await this.interestRepository.findOne({
-      where: { id },
-    });
-
-    if (!updateInterest) {
-      throw new NotFoundException('업데이트 후 데이터를 찾을 수 없습니다.');
-    }
-
-    updateInterest.id = undefined;
-
-    return updateInterest;
+    return true;
   }
 
   // 관심사 삭제
-  async remove(user: any, id: number) {
-    // 1. 내가 관리자인지 확인
-    const userId = user.id;
+  async remove(id: number): Promise<boolean> {
+    // 존재하는 관심사 ID인지 확인
+    await this.findOneById(id);
 
-    // 2. 관리자가 아니라면 권한 없음으로 에러 발생
-    const checkedAdmin = await this.accountRepository.findOne({
-      where: { id: userId },
-    });
+    // 관심사 삭제
+    await this.interestRepository.delete(id);
 
-    if (!checkedAdmin) {
-      throw new NotFoundException('허가 받지 않은 사용자입니다.');
+    return true;
+  }
+
+  // 이미 존재하는 관심사인지 확인
+  async checkDuplicateInterestName(interestName: string): Promise<void> {
+    const existingInterest = await this.interestRepository.findOne({ where: { interestName } });
+    if (existingInterest) {
+      throw new ConflictException(INTEREST_MESSAGES.COMMON.DUPLICATE);
     }
-
-    const findInterestId = await this.interestRepository.findOne({
-      where: { id },
-    });
-
-    if (!findInterestId) {
-      throw new BadRequestException('존재하지 않는 Id입니다.');
-    }
-
-    const deleteInterestId = await this.interestRepository.delete(id);
-
-    return deleteInterestId;
+    return;
   }
 }
