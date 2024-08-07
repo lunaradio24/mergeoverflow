@@ -20,7 +20,7 @@ export class Account {
 
   @IsOptional()
   @IsString()
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, select: false })
   password: string;
 
   @IsEnum(Role)

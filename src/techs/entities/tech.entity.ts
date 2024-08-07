@@ -7,7 +7,7 @@ export class Tech {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @IsNotEmpty({ message: '기술을 입력해주세요.' })
+  @IsNotEmpty({ message: '기술스택을 입력해주세요.' })
   @IsString()
   @Column({ unique: true })
   techName: string;

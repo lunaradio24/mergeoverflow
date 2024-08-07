@@ -1,75 +1,74 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
-import { CreateTechDto } from 'src/users/dto/tech.dto';
+import { TechDto } from './dto/tech.dto';
 import { Tech } from './entities/tech.entity';
-import { Account } from 'src/auth/entities/account.entity';
+import { TECH_MESSAGES } from './constants/tech.message.constant';
 
 @Injectable()
 export class TechService {
   constructor(
     @InjectRepository(Tech)
     private readonly techRepository: Repository<Tech>,
-    @InjectRepository(Account)
-    private readonly accountRepository: Repository<Account>,
   ) {}
 
   // 기술 목록 생성
-  async create(createTechDto: CreateTechDto) {
+  async create(techDto: TechDto): Promise<boolean> {
+    // 이미 존재하는 기술스택 이름인지 확인
+    await this.checkDuplicateTechName(techDto.techName);
+
     // 입력한 tech 저장
-    const saveTech = await this.techRepository.save(createTechDto);
-    return saveTech;
+    await this.techRepository.save(techDto);
+    return true;
   }
 
-  // 기술 목록 조회
-  async findAll() {
-    const findTech = await this.techRepository.find({
-      order: {
-        id: 'ASC',
-      },
-    });
+  // 기술 ID로 조회
+  async findOneById(id: number): Promise<Tech> {
+    const tech = await this.techRepository.findOne({ where: { id } });
+    if (!tech) {
+      throw new NotFoundException(TECH_MESSAGES.READ_ONE.FAILURE.NOT_FOUND);
+    }
+    return tech;
+  }
 
-    return findTech;
+  // 기술 목록 전체 조회
+  async findAll(): Promise<Tech[]> {
+    const techList = await this.techRepository.find({ order: { id: 'ASC' } });
+    return techList;
   }
 
   // 기술 수정
-  async update(id: number, createTechDto: CreateTechDto) {
-    // 기술의 기술의 ID 검색
-    const findTech = await this.techRepository.findOne({
-      where: { id },
-    });
+  async update(id: number, techDto: TechDto): Promise<boolean> {
+    // 존재하는 기술 ID인지 확인
+    await this.findOneById(id);
 
-    // 아니라면 오류 배출
-    if (!findTech) {
-      throw new BadRequestException('존재하지 않는 ID입니다.');
-    }
+    // 이미 존재하는 기술스택 이름인지 확인
+    await this.checkDuplicateTechName(techDto.techName);
 
-    // 맞으면 새로운 것을 업데이트
-    await this.techRepository.update({ id }, createTechDto);
+    // 기술스택 이름 업데이트
+    await this.techRepository.update({ id }, techDto);
 
-    // 업데이트 한 것들 다시 조회
-    const updateTech = await this.techRepository.findOne({
-      where: {
-        id,
-      },
-    });
-
-    return updateTech;
+    return true;
   }
 
   // 기술 삭제
-  async remove(id: number) {
-    const findTech = await this.techRepository.findOne({
-      where: { id },
-    });
+  async remove(id: number): Promise<boolean> {
+    // 존재하는 기술 ID인지 확인
+    await this.findOneById(id);
 
-    if (!findTech) {
-      throw new BadRequestException('존재하지 않는 ID입니다.');
+    // 기술스택 삭제
+    await this.techRepository.delete(id);
+
+    return true;
+  }
+
+  // 이미 존재하는 기술인지 확인
+  async checkDuplicateTechName(techName: string): Promise<void> {
+    const existingTech = await this.techRepository.findOne({ where: { techName } });
+    if (existingTech) {
+      throw new ConflictException(TECH_MESSAGES.COMMON.DUPLICATE);
     }
-
-    const deleteTech = await this.techRepository.delete(id);
-
-    return deleteTech;
+    return;
   }
 }
