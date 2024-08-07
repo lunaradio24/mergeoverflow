@@ -8,7 +8,7 @@ on:
     branches: [dev] # main 브랜치
 
 env:
-  PROJECT_DIR: /home/ubuntu/last-Project
+  PROJECT_DIR: /home/ubuntu/SP-last-Project
 
 jobs:
   deploy:
