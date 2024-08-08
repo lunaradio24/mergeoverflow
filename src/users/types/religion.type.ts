@@ -1,7 +1,7 @@
 export enum Religion {
-  CHRISTIAN = 'CHRISTIAN',
-  CATHOLIC = 'CATHOLIC',
-  BUDDHISM = 'BUDDHISM',
-  ETC = 'ETC',
-  NONE = 'NONE',
+  CHRISTIAN = '기독교',
+  CATHOLIC = '천주교',
+  BUDDHISM = '불교',
+  ETC = '기타',
+  NONE = '무교',
 }
