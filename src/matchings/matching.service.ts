@@ -282,10 +282,8 @@ export class MatchingService {
           throw new BadRequestException('제공된 순서대로 사용자와 상호작용하세요.');
         }
       }
-
       // 매칭 정보 업데이트
       await queryRunner.manager.update(Matching, { userId, targetUserId }, { interactionType });
-
       // 상대방이 이미 좋아요를 눌렀는지 확인
       const targetUserMatching = await queryRunner.manager.findOne(Matching, {
         where: {

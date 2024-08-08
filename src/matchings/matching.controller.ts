@@ -24,14 +24,14 @@ export class MatchingController {
 
   // 좋아요 처리
   @Post('like')
-  async likeUser(@UserInfo() user: User, @Body() targetUserId: number) {
+  async likeUser(@UserInfo() user: User, @Body('targetUserId') targetUserId: number) {
     const userId = user.id;
     await this.matchingService.likeUser(userId, targetUserId);
   }
 
   // 싫어요 처리
   @Post('dislike')
-  async dislikeUser(@UserInfo() user: User, @Body() targetUserId: number) {
+  async dislikeUser(@UserInfo() user: User, @Body('targetUserId') targetUserId: number) {
     const userId = user.id;
     await this.matchingService.dislikeUser(userId, targetUserId);
   }
