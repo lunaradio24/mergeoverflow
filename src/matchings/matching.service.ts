@@ -179,6 +179,15 @@ export class MatchingService {
       }
     }
 
+    // 기존 매칭된 사용자를 제외
+    const existingMatchings = await this.matchingRepository.find({
+      where: { userId },
+    });
+    const existingTargetUserIds = existingMatchings.map((matching) => matching.targetUserId);
+    if (existingTargetUserIds.length > 0) {
+      queryBuilder.andWhere('user.id NOT IN (:...existingTargetUserIds)', { existingTargetUserIds });
+    }
+
     queryBuilder.orderBy('RAND()').take(NUM_MATCHING_CREATION);
     const newUsers = await queryBuilder.getMany();
 
