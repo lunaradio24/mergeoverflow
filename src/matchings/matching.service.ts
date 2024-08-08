@@ -38,7 +38,10 @@ export class MatchingService {
   public async createNewMatchings(userId: number): Promise<Matching[]> {
     // 사용자의 매칭 선호도 가져오기
     const preferences = await this.matchingPreferencesRepository.findOne({ where: { user: { id: userId } } });
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: { images: true },
+    });
 
     if (!user) {
       throw new NotFoundException(`사용자 ID ${userId}를 찾을 수 없습니다.`);
@@ -159,7 +162,9 @@ export class MatchingService {
         }
 
         // 거리 필터링 조건에 맞는 사용자만 쿼리 빌더에 추가
-        queryBuilder.andWhere('user.id IN (:...userIds)', { userIds: userIdsWithinDistance });
+        if (userIdsWithinDistance.length > 0) {
+          queryBuilder.andWhere('user.id IN (:...userIds)', { userIds: userIdsWithinDistance });
+        }
       }
     }
 
