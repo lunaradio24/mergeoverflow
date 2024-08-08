@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, IsNull } from 'typeorm';
+import { Repository, In, IsNull, DataSource } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { Matching } from './entities/matching.entity';
 import { InteractionType } from './types/interaction-type.type';
@@ -17,6 +17,9 @@ import { Heart } from '../hearts/entities/heart.entity';
 import { LocationService } from '../locations/location.service';
 import { PreferredDistance } from '../preferences/types/preferred-distance.type';
 import { InteractionDto } from './dto/interaction.dto';
+import { UserService } from 'src/users/user.service';
+import { PreferredBodyShape } from 'src/preferences/types/preferred-body-shape.type';
+import { PreferredFrequency } from 'src/preferences/types/preferred-frequency.type';
 
 @Injectable()
 export class MatchingService {
@@ -32,9 +35,87 @@ export class MatchingService {
     private readonly chatRoomService: ChatRoomService,
     private readonly notificationGateway: NotificationGateway,
     private readonly locationService: LocationService,
+    private readonly userService: UserService,
+    private readonly dataSource: DataSource,
   ) {}
 
-  // 새로운 매칭 상대를 생성하는 메서드
+  // 필터링 함수들 추가
+  private applyGenderFilter(queryBuilder: any, preferences: Preferences, userGender: Gender) {
+    if (preferences.gender && preferences.gender !== PreferredGender.NO_PREFERENCE) {
+      if (preferences.gender === PreferredGender.ONLY_OPPOSITE) {
+        const oppositeGender = userGender === Gender.MALE ? Gender.FEMALE : Gender.MALE;
+        queryBuilder.andWhere('user.gender = :gender', { gender: oppositeGender });
+      } else if (preferences.gender === PreferredGender.ONLY_SAME) {
+        queryBuilder.andWhere('user.gender = :gender', { gender: userGender });
+      }
+    }
+  }
+
+  private applyAgeGapFilter(queryBuilder: any, preferences: Preferences, userBirthDate: string) {
+    if (preferences.ageGap) {
+      const birthYear = new Date(userBirthDate).getFullYear();
+      let minBirthYear: number;
+      let maxBirthYear: number;
+
+      switch (preferences.ageGap) {
+        case PreferredAgeGap.WITHIN_3_YEARS:
+          minBirthYear = birthYear - 3;
+          maxBirthYear = birthYear + 3;
+          break;
+        case PreferredAgeGap.WITHIN_5_YEARS:
+          minBirthYear = birthYear - 5;
+          maxBirthYear = birthYear + 5;
+          break;
+        case PreferredAgeGap.WITHIN_10_YEARS:
+          minBirthYear = birthYear - 10;
+          maxBirthYear = birthYear + 10;
+          break;
+        default:
+          minBirthYear = null;
+          maxBirthYear = null;
+      }
+
+      if (minBirthYear && maxBirthYear) {
+        queryBuilder.andWhere('YEAR(user.birthDate) BETWEEN :minBirthYear AND :maxBirthYear', {
+          minBirthYear,
+          maxBirthYear,
+        });
+      }
+    }
+  }
+
+  private applyHeightFilter(queryBuilder: any, heightPreference: PreferredHeight) {
+    const heightRanges = {
+      [PreferredHeight.HEIGHT_150_160]: [150, 160],
+      [PreferredHeight.HEIGHT_160_170]: [160, 170],
+      [PreferredHeight.HEIGHT_170_180]: [170, 180],
+      [PreferredHeight.HEIGHT_180_PLUS]: [180, Number.MAX_SAFE_INTEGER],
+    };
+
+    if (heightPreference && heightPreference !== PreferredHeight.NO_PREFERENCE) {
+      const [minHeight, maxHeight] = heightRanges[heightPreference];
+      queryBuilder.andWhere('user.height BETWEEN :minHeight AND :maxHeight', { minHeight, maxHeight });
+    }
+  }
+
+  private applyBodyShapeFilter(queryBuilder: any, bodyShapePreference: PreferredBodyShape) {
+    if (bodyShapePreference && bodyShapePreference !== PreferredBodyShape.NO_PREFERENCE) {
+      queryBuilder.andWhere('user.bodyShape = :bodyShape', { bodyShape: bodyShapePreference });
+    }
+  }
+
+  private applySmokingFrequencyFilter(queryBuilder: any, smokingFreqPreference: PreferredFrequency) {
+    if (smokingFreqPreference && smokingFreqPreference !== PreferredFrequency.NO_PREFERENCE) {
+      queryBuilder.andWhere('user.smokingFreq = :smokingFreq', { smokingFreq: smokingFreqPreference });
+    }
+  }
+
+  private applyDrinkingFrequencyFilter(queryBuilder: any, drinkingFreqPreference: PreferredFrequency) {
+    if (drinkingFreqPreference && drinkingFreqPreference !== PreferredFrequency.NO_PREFERENCE) {
+      queryBuilder.andWhere('user.drinkingFreq = :drinkingFreq', { drinkingFreq: drinkingFreqPreference });
+    }
+  }
+
   public async createNewMatchings(userId: number): Promise<Matching[]> {
     // 사용자의 매칭 선호도 가져오기
     const preferences = await this.matchingPreferencesRepository.findOne({ where: { user: { id: userId } } });
@@ -52,86 +133,27 @@ export class MatchingService {
 
     // 매칭 선호도 필터링 적용
     if (preferences) {
-      //성별에 선호도 필터링
-      if (preferences.gender && preferences.gender !== PreferredGender.NO_PREFERENCE) {
-        if (preferences.gender === PreferredGender.ONLY_OPPOSITE) {
-          const oppositeGender = user.gender === Gender.MALE ? Gender.FEMALE : Gender.MALE;
-          queryBuilder.andWhere('user.gender = :gender', { gender: oppositeGender });
-        } else if (preferences.gender === PreferredGender.ONLY_SAME) {
-          queryBuilder.andWhere('user.gender = :gender', { gender: user.gender });
-        }
-      }
+      // 성별 필터링
+      this.applyGenderFilter(queryBuilder, preferences, user.gender);
 
-      //나이차이 필터링
-      if (preferences.ageGap) {
-        const birthYear = new Date(user.birthDate).getFullYear();
-        let minBirthYear: number;
-        let maxBirthYear: number;
+      // 나이차이 필터링
+      this.applyAgeGapFilter(queryBuilder, preferences, user.birthDate);
 
-        switch (preferences.ageGap) {
-          case PreferredAgeGap.WITHIN_3_YEARS:
-            minBirthYear = birthYear - 3;
-            maxBirthYear = birthYear + 3;
-            break;
-          case PreferredAgeGap.WITHIN_5_YEARS:
-            minBirthYear = birthYear - 5;
-            maxBirthYear = birthYear + 5;
-            break;
-          case PreferredAgeGap.WITHIN_10_YEARS:
-            minBirthYear = birthYear - 10;
-            maxBirthYear = birthYear + 10;
-            break;
-          default:
-            minBirthYear = null;
-            maxBirthYear = null;
-        }
-        if (minBirthYear && maxBirthYear) {
-          //SQL YEAR 함수 , 1991-01-01 이면 1991이라는 연도를 추출함
-          queryBuilder.andWhere('YEAR(user.birthDate) BETWEEN :minBirthYear AND :maxBirthYear', {
-            minBirthYear,
-            maxBirthYear,
-          });
-        }
-      }
-      //키 필터링
-      if (preferences.height && preferences.height !== PreferredHeight.NO_PREFERENCE) {
-        switch (preferences.height) {
-          case PreferredHeight.HEIGHT_150_160:
-            queryBuilder.andWhere('user.height BETWEEN 150 AND 160');
-            break;
-          case PreferredHeight.HEIGHT_160_170:
-            queryBuilder.andWhere('user.height BETWEEN 160 AND 170');
-            break;
-          case PreferredHeight.HEIGHT_170_180:
-            queryBuilder.andWhere('user.height BETWEEN 170 AND 180');
-            break;
-          case PreferredHeight.HEIGHT_180_PLUS:
-            queryBuilder.andWhere('user.height > 180');
-            break;
-        }
-      }
-      //체형 필터링
-      if (preferences.bodyShape) {
-        queryBuilder.andWhere('user.bodyShape = :bodyShape', { bodyShape: preferences.bodyShape });
-      }
-      //흡연빈도
-      if (preferences.smokingFrequency) {
-        queryBuilder.andWhere('user.smokingFreq = :smokingFreq', { smokingFreq: preferences.smokingFrequency });
-      }
-      //움주빈도
-      if (preferences.drinkingFrequency) {
-        queryBuilder.andWhere('user.drinkingFreq = :drinkingFreq', { drinkingFreq: preferences.drinkingFrequency });
-      }
-      // //코딩레벨 필터링
-      // if (preferences.codingLevel) {
-      //   queryBuilder.andWhere('user.codingLevel = :codingLevel', { codingLevel: preferences.codingLevel });
-      // }
+      // 키 필터링
+      this.applyHeightFilter(queryBuilder, preferences.height);
+
+      // 체형 필터링
+      this.applyBodyShapeFilter(queryBuilder, preferences.bodyShape);
+
+      // 흡연빈도 필터링
+      this.applySmokingFrequencyFilter(queryBuilder, preferences.smokingFrequency);
+
+      // 움주빈도 필터링
+      this.applyDrinkingFrequencyFilter(queryBuilder, preferences.drinkingFrequency);
 
       // 거리 필터링
-      // 현재 사용자의 위치 정보 가져오기
       const userLocation = await this.locationService.getLocationByUserId(userId);
-      if (userLocation.latitude && userLocation.longitude && preferences.distance !== PreferredDistance.NO_PREFERENCE) {
-        // 거리 조건별 최대 거리 (단위: km)
+      if (preferences.distance !== PreferredDistance.NO_PREFERENCE) {
         const distanceInKm = {
           [PreferredDistance.WITHIN_10_KM]: 10,
           [PreferredDistance.WITHIN_20_KM]: 20,
@@ -139,32 +161,22 @@ export class MatchingService {
           [PreferredDistance.WITHIN_100_KM]: 100,
         };
 
-        // 매칭 후보자 목록 가져오기
-        const targetUsers = await this.userRepository.find();
-        const userIdsWithinDistance = [];
+        // latitude와 longitude가 null이 아닌 사용자만 필터링 대상
+        queryBuilder.innerJoin('user.location', 'location');
+        queryBuilder.andWhere('user.location.latitude IS NOT NULL AND user.location.longitude IS NOT NULL');
 
-        // 각 매칭 후보자의 위치 정보 가져오기 및 거리 계산
-        for (const targetUser of targetUsers) {
-          const targetLocation = await this.locationService.getLocationByUserId(targetUser.id);
-          if (targetLocation.latitude && targetLocation.longitude) {
-            const distance = this.locationService.calculateDistance(
-              userLocation.latitude,
-              userLocation.longitude,
-              targetLocation.latitude,
-              targetLocation.longitude,
-            );
-
-            // 거리가 설정된 조건 내에 있는 경우 매칭 대상 목록에 추가
-            if (distance <= distanceInKm[preferences.distance]) {
-              userIdsWithinDistance.push(targetUser.id);
-            }
-          }
-        }
-
-        // 거리 필터링 조건에 맞는 사용자만 쿼리 빌더에 추가
-        if (userIdsWithinDistance.length > 0) {
-          queryBuilder.andWhere('user.id IN (:...userIds)', { userIds: userIdsWithinDistance });
-        }
+        // 거리 필터링을 SQL 쿼리 내에서 직접 처리
+        queryBuilder.andWhere(
+          `ST_Distance_Sphere(
+          point(user.location.longitude, user.location.latitude),
+          point(:userLongitude, :userLatitude))
+          <= :distanceInMeters`,
+          {
+            userLongitude: userLocation.longitude,
+            userLatitude: userLocation.latitude,
+            distanceInMeters: distanceInKm[preferences.distance] * 1000, // km를 m로 변환
+          },
+        );
       }
     }
 
@@ -182,7 +194,6 @@ export class MatchingService {
 
     // targetUserId 순으로 정렬
     newMatchings.sort((a, b) => a.targetUserId - b.targetUserId);
-    console.log(newMatchings);
 
     if (newMatchings.length > 0) {
       await this.matchingRepository.save(newMatchings);
@@ -205,7 +216,7 @@ export class MatchingService {
     if (existingMatchings.length === 0) {
       existingMatchings = await this.createNewMatchings(userId);
 
-      // 새로운 매칭 상대가 없으면 빈 배열 반환
+      // 새로 생성할 매칭 상대가 없으면 빈 배열 반환
       if (existingMatchings.length === 0) {
         return [];
       }
@@ -222,96 +233,101 @@ export class MatchingService {
     return users;
   }
 
-  // 매칭 결과를 저장하는 함수
   async handleUserInteraction(interactionDto: InteractionDto): Promise<void> {
     const { userId, targetUserId, interactionType } = interactionDto;
 
-    // 자기 자신을 좋아요 또는 싫어요 하는지 검증
-    if (userId === targetUserId) {
-      throw new BadRequestException('자신을 좋아요 또는 싫어요할 수 없습니다.');
-    }
+    // 트랜잭션 시작
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    // userId와 targetUserId가 존재하는지 확인
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new NotFoundException(`사용자 ID ${userId}를 찾을 수 없습니다.`);
-    }
-
-    const targetUser = await this.userRepository.findOne({ where: { id: targetUserId } });
-    if (!targetUser) {
-      throw new NotFoundException(`대상 사용자 ID ${targetUserId}를 찾을 수 없습니다.`);
-    }
-
-    // 하트 차감 로직 추가
-    if (interactionType === InteractionType.LIKE) {
-      const userHearts = await this.heartRepository.findOne({ where: { userId } });
-      if (!userHearts || userHearts.remainHearts < 1) {
-        throw new BadRequestException('남은 하트가 없습니다.');
+    try {
+      // 자기 자신을 좋아요 또는 싫어요 하는지 검증
+      if (userId === targetUserId) {
+        throw new BadRequestException('자신을 좋아요 또는 싫어요할 수 없습니다.');
       }
-      await this.heartRepository.decrement({ userId }, 'remainHearts', 1);
-    }
 
-    // 순차적으로 처리되었는지 확인
-    let existingMatchings = await this.matchingRepository.find({
-      where: {
-        userId,
-        interactionType: IsNull(), // interaction 타입이 null인 매칭을 가져옴
-      },
-      order: { createdAt: 'ASC' }, // 생성된 순서대로 정렬
-    });
+      // userId와 targetUserId가 존재하는지 확인
+      await this.userService.validateUserExists(userId);
+      await this.userService.validateUserExists(targetUserId);
 
-    if (existingMatchings.length === 0) {
-      // interaction 타입이 null인 매칭이 0이면 새로운 생성 메소드로 다시 가져옴
-      existingMatchings = await this.createNewMatchings(userId);
-    }
-
-    if (existingMatchings.length > 0) {
-      // interaction 타입이 null인 가장 첫 번째 매칭의 targetUserId 가져오기
-      const nextTargetUserId = existingMatchings[0].targetUserId;
-
-      // 상호작용해야 하는 대상 사용자 ID와 다른 경우 에러 메시지 출력
-      if (nextTargetUserId !== targetUserId) {
-        throw new BadRequestException('제공된 순서대로 사용자와 상호작용하세요.');
+      // 하트 차감 로직 추가
+      if (interactionType === InteractionType.LIKE) {
+        const userHearts = await queryRunner.manager.findOne(Heart, { where: { userId } });
+        if (userHearts.remainHearts < 1) {
+          throw new BadRequestException('남은 하트가 없습니다.');
+        }
+        await queryRunner.manager.decrement(Heart, { userId }, 'remainHearts', 1);
       }
-    }
 
-    // 매칭 정보 업데이트
-    await this.matchingRepository.update({ userId, targetUserId }, { interactionType });
+      // 순차적으로 처리되었는지 확인
+      let existingMatchings = await queryRunner.manager.find(Matching, {
+        where: {
+          userId,
+          interactionType: IsNull(), // interaction 타입이 null인 매칭을 가져옴
+        },
+        order: { createdAt: 'ASC' }, // 생성된 순서대로 정렬
+      });
 
-    // 상대방이 이미 좋아요를 눌렀는지 확인
-    const targetUserMatching = await this.matchingRepository.findOne({
-      where: {
-        userId: targetUserId,
-        targetUserId: userId,
-        interactionType: InteractionType.LIKE,
-      },
-    });
+      if (existingMatchings.length === 0) {
+        // interaction 타입이 null인 매칭이 0이면 새로운 생성 메소드로 다시 가져옴
+        existingMatchings = await this.createNewMatchings(userId);
+      }
 
-    // 서로 좋아요를 눌렀다면 채팅방 생성
-    if (interactionType === InteractionType.LIKE && targetUserMatching) {
-      const user1Id = targetUserMatching ? targetUserId : userId;
-      const user2Id = targetUserMatching ? userId : targetUserId;
-      await this.chatRoomService.createChatRoom(user1Id, user2Id);
+      if (existingMatchings.length > 0) {
+        // interaction 타입이 null인 가장 첫 번째 매칭의 targetUserId 가져오기
+        const nextTargetUserId = existingMatchings[0].targetUserId;
+
+        // 상호작용해야 하는 대상 사용자 ID와 다른 경우 에러 메시지 출력
+        if (nextTargetUserId !== targetUserId) {
+          throw new BadRequestException('제공된 순서대로 사용자와 상호작용하세요.');
+        }
+      }
+
+      // 매칭 정보 업데이트
+      await queryRunner.manager.update(Matching, { userId, targetUserId }, { interactionType });
+
+      // 상대방이 이미 좋아요를 눌렀는지 확인
+      const targetUserMatching = await queryRunner.manager.findOne(Matching, {
+        where: {
+          userId: targetUserId,
+          targetUserId: userId,
+          interactionType: InteractionType.LIKE,
+        },
+      });
+
+      // 서로 좋아요를 눌렀다면 채팅방 생성
+      if (interactionType === InteractionType.LIKE && targetUserMatching) {
+        const user1Id = targetUserMatching ? targetUserId : userId;
+        const user2Id = targetUserMatching ? userId : targetUserId;
+
+        await this.chatRoomService.createChatRoom(user1Id, user2Id);
+        this.notificationGateway.server
+          .to(user1Id.toString())
+          .emit('mergeNotify', { type: NotificationType.MERGED, userId: user1Id, targetUserId: user2Id });
+
+        this.notificationGateway.server
+          .to(user2Id.toString())
+          .emit('mergeNotify', { type: NotificationType.MERGED, userId: user2Id, targetUserId: user1Id });
+      }
+      // 좋아요 알람을 상대방에게 보냄
       this.notificationGateway.server
-        .to(user1Id.toString())
-        .emit('mergeNotify', { type: NotificationType.MERGED, userId: user1Id, targetUserId: user2Id });
-
-      this.notificationGateway.server
-        .to(user2Id.toString())
-        .emit('mergeNotify', { type: NotificationType.MERGED, userId: user2Id, targetUserId: user1Id });
+        .to(targetUserId.toString())
+        .emit('likeNotify', { type: NotificationType.LIKE, userId: targetUserId, mergeRequesterId: userId });
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      console.error('Transaction failed:', error);
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
-    // 좋아요 알람을 상대방에게 보냄
-    this.notificationGateway.server
-      .to(targetUserId.toString())
-      .emit('likeNotify', { type: NotificationType.LIKE, userId: targetUserId, mergeRequesterId: userId });
   }
 
-  // 모든 매칭 삭제
   async deleteAllMatchingsForUser(userId: number) {
     await this.matchingRepository.delete({ userId });
   }
 
-  // 좋아요를 처리하는 함수
   async likeUser(userId: number, targetUserId: number) {
     const heart = await this.heartRepository.findOne({ where: { userId } });
 
@@ -323,14 +339,27 @@ export class MatchingService {
       throw new ForbiddenException('남은 하트가 없습니다.');
     }
 
-    const interactionDto = { userId, targetUserId, interactionType: InteractionType.LIKE };
-    await this.handleUserInteraction(interactionDto);
+    // 트랜잭션 시작
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    heart.remainHearts -= 1;
-    await this.heartRepository.save(heart);
+    try {
+      // 매칭 interaction 상태 변경 적용
+      const interactionDto = { userId, targetUserId, interactionType: InteractionType.LIKE };
+      await this.handleUserInteraction(interactionDto);
+
+      // 하트 차감
+      await queryRunner.manager.decrement(Heart, { userId }, 'remainHearts', 1);
+    } catch (error) {
+      console.error('Transaction failed:', error);
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
-  // 싫어요를 처리하는 함수
   async dislikeUser(userId: number, targetUserId: number) {
     const interactionDto = { userId, targetUserId, interactionType: InteractionType.DISLIKE };
     await this.handleUserInteraction(interactionDto);

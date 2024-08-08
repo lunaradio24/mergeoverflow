@@ -4,10 +4,9 @@ import { PreferenceService } from './preference.service';
 import { PreferenceController } from './preference.controller';
 import { Preferences } from './entities/preferences.entity';
 import { MatchingModule } from '../matchings/matching.module';
-import { UserModule } from 'src/users/user.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Preferences]), MatchingModule, UserModule],
+  imports: [TypeOrmModule.forFeature([Preferences]), MatchingModule],
   controllers: [PreferenceController],
   providers: [PreferenceService],
 })

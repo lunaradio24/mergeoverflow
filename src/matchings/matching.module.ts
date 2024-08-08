@@ -12,12 +12,14 @@ import { HeartService } from 'src/hearts/heart.service';
 import { Location } from '../locations/entities/location.entity';
 import { LocationService } from '../locations/location.service';
 import { LocationController } from '../locations/location.controller';
+import { UserModule } from 'src/users/user.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Heart, Matching, Preferences, Location]),
     ChatRoomModule,
     NotificationModule,
+    UserModule,
   ],
   controllers: [MatchingController, LocationController],
   providers: [MatchingService, HeartService, LocationService],

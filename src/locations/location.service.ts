@@ -68,7 +68,6 @@ export class LocationService {
       location2.latitude,
       location2.longitude,
     );
-    console.log(`User ${userId1}와 User ${userId2} 간의 거리: ${distance} km`);
 
     return distance;
   }

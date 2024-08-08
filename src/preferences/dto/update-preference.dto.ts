@@ -35,7 +35,7 @@ export class UpdatePreferenceDto {
 
   @IsOptional()
   @IsEnum(PreferredDistance, {
-    message: 'distance은 10km 이내, 20km 이내, 50km 이내, 100km 이내, 상관 없음 중에 선택해주세요',
+    message: 'distance은 [10km 이내], [20km 이내], [50km 이내], [100km 이내], [상관 없음] 중에 선택해주세요',
   })
   distance?: PreferredDistance;
 }

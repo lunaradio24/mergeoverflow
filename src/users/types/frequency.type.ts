@@ -1,5 +1,5 @@
 export enum Frequency {
-  FREQUENTLY = 'FREQUENTLY',
-  SOMETIMES = 'SOMETIMES',
-  NEVER = 'NEVER',
+  FREQUENTLY = '자주',
+  SOMETIMES = '가끔',
+  NEVER = '하지 않음',
 }

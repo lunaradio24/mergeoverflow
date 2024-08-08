@@ -31,11 +31,23 @@ export class UserService {
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['account', 'images'],
+      cache: true,
     });
     if (user) {
       return user;
     }
     return null;
+  }
+
+  async validateUserExists(userId: number): Promise<boolean> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      cache: true,
+    });
+    if (!user) {
+      throw new NotFoundException(`사용자 ID ${userId}를 찾을 수 없습니다.`);
+    }
+    return true;
   }
 
   /**
