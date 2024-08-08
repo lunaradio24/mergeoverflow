@@ -25,7 +25,7 @@ import { ChatMessage } from '../../chat-rooms/entities/chat-message.entity';
 import { ChatRoom } from '../../chat-rooms/entities/chat-room.entity';
 import { Account } from '../../auth/entities/account.entity';
 import { IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
-import { MatchingPreferences } from 'src/matchings/entities/matching-preferences.entity';
+import { Preferences } from 'src/preferences/entities/preferences.entity';
 import { Location } from 'src/locations/entities/location.entity';
 @Entity({ name: 'users' })
 export class User {
@@ -138,8 +138,8 @@ export class User {
   @JoinColumn({ name: 'account_id', referencedColumnName: 'id' })
   account: Account;
 
-  @OneToOne(() => MatchingPreferences, (matchingPreferences) => matchingPreferences.user, { cascade: true })
-  matchingPreferences: MatchingPreferences;
+  @OneToOne(() => Preferences, (preferences) => preferences.user, { cascade: true })
+  preferences: Preferences;
 
   @OneToOne(() => Location, (location) => location.user, { cascade: true })
   location: Location;

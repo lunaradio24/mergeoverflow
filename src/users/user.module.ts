@@ -15,7 +15,7 @@ import { ChatMessage } from '../chat-rooms/entities/chat-message.entity';
 import { Account } from '../auth/entities/account.entity';
 import { Notification } from '../notifications/entities/notification.entity';
 import { S3Module } from 'src/s3/s3.module';
-import { MatchingPreferences } from 'src/matchings/entities/matching-preferences.entity';
+import { Preferences } from 'src/preferences/entities/preferences.entity';
 import { Location } from 'src/locations/entities/location.entity';
 
 @Module({
@@ -34,7 +34,7 @@ import { Location } from 'src/locations/entities/location.entity';
       ChatRoom,
       ChatMessage,
       Account,
-      MatchingPreferences,
+      Preferences,
       Location,
     ]),
   ],

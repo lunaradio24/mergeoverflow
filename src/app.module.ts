@@ -18,7 +18,7 @@ import { InterestModule } from './interests/interest.module';
 import { TechModule } from './techs/tech.module';
 import { SmsModule } from './sms/sms.module';
 import { S3Module } from './s3/s3.module';
-import { MatchingPreferencesModule } from './matchings/matching-preferences.module';
+import { PreferenceModule } from './preferences/preference.module';
 import { ImageModule } from './images/image.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { LocationModule } from './locations/location.module';
@@ -39,7 +39,7 @@ import { HeartModule } from './hearts/heart.module';
     AuthModule,
     UserModule,
     MatchingModule,
-    MatchingPreferencesModule,
+    PreferenceModule,
     ChatRoomModule,
     NotificationModule,
     InterestModule,

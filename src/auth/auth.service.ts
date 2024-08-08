@@ -33,7 +33,7 @@ import { TECH_MESSAGES } from 'src/techs/constants/tech.message.constant';
 import { LocalPayload } from './interfaces/local-payload.interface';
 import { SocialPayload } from './interfaces/social-payload.interface';
 import { Location } from 'src/locations/entities/location.entity';
-import { MatchingPreferences } from 'src/matchings/entities/matching-preferences.entity';
+import { Preferences } from 'src/preferences/entities/preferences.entity';
 import { TokensRO } from './ro/tokens.ro';
 import { SocialSignInDto } from './dto/social-sign-in.dto';
 import { SocialSignUpDto } from './dto/social-sign-up.dto';
@@ -185,7 +185,7 @@ export class AuthService {
       await queryRunner.manager.save(location);
 
       // MatchingPreferences 데이터 생성 및 저장
-      const matchingPreferences = new MatchingPreferences();
+      const matchingPreferences = new Preferences();
       matchingPreferences.userId = savedUser.id;
       await queryRunner.manager.save(matchingPreferences);
 
@@ -326,7 +326,7 @@ export class AuthService {
       await queryRunner.manager.save(location);
 
       // MatchingPreferences 데이터 생성 및 저장
-      const matchingPreferences = new MatchingPreferences();
+      const matchingPreferences = new Preferences();
       matchingPreferences.userId = savedUser.id;
       await queryRunner.manager.save(matchingPreferences);
 

@@ -7,7 +7,7 @@ import { PreferredAgeGap } from '../types/preferred-age-gap.type';
 import { PreferredHeight } from '../types/preferred-height.type';
 import { PreferredDistance } from '../types/preferred-distance.type';
 
-export class CreateMatchingPreferencesDto {
+export class CreatePreferenceDto {
   @IsOptional()
   @IsEnum(PreferredGender)
   gender?: PreferredGender;
