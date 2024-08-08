@@ -18,7 +18,7 @@ import { Heart } from 'src/hearts/entities/heart.entity';
 import { Matching } from 'src/matchings/entities/matching.entity';
 import { Notification } from 'src/notifications/entities/notification.entity';
 import { Location } from 'src/locations/entities/location.entity';
-import { MatchingPreferences } from 'src/matchings/entities/matching-preferences.entity';
+import { Preferences } from 'src/preferences/entities/preferences.entity';
 import { accountFactory } from './factories/account.factory';
 import { userFactory } from './factories/user.factory';
 import { profileImageFactory } from './factories/profile-image.factory';
@@ -61,7 +61,7 @@ import MatchingPreferenceSeeder from './seeders/matching-preference.seeder';
       Heart,
       Matching,
       Notification,
-      MatchingPreferences,
+      Preferences,
       Location,
     ],
     seeds: [

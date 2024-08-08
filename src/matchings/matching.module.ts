@@ -7,7 +7,7 @@ import { Heart } from '../hearts/entities/heart.entity';
 import { Matching } from './entities/matching.entity';
 import { ChatRoomModule } from 'src/chat-rooms/chat-room.module';
 import { NotificationModule } from 'src/notifications/notification.module';
-import { MatchingPreferences } from './entities/matching-preferences.entity';
+import { Preferences } from '../preferences/entities/preferences.entity';
 import { HeartService } from 'src/hearts/heart.service';
 import { Location } from '../locations/entities/location.entity';
 import { LocationService } from '../locations/location.service';
@@ -15,7 +15,7 @@ import { LocationController } from '../locations/location.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Heart, Matching, MatchingPreferences, Location]),
+    TypeOrmModule.forFeature([User, Heart, Matching, Preferences, Location]),
     ChatRoomModule,
     NotificationModule,
   ],

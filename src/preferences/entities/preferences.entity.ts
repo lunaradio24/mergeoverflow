@@ -10,15 +10,14 @@ import {
 import { User } from '../../users/entities/user.entity';
 import { PreferredGender } from '../types/preferred-gender.type';
 import { PreferredBodyShape } from '../types/preferred-body-shape.type';
-import { PreferredReligion } from '../types/preferred-religion.type';
 import { PreferredFrequency } from '../types/preferred-frequency.type';
 import { PreferredAgeGap } from '../types/preferred-age-gap.type';
 import { PreferredCodingLevel } from '../types/preferred-coding-level.type';
 import { PreferredHeight } from '../types/preferred-height.type';
 import { PreferredDistance } from '../types/preferred-distance.type';
 
-@Entity({ name: 'matching_preferences' })
-export class MatchingPreferences {
+@Entity({ name: 'preferences' })
+export class Preferences {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -55,7 +54,7 @@ export class MatchingPreferences {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToOne(() => User, (user) => user.matchingPreferences, { onDelete: 'CASCADE' })
+  @OneToOne(() => User, (user) => user.preferences, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: User;
 }

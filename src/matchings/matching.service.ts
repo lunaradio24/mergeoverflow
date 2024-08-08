@@ -8,14 +8,14 @@ import { NUM_MATCHING_CREATION } from './constants/matching.constant';
 import { ChatRoomService } from '../chat-rooms/chat-room.service';
 import { NotificationGateway } from 'src/notifications/notification.gateway';
 import { NotificationType } from 'src/notifications/types/notification-type.type';
-import { MatchingPreferences } from './entities/matching-preferences.entity';
-import { PreferredGender } from './types/preferred-gender.type';
+import { Preferences } from '../preferences/entities/preferences.entity';
+import { PreferredGender } from '../preferences/types/preferred-gender.type';
 import { Gender } from '../users/types/gender.type';
-import { PreferredAgeGap } from './types/preferred-age-gap.type';
-import { PreferredHeight } from './types/preferred-height.type';
+import { PreferredAgeGap } from '../preferences/types/preferred-age-gap.type';
+import { PreferredHeight } from '../preferences/types/preferred-height.type';
 import { Heart } from '../hearts/entities/heart.entity';
 import { LocationService } from '../locations/location.service';
-import { PreferredDistance } from './types/preferred-distance.type';
+import { PreferredDistance } from '../preferences/types/preferred-distance.type';
 import { InteractionDto } from './dto/interaction.dto';
 
 @Injectable()
@@ -25,8 +25,8 @@ export class MatchingService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Matching)
     private readonly matchingRepository: Repository<Matching>,
-    @InjectRepository(MatchingPreferences)
-    private readonly matchingPreferencesRepository: Repository<MatchingPreferences>,
+    @InjectRepository(Preferences)
+    private readonly matchingPreferencesRepository: Repository<Preferences>,
     @InjectRepository(Heart)
     private readonly heartRepository: Repository<Heart>,
     private readonly chatRoomService: ChatRoomService,
@@ -125,10 +125,9 @@ export class MatchingService {
       // }
 
       // 거리 필터링
-      if (preferences.distance && preferences.distance !== PreferredDistance.NO_PREFERENCE) {
-        // 현재 사용자의 위치 정보 가져오기
-        const userLocation = await this.locationService.getLocationByUserId(userId);
-
+      // 현재 사용자의 위치 정보 가져오기
+      const userLocation = await this.locationService.getLocationByUserId(userId);
+      if (userLocation.latitude && userLocation.longitude && preferences.distance !== PreferredDistance.NO_PREFERENCE) {
         // 거리 조건별 최대 거리 (단위: km)
         const distanceInKm = {
           [PreferredDistance.WITHIN_10_KM]: 10,

@@ -6,14 +6,14 @@ import { PreferredAgeGap } from '../types/preferred-age-gap.type';
 import { PreferredHeight } from '../types/preferred-height.type';
 import { PreferredDistance } from '../types/preferred-distance.type';
 
-export class UpdateMatchingPreferencesDto {
+export class UpdatePreferenceDto {
   @IsOptional()
   @IsEnum(PreferredGender)
   gender?: PreferredGender;
 
   @IsOptional()
   @IsEnum(PreferredAgeGap, {
-    message: 'ageGap은 3살이내, 5살이내, 10살이내, 상관없음 중에 선택해주세요',
+    message: 'ageGap은 [3살 이내], [5살 이내], [10살 이내], [상관없음] 중에 선택해주세요',
   })
   ageGap?: PreferredAgeGap;
 
