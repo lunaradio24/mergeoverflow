@@ -117,7 +117,7 @@ export class ChatRoomService {
           id: chatRoom.id,
           createdAt: chatRoom.createdAt,
           otherUser: { id: otherUser.id, nickname: otherUser.nickname, images: otherUserImages },
-          latestMessage,
+          latestMessageText: { text: latestMessage.text, createdAt: latestMessage.createdAt },
         };
       }),
     );
