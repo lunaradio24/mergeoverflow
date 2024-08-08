@@ -5,12 +5,14 @@ import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../auth.service';
 import { LocalPayload } from '../interfaces/local-payload.interface';
 import { AUTH_MESSAGES } from '../constants/auth.message.constant';
+import { UserService } from 'src/users/user.service';
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(Strategy, 'access-token') {
   constructor(
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
+    private readonly userService: UserService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -21,7 +23,7 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, 'access-toke
 
   async validate(payload: LocalPayload) {
     const userId = payload.userId;
-    const user = await this.authService.findUserByUserId(userId);
+    const user = await this.userService.findByUserId(userId);
     if (!user) {
       throw new NotFoundException(AUTH_MESSAGES.COMMON.JWT.NO_USER);
     }
