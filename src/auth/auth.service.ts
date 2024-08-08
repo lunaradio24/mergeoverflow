@@ -355,17 +355,6 @@ export class AuthService {
     return null;
   }
 
-  async findUserByUserId(userId: number): Promise<User | null> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['account'],
-    });
-    if (user) {
-      return user;
-    }
-    return null;
-  }
-
   async validateSocialUser(provider: string, providerId: string): Promise<User | null> {
     const account = await this.accountRepository.findOne({ where: { provider, providerId }, relations: ['user'] });
     return account ? account.user : null;
