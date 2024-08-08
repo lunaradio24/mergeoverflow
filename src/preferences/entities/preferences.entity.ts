@@ -40,10 +40,10 @@ export class Preferences {
   bodyShape: PreferredBodyShape;
 
   @Column({ type: 'enum', enum: PreferredFrequency, nullable: true })
-  smokingFrequency: PreferredFrequency;
+  smokingFreq: PreferredFrequency;
 
   @Column({ type: 'enum', enum: PreferredFrequency, nullable: true })
-  drinkingFrequency: PreferredFrequency;
+  drinkingFreq: PreferredFrequency;
 
   @Column({ type: 'enum', enum: PreferredDistance, nullable: true })
   distance: PreferredDistance;

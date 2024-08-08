@@ -4,10 +4,9 @@ import { User } from 'src/users/entities/user.entity';
 import { Preferences } from 'src/preferences/entities/preferences.entity';
 import { NUM_CREATING_ACCOUNTS } from 'seeds/constants/account.seed.constant';
 
-export default class MatchingPreferenceSeeder implements Seeder {
+export default class PreferenceSeeder implements Seeder {
   public async run(dataSource: DataSource, factoryManager: SeederFactoryManager): Promise<void> {
     const userRepository = dataSource.getRepository(User);
-    const matchingPreferenceRepository = dataSource.getRepository(Preferences);
 
     // 먼저 생성된 User 데이터를 내림차순으로 정렬하여 상위 {numNewAccounts}개를 가져온다.
     const newUsers = await userRepository.find({
@@ -19,14 +18,14 @@ export default class MatchingPreferenceSeeder implements Seeder {
     newUsers.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
     // 생성된 User 데이터에 따라 Matching-Preferences 데이터를 생성
-    const matchingPreferenceFactory = factoryManager.get(Preferences);
+    const preferenceFactory = factoryManager.get(Preferences);
 
     await Promise.all(
       newUsers.map(async (user) => {
         try {
-          const matchingPreferences = await matchingPreferenceFactory.make();
-          matchingPreferences.userId = user.id;
-          await matchingPreferenceFactory.save(matchingPreferences);
+          const preferences = await preferenceFactory.make();
+          preferences.userId = user.id;
+          await preferenceFactory.save(preferences);
         } catch (error) {
           console.error(`Failed to save matching-preferences of user: ${user.id}`, error);
         }

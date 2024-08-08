@@ -14,11 +14,11 @@ export class PreferenceService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async get(userId: number) {
+  async get(userId: number): Promise<Preferences> {
     return await this.preferenceRepository.findOne({ where: { user: { id: userId } } });
   }
 
-  async update(userId: number, updatePreferenceDto: UpdatePreferenceDto) {
+  async update(userId: number, updatePreferenceDto: UpdatePreferenceDto): Promise<void> {
     // 트랜잭션 시작
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -39,7 +39,7 @@ export class PreferenceService {
 
       // 새로운 매칭 생성
       await this.matchingService.createNewMatchings(userId);
-      return preferences;
+      return;
     } catch (error) {
       console.error('Transaction failed:', error);
       await queryRunner.rollbackTransaction();

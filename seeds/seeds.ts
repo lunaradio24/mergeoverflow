@@ -23,7 +23,7 @@ import { accountFactory } from './factories/account.factory';
 import { userFactory } from './factories/user.factory';
 import { profileImageFactory } from './factories/profile-image.factory';
 import { locationFactory } from './factories/location.factory';
-import { matchingPreferenceFactory } from './factories/matching-preference.factory';
+import { preferenceFactory } from './factories/preference.factory';
 import AccountSeeder from './seeders/account.seeder';
 import UserSeeder from './seeders/user.seeder';
 import ProfileImageSeeder from './seeders/profile-image.seeder';
@@ -33,7 +33,7 @@ import UserToInterestSeeder from './seeders/user-to-interest.seeder';
 import UserToTechSeeder from './seeders/user-to-tech.seeder';
 import HeartSeeder from './seeders/heart.seeder';
 import LocationSeeder from './seeders/location.seeder';
-import MatchingPreferenceSeeder from './seeders/matching-preference.seeder';
+import PreferenceSeeder from './seeders/preference.seeder';
 
 (async () => {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -74,9 +74,9 @@ import MatchingPreferenceSeeder from './seeders/matching-preference.seeder';
       UserToTechSeeder,
       HeartSeeder,
       LocationSeeder,
-      MatchingPreferenceSeeder,
+      PreferenceSeeder,
     ],
-    factories: [accountFactory, userFactory, profileImageFactory, locationFactory, matchingPreferenceFactory],
+    factories: [accountFactory, userFactory, profileImageFactory, locationFactory, preferenceFactory],
   };
 
   const dataSource = new DataSource(options);
@@ -85,7 +85,7 @@ import MatchingPreferenceSeeder from './seeders/matching-preference.seeder';
   // Run seeders in order
   await runSeeders(dataSource, { seeds: [AccountSeeder] });
   await runSeeders(dataSource, { seeds: [UserSeeder] });
-  await runSeeders(dataSource, { seeds: [ProfileImageSeeder, HeartSeeder, LocationSeeder, MatchingPreferenceSeeder] });
+  await runSeeders(dataSource, { seeds: [ProfileImageSeeder, HeartSeeder, LocationSeeder, PreferenceSeeder] });
   await runSeeders(dataSource, { seeds: [InterestSeeder, TechSeeder] });
   await runSeeders(dataSource, { seeds: [UserToInterestSeeder, UserToTechSeeder] });
 
