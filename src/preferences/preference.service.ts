@@ -2,34 +2,18 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Preferences } from '../preferences/entities/preferences.entity';
-import { CreatePreferenceDto } from '../preferences/dto/create-preference.dto';
 import { UpdatePreferenceDto } from '../preferences/dto/update-preference.dto';
 import { MatchingService } from 'src/matchings/matching.service';
-import { User } from '../users/entities/user.entity';
+import { UserService } from 'src/users/user.service';
 
 @Injectable()
 export class PreferenceService {
   constructor(
     @InjectRepository(Preferences)
     private readonly preferenceRepository: Repository<Preferences>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
     private readonly matchingService: MatchingService,
+    private readonly userService: UserService,
   ) {}
-
-  async create(userId: number, createPreferenceDto: CreatePreferenceDto) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new NotFoundException(`사용자 ID ${userId}를 찾을 수 없습니다.`);
-    }
-
-    const preferences = this.preferenceRepository.create({
-      ...createPreferenceDto,
-      user,
-    });
-
-    return this.preferenceRepository.save(preferences);
-  }
 
   async get(userId: number) {
     return this.preferenceRepository.findOne({ where: { user: { id: userId } } });

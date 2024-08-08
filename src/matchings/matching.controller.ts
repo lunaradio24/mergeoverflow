@@ -13,7 +13,7 @@ export class MatchingController {
   @Get()
   async getMatchingUsers(@UserInfo() user: User) {
     const userId = user.id;
-    return this.matchingService.getMatchingUsers(userId);
+    return await this.matchingService.getMatchingUsers(userId);
   }
 
   // 좋아요 처리

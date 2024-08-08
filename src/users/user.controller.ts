@@ -13,7 +13,7 @@ import { ApiResponse } from 'src/common/interceptors/response/response.interface
 export class UserController {
   constructor(private readonly usersService: UserService) {}
 
-  // 프로필 조회, 내 정보 조회,
+  // 내 프로필 조회
   @UseGuards(AccessTokenGuard)
   @Get('me')
   async find(@UserInfo() user: User): Promise<ApiResponse<User>> {
@@ -24,7 +24,7 @@ export class UserController {
     };
   }
 
-  // 프로필 수정
+  // 내 프로필 수정
   @UseGuards(AccessTokenGuard)
   @Patch('me')
   async updateProfile(

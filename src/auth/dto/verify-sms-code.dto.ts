@@ -1,8 +1,8 @@
-import { IsString, IsNotEmpty, IsInt, Matches } from 'class-validator';
+import { IsString, IsNotEmpty } from 'class-validator';
 import { SendSmsCodeDto } from './send-sms-code.dto';
 
 export class VerifySmsCodeDto extends SendSmsCodeDto {
-  @IsInt()
+  @IsString()
   @IsNotEmpty()
   code: string;
 }
