@@ -3,5 +3,5 @@ export enum PreferredCodingLevel {
   LEVEL_1 = 'LEVEL_1',
   LEVEL_2 = 'LEVEL_2',
   LEVEL_3 = 'LEVEL_3',
-  NO_PREFERENCE = 'NO_PREFERENCE',
+  NO_PREFERENCE = '상관없음',
 }

@@ -4,5 +4,5 @@ export enum PreferredReligion {
   BUDDHISM = '불교',
   ETC = '기타',
   NONE = '무교',
-  NO_PREFERENCE = '상관없음',
+  NO_PREFERENCE = '상관 없음',
 }

@@ -182,6 +182,7 @@ export class MatchingService {
 
     // targetUserId 순으로 정렬
     newMatchings.sort((a, b) => a.targetUserId - b.targetUserId);
+    console.log(newMatchings);
 
     if (newMatchings.length > 0) {
       await this.matchingRepository.save(newMatchings);
