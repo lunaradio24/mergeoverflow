@@ -144,7 +144,7 @@ export class MatchingService {
         // 각 매칭 후보자의 위치 정보 가져오기 및 거리 계산
         for (const targetUser of targetUsers) {
           const targetLocation = await this.locationService.getLocationByUserId(targetUser.id);
-          if (targetLocation) {
+          if (targetLocation.latitude && targetLocation.longitude) {
             const distance = this.locationService.calculateDistance(
               userLocation.latitude,
               userLocation.longitude,
