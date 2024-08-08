@@ -253,7 +253,7 @@ export class MatchingService {
       // 하트 차감 로직 추가
       if (interactionType === InteractionType.LIKE) {
         const userHearts = await queryRunner.manager.findOne(Heart, { where: { userId } });
-        if (userHearts.remainHearts < 1) {
+        if (userHearts.remainHearts <= 0) {
           throw new BadRequestException('남은 하트가 없습니다.');
         }
         await queryRunner.manager.decrement(Heart, { userId }, 'remainHearts', 1);
