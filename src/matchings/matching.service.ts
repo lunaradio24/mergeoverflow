@@ -16,6 +16,7 @@ import { PreferredHeight } from './types/preferred-height.type';
 import { Heart } from '../hearts/entities/heart.entity';
 import { LocationService } from '../locations/location.service';
 import { PreferredDistance } from './types/preferred-distance.type';
+import { InteractionDto } from './dto/interaction.dto';
 
 @Injectable()
 export class MatchingService {
@@ -217,7 +218,9 @@ export class MatchingService {
   }
 
   // 매칭 결과를 저장하는 함수
-  async handleUserInteraction(userId: number, targetUserId: number, interactionType: InteractionType) {
+  async handleUserInteraction(interactionDto: InteractionDto): Promise<void> {
+    const { userId, targetUserId, interactionType } = interactionDto;
+
     // 자기 자신을 좋아요 또는 싫어요 하는지 검증
     if (userId === targetUserId) {
       throw new BadRequestException('자신을 좋아요 또는 싫어요할 수 없습니다.');
@@ -315,7 +318,8 @@ export class MatchingService {
       throw new ForbiddenException('남은 하트가 없습니다.');
     }
 
-    await this.handleUserInteraction(userId, targetUserId, InteractionType.LIKE);
+    const interactionDto = { userId, targetUserId, interactionType: InteractionType.LIKE };
+    await this.handleUserInteraction(interactionDto);
 
     heart.remainHearts -= 1;
     await this.heartRepository.save(heart);
@@ -323,6 +327,7 @@ export class MatchingService {
 
   // 싫어요를 처리하는 함수
   async dislikeUser(userId: number, targetUserId: number) {
-    await this.handleUserInteraction(userId, targetUserId, InteractionType.DISLIKE); // 싫어요 처리
+    const interactionDto = { userId, targetUserId, interactionType: InteractionType.DISLIKE };
+    await this.handleUserInteraction(interactionDto);
   }
 }
