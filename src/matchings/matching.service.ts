@@ -146,14 +146,14 @@ export class MatchingService {
       this.applyBodyShapeFilter(queryBuilder, preferences.bodyShape);
 
       // 흡연빈도 필터링
-      this.applySmokingFrequencyFilter(queryBuilder, preferences.smokingFrequency);
+      this.applySmokingFrequencyFilter(queryBuilder, preferences.smokingFreq);
 
       // 움주빈도 필터링
-      this.applyDrinkingFrequencyFilter(queryBuilder, preferences.drinkingFrequency);
+      this.applyDrinkingFrequencyFilter(queryBuilder, preferences.drinkingFreq);
 
       // 거리 필터링
       const userLocation = await this.locationService.getLocationByUserId(userId);
-      if (preferences.distance !== PreferredDistance.NO_PREFERENCE) {
+      if (userLocation.latitude && userLocation.longitude && preferences.distance !== PreferredDistance.NO_PREFERENCE) {
         const distanceInKm = {
           [PreferredDistance.WITHIN_10_KM]: 10,
           [PreferredDistance.WITHIN_20_KM]: 20,
@@ -161,14 +161,13 @@ export class MatchingService {
           [PreferredDistance.WITHIN_100_KM]: 100,
         };
 
-        // latitude와 longitude가 null이 아닌 사용자만 필터링 대상
+        // User 엔티티와 Location 엔티티를 조인합니다.
         queryBuilder.innerJoin('user.location', 'location');
-        queryBuilder.andWhere('user.location.latitude IS NOT NULL AND user.location.longitude IS NOT NULL');
 
         // 거리 필터링을 SQL 쿼리 내에서 직접 처리
         queryBuilder.andWhere(
           `ST_Distance_Sphere(
-          point(user.location.longitude, user.location.latitude),
+          point(location.longitude, location.latitude),
           point(:userLongitude, :userLatitude))
           <= :distanceInMeters`,
           {
@@ -324,7 +323,7 @@ export class MatchingService {
     }
   }
 
-  async deleteAllMatchingsForUser(userId: number) {
+  async deleteAllMatchingsForUser(userId: number): Promise<void> {
     await this.matchingRepository.delete({ userId });
   }
 
