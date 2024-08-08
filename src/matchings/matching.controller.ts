@@ -27,6 +27,11 @@ export class MatchingController {
   async likeUser(@UserInfo() user: User, @Body('targetUserId') targetUserId: number) {
     const userId = user.id;
     await this.matchingService.likeUser(userId, targetUserId);
+    return {
+      statusCode: HttpStatus.OK,
+      message: '매칭 상대에게 [좋아요]를 눌렀습니다.',
+      data: { targetUserId, like: true, dislike: false },
+    };
   }
 
   // 싫어요 처리
@@ -34,5 +39,10 @@ export class MatchingController {
   async dislikeUser(@UserInfo() user: User, @Body('targetUserId') targetUserId: number) {
     const userId = user.id;
     await this.matchingService.dislikeUser(userId, targetUserId);
+    return {
+      statusCode: HttpStatus.OK,
+      message: '매칭 상대에게 [싫어요]를 눌렀습니다.',
+      data: { targetUserId, like: false, dislike: true },
+    };
   }
 }
