@@ -8,6 +8,7 @@ import { NotificationType } from 'src/notifications/types/notification-type.type
 import { NotificationGateway } from 'src/notifications/notification.gateway';
 import { UserService } from 'src/users/user.service';
 import { PartnersRO } from './ro/partners.ro';
+import { aw } from '@upstash/redis/zmscore-80635339';
 
 @Injectable()
 export class ChatRoomService {
@@ -83,9 +84,43 @@ export class ChatRoomService {
     return { user1Id, user2Id };
   }
 
-  async getUserChatRooms(userId: number): Promise<ChatRoom[]> {
-    return await this.chatRoomRepository.find({
+  async getUserChatRooms(userId: number) {
+    const chatRooms = await this.chatRoomRepository.find({
       where: [{ user1Id: userId }, { user2Id: userId }],
+      relations: ['user1', 'user2', 'user1.images', 'user2.images'],
+      select: {
+        id: true,
+        createdAt: true,
+        user1: {
+          id: true,
+          nickname: true,
+          images: { imageUrl: true },
+        },
+        user2: {
+          id: true,
+          nickname: true,
+          images: { imageUrl: true },
+        },
+      },
     });
+
+    const returnData = await Promise.all(
+      chatRooms.map(async (chatRoom) => {
+        const otherUser = chatRoom.user1.id === userId ? chatRoom.user2 : chatRoom.user1;
+        const otherUserImages = otherUser.images.map((image) => image.imageUrl);
+        const latestMessage = await this.chatMessageRepository.findOne({
+          where: { roomId: chatRoom.id },
+          order: { createdAt: 'DESC' },
+          select: { text: true, createdAt: true },
+        });
+        return {
+          id: chatRoom.id,
+          createdAt: chatRoom.createdAt,
+          otherUser: { id: otherUser.id, nickname: otherUser.nickname, images: otherUserImages },
+          latestMessage,
+        };
+      }),
+    );
+    return returnData;
   }
 }
