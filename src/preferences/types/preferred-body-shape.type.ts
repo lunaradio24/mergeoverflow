@@ -4,5 +4,5 @@ export enum PreferredBodyShape {
   CHUBBY = '통통한 체형',
   MUSCULAR = '근육질 체형',
   DEVELOPER = '개발자 체형',
-  NO_PREFERENCE = '상관없음',
+  NO_PREFERENCE = '상관 없음',
 }
