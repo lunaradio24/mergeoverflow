@@ -29,8 +29,8 @@ export class NotificationGateway
 
   handleConnection(@ConnectedSocket() socket: Socket) {
     const decoded = this.parseToken(socket);
-    const userNickname = this.userService.findNicknameByUserId(decoded.id);
-    socket.data = { userId: decoded.id, nickname: userNickname };
+    const userNickname = this.userService.findNicknameByUserId(decoded.userId);
+    socket.data = { userId: decoded.userId, nickname: userNickname };
     socket.join(socket.data.userId.toString());
     this.logger.log(`[알림 서버 연결] 소켓 ID : ${socket.id}`);
   }

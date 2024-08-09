@@ -25,10 +25,10 @@ export class ChatRoomGateway extends SocketGateway implements OnGatewayInit, OnG
     super({ jwtService, name: 'chat' });
   }
   async handleConnection(@ConnectedSocket() socket: Socket, server: Server) {
-    const decoded = await this.parseToken(socket);
-    console.log(socket);
-    const userNickname = this.userService.findNicknameByUserId(decoded.id);
-    socket.data = { userId: decoded.id, nickname: userNickname };
+    const decoded = this.parseToken(socket);
+
+    const userNickname = this.userService.findNicknameByUserId(decoded.userId);
+    socket.data = { userId: decoded.userId, nickname: userNickname };
 
     this.logger.log(`[채팅 서버 연결] 소켓 ID : ${socket.id}`);
     this.logger.log(`[채팅 서버 연결] 유저 ID : ${socket.data.userId}`);
