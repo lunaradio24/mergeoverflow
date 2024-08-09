@@ -29,6 +29,8 @@ export class ChatRoomGateway extends SocketGateway implements OnGatewayInit, OnG
     const userNickname = this.userService.findNicknameByUserId(decoded.id);
     socket.data = { userId: decoded.id, nickname: userNickname };
     this.logger.log(`[채팅 서버 연결] 소켓 ID : ${socket.id}`);
+    this.logger.log(`[채팅 서버 연결] 유저 ID : ${socket.data.userId}`);
+    this.logger.log(`[채팅 서버 연결] 유저 닉네임 : ${socket.data.nickname}`);
   }
 
   @SubscribeMessage('createChatRoom')
@@ -73,7 +75,9 @@ export class ChatRoomGateway extends SocketGateway implements OnGatewayInit, OnG
   @SubscribeMessage('message')
   async handleMessage(@MessageBody() data: { roomId: number; message: string }, @ConnectedSocket() socket: Socket) {
     const { roomId, message } = data;
+    this.logger.log(`데이터: ${data}`);
     await this.chatRoomService.saveMessage(socket.data.userId, roomId, message);
+    this.logger.log(`데이터 저장 성공: true`);
     this.server.to(roomId.toString()).emit('message', { nickname: await socket.data.nickname, text: message });
     this.logger.log(`방번호:${roomId}번 / ${await socket.data.nickname}:${message}`);
   }

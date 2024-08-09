@@ -29,7 +29,7 @@ export class MatchingService {
     @InjectRepository(Matching)
     private readonly matchingRepository: Repository<Matching>,
     @InjectRepository(Preferences)
-    private readonly matchingPreferencesRepository: Repository<Preferences>,
+    private readonly preferencesRepository: Repository<Preferences>,
     @InjectRepository(Heart)
     private readonly heartRepository: Repository<Heart>,
     private readonly chatRoomService: ChatRoomService,
@@ -118,7 +118,7 @@ export class MatchingService {
 
   public async createNewMatchings(userId: number): Promise<Matching[]> {
     // 사용자의 매칭 선호도 가져오기
-    const preferences = await this.matchingPreferencesRepository.findOne({ where: { user: { id: userId } } });
+    const preferences = await this.preferencesRepository.findOne({ where: { user: { id: userId } } });
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: { images: true },
