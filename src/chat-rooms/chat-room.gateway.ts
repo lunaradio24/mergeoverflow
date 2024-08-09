@@ -26,11 +26,10 @@ export class ChatRoomGateway extends SocketGateway implements OnGatewayInit, OnG
   }
   async handleConnection(@ConnectedSocket() socket: Socket, server: Server) {
     const decoded = await this.parseToken(socket);
-    this.logger.log(`토큰 확인 : ${decoded.id}`);
-    this.logger.log(`소켓.data 1 : ${socket.data}`);
+    console.log(socket);
     const userNickname = this.userService.findNicknameByUserId(decoded.id);
     socket.data = { userId: decoded.id, nickname: userNickname };
-    this.logger.log(`토큰 확인 : ${socket.data}`);
+
     this.logger.log(`[채팅 서버 연결] 소켓 ID : ${socket.id}`);
     this.logger.log(`[채팅 서버 연결] 유저 ID : ${socket.data.userId}`);
     this.logger.log(`[채팅 서버 연결] 유저 닉네임 : ${await socket.data.nickname}`);
