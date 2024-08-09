@@ -29,13 +29,14 @@ export class SocketGateway {
       if (!token) {
         throw new UnauthorizedException('토큰이 유효하지 않습니다.');
       }
+
       const decoded = this.jwtService.verify(token, { secret: process.env.ACCESS_TOKEN_SECRET_KEY });
 
       return decoded;
     } catch (error) {
       console.error(`[연결 강제 종료] 소켓 ID : ${socket.id} , status: ${error.status}, ${error.message}`);
       socket.disconnect();
-      throw new UnauthorizedException('토큰이  않습니다.');
+      throw new UnauthorizedException('토큰이 존재하지 않습니다.');
     }
   }
 }
