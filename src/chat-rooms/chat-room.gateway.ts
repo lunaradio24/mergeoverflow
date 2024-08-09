@@ -25,12 +25,12 @@ export class ChatRoomGateway extends SocketGateway implements OnGatewayInit, OnG
     super({ jwtService, name: 'chat' });
   }
   async handleConnection(@ConnectedSocket() socket: Socket, server: Server) {
-    const decoded = this.parseToken(socket);
+    const decoded = await this.parseToken(socket);
     this.logger.log(`토큰 확인 : ${decoded}`);
     const userNickname = this.userService.findNicknameByUserId(decoded.id);
     socket.data = { userId: decoded.id, nickname: userNickname };
     this.logger.log(`[채팅 서버 연결] 소켓 ID : ${socket.id}`);
-    this.logger.log(`[채팅 서버 연결] 유저 ID : ${await socket.data.userId}`);
+    this.logger.log(`[채팅 서버 연결] 유저 ID : ${socket.data.userId}`);
     this.logger.log(`[채팅 서버 연결] 유저 닉네임 : ${await socket.data.nickname}`);
   }
 
@@ -50,7 +50,7 @@ export class ChatRoomGateway extends SocketGateway implements OnGatewayInit, OnG
     @ConnectedSocket() socket: Socket,
   ) {
     const { roomId, joinCheck } = data;
-    await this.chatRoomService.isUserInChatRoom(await socket.data.userId, roomId);
+    await this.chatRoomService.isUserInChatRoom(socket.data.userId, roomId);
     if (!joinCheck) {
       socket.join(roomId.toString());
       this.server.to(roomId.toString()).emit('join', { roomId, nickname: await socket.data.nickname });
@@ -77,7 +77,7 @@ export class ChatRoomGateway extends SocketGateway implements OnGatewayInit, OnG
   async handleMessage(@MessageBody() data: { roomId: number; message: string }, @ConnectedSocket() socket: Socket) {
     const { roomId, message } = data;
     this.logger.log(`데이터: ${data}`);
-    await this.chatRoomService.saveMessage(await socket.data.userId, roomId, message);
+    await this.chatRoomService.saveMessage(socket.data.userId, roomId, message);
     this.logger.log(`데이터 저장 성공: true`);
     this.server.to(roomId.toString()).emit('message', { nickname: await socket.data.nickname, text: message });
     this.logger.log(`방번호:${roomId}번 / ${await socket.data.nickname}:${message}`);
