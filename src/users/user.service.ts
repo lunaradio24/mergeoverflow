@@ -67,6 +67,7 @@ export class UserService {
     const existingUser = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['account'],
+      select: { account: { password: true } },
     });
 
     if (!existingUser) {
@@ -82,7 +83,7 @@ export class UserService {
       throw new BadRequestException(USER_MESSAGES.UPDATE_PASSWORD.FAILURE.WRONG_PW);
     }
 
-    const hashRounds = this.configService.get('HASH_ROUNDS');
+    const hashRounds = Number(this.configService.get('HASH_ROUNDS'));
     // 새로운 비밀번호 해싱 // 10을 content에다가 넣을까?
     const hashedNewPassword = await hash(updatePasswordDto.newPassword, hashRounds);
 
