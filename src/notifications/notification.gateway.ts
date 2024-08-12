@@ -24,7 +24,7 @@ export class NotificationGateway
     private readonly notificationService: NotificationService,
     private readonly userService: UserService,
   ) {
-    super({ jwtService, name: 'notificaction' });
+    super({ jwtService, name: 'notification' });
   }
 
   handleConnection(@ConnectedSocket() socket: Socket) {

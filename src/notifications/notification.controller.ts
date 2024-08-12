@@ -35,7 +35,7 @@ export class NotificationController {
   @Patch()
   async readNotifications(@Request() req): Promise<Notification[]> {
     const userId = req.user.id;
-    const notificactions = await this.notificationService.readNotifications(userId);
-    return notificactions;
+    const notifications = await this.notificationService.readNotifications(userId);
+    return notifications;
   }
 }
