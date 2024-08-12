@@ -14,7 +14,7 @@ import { NotificationService } from './notification.service';
 import { NotificationType } from './types/notification-type.type';
 import { UserService } from 'src/users/user.service';
 
-@WebSocketGateway({ namespace: 'notifications', cors: { origin: '*' } })
+@WebSocketGateway({ namespace: 'notification', cors: { origin: '*' } })
 export class NotificationGateway
   extends SocketGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
