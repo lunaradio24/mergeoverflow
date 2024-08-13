@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, IsNull, DataSource } from 'typeorm';
+import { Repository, In, IsNull, DataSource, Not } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { Matching } from './entities/matching.entity';
 import { InteractionType } from './types/interaction-type.type';
@@ -161,6 +161,15 @@ export class MatchingService {
           [PreferredDistance.WITHIN_100_KM]: 100,
         };
 
+        const selectedDistance = distanceInKm[preferences.distance];
+
+        if (!selectedDistance) {
+          throw new BadRequestException('유효한 거리 선호도 설정 값을 선택해주세요.');
+        }
+
+        // User 엔티티와 Location 엔티티를 join (longitude와 latitude가 NULL인 경우, 해당 user는 결과에서 제외)
+        queryBuilder.innerJoin('user.location', 'location');
+
         // 거리 필터링을 SQL 쿼리 내에서 직접 처리
         queryBuilder.andWhere(
           `ST_Distance_Sphere(
@@ -176,15 +185,17 @@ export class MatchingService {
       }
     }
 
-    // 기존 매칭된 사용자를 제외
+    // 기존 매칭이 되어 좋아요/싫어요 한 사용자는 제외
     const existingMatchings = await this.matchingRepository.find({
-      where: { userId },
+      where: { userId, interactionType: Not(IsNull()) },
     });
+
     const existingTargetUserIds = existingMatchings.map((matching) => matching.targetUserId);
     if (existingTargetUserIds.length > 0) {
       queryBuilder.andWhere('user.id NOT IN (:...existingTargetUserIds)', { existingTargetUserIds });
     }
 
+    // 필터링 된 결과 중에 랜덤으로 지정된 개수만큼 선택
     queryBuilder.orderBy('RAND()').take(NUM_MATCHING_CREATION);
     const newUsers = await queryBuilder.getMany();
 
