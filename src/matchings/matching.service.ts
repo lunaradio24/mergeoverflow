@@ -161,9 +161,6 @@ export class MatchingService {
           [PreferredDistance.WITHIN_100_KM]: 100,
         };
 
-        // User 엔티티와 Location 엔티티를 조인합니다.
-        queryBuilder.innerJoin('user.location', 'location');
-
         // 거리 필터링을 SQL 쿼리 내에서 직접 처리
         queryBuilder.andWhere(
           `ST_Distance_Sphere(
