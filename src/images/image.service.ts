@@ -23,7 +23,7 @@ export class ImageService {
 
   // 저장 : DB에 이미지 저장
   async saveImage(userId: number, imageUrl: string): Promise<ProfileImage> {
-    const savedImage = await this.profileImageRepository.save({ userId, image: imageUrl });
+    const savedImage = await this.profileImageRepository.save({ userId, imageUrl: imageUrl });
     return savedImage;
   }
 
