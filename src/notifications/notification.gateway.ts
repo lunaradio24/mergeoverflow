@@ -27,14 +27,19 @@ export class NotificationGateway
     super({ jwtService, name: 'notification' });
   }
 
-  handleConnection(@ConnectedSocket() socket: Socket) {
+  async handleConnection(@ConnectedSocket() socket: Socket) {
     const decoded = this.parseToken(socket);
-    const userNickname = this.userService.findNicknameByUserId(decoded.userId);
+    if (!decoded) {
+      return;
+    }
+
+    const userNickname = await this.userService.findNicknameByUserId(decoded.userId);
     socket.data = { userId: decoded.userId, nickname: userNickname };
     socket.join(socket.data.userId.toString());
-    this.logger.log(`[알림 서버 연결] 소켓 ID : ${socket.id}`);
+    this.logger.log(
+      `[알림 서버 연결] 소켓 ID : ${socket.id} / 소켓 유저 ID : ${socket.data.userId} / 소켓 유저 닉네임 : ${socket.data.nickname}`,
+    );
   }
-
   @SubscribeMessage('mergeNotify')
   async mergeNotificationHandler(
     @ConnectedSocket() socket: Socket,
