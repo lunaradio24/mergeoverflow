@@ -26,13 +26,16 @@ export class ChatRoomGateway extends SocketGateway implements OnGatewayInit, OnG
   }
   async handleConnection(@ConnectedSocket() socket: Socket, server: Server) {
     const decoded = this.parseToken(socket);
+    if (!decoded) {
+      return;
+    }
 
-    const userNickname = this.userService.findNicknameByUserId(decoded.userId);
+    const userNickname = await this.userService.findNicknameByUserId(decoded.userId);
     socket.data = { userId: decoded.userId, nickname: userNickname };
 
-    this.logger.log(`[채팅 서버 연결] 소켓 ID : ${socket.id}`);
-    this.logger.log(`[채팅 서버 연결] 유저 ID : ${socket.data.userId}`);
-    this.logger.log(`[채팅 서버 연결] 유저 닉네임 : ${await socket.data.nickname}`);
+    this.logger.log(
+      `[채팅 서버 연결] 소켓 ID : ${socket.id} / 소켓 유저 ID : ${socket.data.userId} / 소켓 유저 닉네임 : ${socket.data.nickname}`,
+    );
   }
 
   @SubscribeMessage('createChatRoom')
