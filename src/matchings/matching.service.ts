@@ -20,6 +20,7 @@ import { InteractionDto } from './dto/interaction.dto';
 import { UserService } from 'src/users/user.service';
 import { PreferredBodyShape } from 'src/preferences/types/preferred-body-shape.type';
 import { PreferredFrequency } from 'src/preferences/types/preferred-frequency.type';
+import { Location } from 'src/locations/entities/location.entity';
 
 @Injectable()
 export class MatchingService {
@@ -116,12 +117,41 @@ export class MatchingService {
     }
   }
 
+  private applyDistanceFilter(queryBuilder: any, distancePreference: PreferredDistance, userLocation: Location) {
+    if (distancePreference && distancePreference !== PreferredDistance.NO_PREFERENCE) {
+      if (userLocation.latitude && userLocation.longitude) {
+        const distanceInKm = {
+          [PreferredDistance.WITHIN_10_KM]: 10,
+          [PreferredDistance.WITHIN_20_KM]: 20,
+          [PreferredDistance.WITHIN_50_KM]: 50,
+          [PreferredDistance.WITHIN_100_KM]: 100,
+        };
+
+        // User 엔티티와 Location 엔티티를 join (longitude와 latitude가 NULL인 경우, 해당 user는 결과에서 제외)
+        queryBuilder.innerJoin('user.location', 'location');
+
+        // 거리 필터링을 SQL 쿼리 내에서 직접 처리
+        queryBuilder.andWhere(
+          `ST_Distance_Sphere(
+          point(location.longitude, location.latitude),
+          point(:userLongitude, :userLatitude))
+          <= :distanceInMeters`,
+          {
+            userLongitude: userLocation.longitude,
+            userLatitude: userLocation.latitude,
+            distanceInMeters: distanceInKm[distancePreference] * 1000, // km를 m로 변환
+          },
+        );
+      }
+    }
+  }
+
   public async createNewMatchings(userId: number): Promise<Matching[]> {
     // 사용자의 매칭 선호도 가져오기
     const preferences = await this.preferencesRepository.findOne({ where: { user: { id: userId } } });
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: { images: true },
+      relations: { images: true, location: true },
     });
 
     if (!user) {
@@ -152,37 +182,7 @@ export class MatchingService {
       this.applyDrinkingFrequencyFilter(queryBuilder, preferences.drinkingFreq);
 
       // 거리 필터링
-      const userLocation = await this.locationService.getLocationByUserId(userId);
-      if (userLocation.latitude && userLocation.longitude && preferences.distance !== PreferredDistance.NO_PREFERENCE) {
-        const distanceInKm = {
-          [PreferredDistance.WITHIN_10_KM]: 10,
-          [PreferredDistance.WITHIN_20_KM]: 20,
-          [PreferredDistance.WITHIN_50_KM]: 50,
-          [PreferredDistance.WITHIN_100_KM]: 100,
-        };
-
-        const selectedDistance = distanceInKm[preferences.distance];
-
-        if (!selectedDistance) {
-          throw new BadRequestException('유효한 거리 선호도 설정 값을 선택해주세요.');
-        }
-
-        // User 엔티티와 Location 엔티티를 join (longitude와 latitude가 NULL인 경우, 해당 user는 결과에서 제외)
-        queryBuilder.innerJoin('user.location', 'location');
-
-        // 거리 필터링을 SQL 쿼리 내에서 직접 처리
-        queryBuilder.andWhere(
-          `ST_Distance_Sphere(
-          point(location.longitude, location.latitude),
-          point(:userLongitude, :userLatitude))
-          <= :distanceInMeters`,
-          {
-            userLongitude: userLocation.longitude,
-            userLatitude: userLocation.latitude,
-            distanceInMeters: distanceInKm[preferences.distance] * 1000, // km를 m로 변환
-          },
-        );
-      }
+      this.applyDistanceFilter(queryBuilder, preferences.distance, user.location);
     }
 
     // 기존 매칭이 되어 좋아요/싫어요 한 사용자는 제외
