@@ -96,7 +96,7 @@ export class UserService {
     }
 
     const hashRounds = Number(this.configService.get('HASH_ROUNDS'));
-    // 새로운 비밀번호 해싱 // 10을 content에다가 넣을까?
+    // 새로운 비밀번호 해싱 //
     const hashedNewPassword = await hash(updatePasswordDto.newPassword, hashRounds);
 
     // 비밀번호는 회원정보(auth)니까 authRepository가 되나?
