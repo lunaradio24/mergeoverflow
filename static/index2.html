@@ -1,128 +1,118 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WebSocket Chat</title>
-</head>
+  </head>
 
-<body>
+  <body>
     <h1>WebSocket Chat</h1>
     <!-- Join Section -->
     <div>
-        <label for="joinRoomId">JoinRoom ID:</label>
-        <input type="number" id="joinRoomId">
+      <label for="joinRoomId">JoinRoom ID:</label>
+      <input type="number" id="joinRoomId" />
     </div>
     <button id="joinRoomButton">JoinRoom</button>
     <!-- Message Section -->
     <div>
-        <label for="sendRoomId">Room ID:</label>
-        <input type="number" id="sendRoomId">
+      <label for="sendRoomId">Room ID:</label>
+      <input type="number" id="sendRoomId" />
     </div>
     <div>
-        <label for="message">Message:</label>
-        <input type="text" id="message">
+      <label for="message">Message:</label>
+      <input type="text" id="message" />
     </div>
     <button id="sendMessageButton">Send Message</button>
     <div id>
-        <ul id="messages"></ul>
+      <ul id="messages"></ul>
     </div>
     <!-- Notification Section -->
     <div>
-        <h2>Notifications</h2>
-        <ul id="notifications"></ul>
+      <h2>Notifications</h2>
+      <ul id="notifications"></ul>
     </div>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script>
-        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjQsInBob25lTnVtIjoiMDEwLTM2NzItNzQyMiIsImlhdCI6MTcyMjU1ODM0NywiZXhwIjoxNzIzNDIyMzQ3fQ.HEknTL7lwkZNauyLAEu9o2YQxxY6bBk-1R9rYzu_fxw"
-        const chatSocket = io('ws://localhost:3000/chat', {
-            auth: {
-                token
-            }
-        });
-        const notifySocket = io('ws://localhost:3000/notifications', {
-            auth: {
-                token
-            }
-        });
-        const joinRoomButton = document.getElementById('joinRoomButton');
-        const sendMessageButton = document.getElementById('sendMessageButton');
-        const messagesList = document.getElementById('messages');
-        const notificationsList = document.getElementById('notifications');
-        let joinCheck = false;
+      const token =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMyMSwicGhvbmVOdW0iOiIwMTAtMjg5Ni0yMzIxIiwiaWF0IjoxNzIzNjMyMzY0LCJleHAiOjE3MjM2NzU1NjR9.lvyqjSjDUZBBn7SUl9WWBgRNfJDkm80Q4wsTkmS44jU';
+      const chatSocket = io('ws://localhost:3000/chat', {
+        auth: {
+          token,
+        },
+      });
+      const notifySocket = io('ws://localhost:3000/notification', {
+        auth: {
+          token,
+        },
+      });
+      const joinRoomButton = document.getElementById('joinRoomButton');
+      const sendMessageButton = document.getElementById('sendMessageButton');
+      const messagesList = document.getElementById('messages');
+      const notificationsList = document.getElementById('notifications');
+      let joinCheck = false;
 
-        joinRoomButton.addEventListener('click', () => {
-            const roomId = document.getElementById('joinRoomId').value;
-            chatSocket.emit('join', { roomId, joinCheck });
-        });
+      joinRoomButton.addEventListener('click', () => {
+        const roomId = document.getElementById('joinRoomId').value;
+        chatSocket.emit('join', { roomId, joinCheck });
+      });
 
-        sendMessageButton.addEventListener('click', () => {
-            const roomId = document.getElementById('sendRoomId').value;
-            const message = document.getElementById('message').value;
-            chatSocket.emit('message', { roomId: Number(roomId), message: message });
-        });
+      sendMessageButton.addEventListener('click', () => {
+        const roomId = document.getElementById('sendRoomId').value;
+        const message = document.getElementById('message').value;
+        chatSocket.emit('message', { roomId: Number(roomId), message: message });
+      });
 
-        chatSocket.on('join', (data) => {
-            const item = document.createElement('h1');
-            item.textContent = `${data.nickname}님이 입장했습니다.`;
-            messagesList.appendChild(item);
-            chatSocket.emit('requestHistory', { roomId: data.roomId });
-        })
+      chatSocket.on('join', (data) => {
+        const item = document.createElement('h1');
+        item.textContent = `${data.nickname}님이 입장했습니다.`;
+        messagesList.appendChild(item);
+        chatSocket.emit('requestHistory', { roomId: data.roomId });
+      });
 
-        chatSocket.on('history', (data) => {
-            if (!joinCheck) {
-                data.messages.forEach((msg) => {
-                    const item = document.createElement('li');
-                    item.textContent = `${msg.nickname}:${msg.text}`;
-                    messagesList.appendChild(item);
-                });
-            }
-            joinCheck = true;
-        });
-
-        chatSocket.on('createChatRoom', (data) => {
-            const { chatRoomId, user1Id, user2Id } = data
-            chatSocket.emit('createChatRoom', { chatRoomId, user1Id, user2Id });
+      chatSocket.on('history', (data) => {
+        if (!joinCheck) {
+          data.messages.forEach((msg) => {
             const item = document.createElement('li');
-            item.textContent = `Chat room created with ID ${chatRoom.id}`;
+            item.textContent = `${msg.nickname}:${msg.text}`;
             messagesList.appendChild(item);
-        })
+          });
+        }
+        joinCheck = true;
+      });
 
-        chatSocket.on('exit', (data) => {
-            const { roomId } = data
-            chatSocket.emit('exit', { roomId });
-        })
+      chatSocket.on('exit', (data) => {
+        const { roomId } = data;
+        chatSocket.emit('exit', { roomId });
+      });
 
-        chatSocket.on('message', (message) => {
-            const item = document.createElement('li');
-            item.textContent = `${message.nickname}: ${message.text}`;
-            messagesList.appendChild(item);
-        });
+      chatSocket.on('message', (message) => {
+        const item = document.createElement('li');
+        item.textContent = `${message.nickname}: ${message.text}`;
+        messagesList.appendChild(item);
+      });
 
-        notifySocket.on('likeNotify', (data) => {
-            const { type, userId, mergeRequesterId } = data
-            notifySocket.emit('likeNotify', { type, userId, mergeRequesterId });
-        })
+      notifySocket.on('likeNotify', (data) => {
+        const { type, userId, message } = data;
+        notifySocket.emit('likeNotify', { type, userId, message });
+      });
 
-        notifySocket.on('mergeNotify', (data) => {
-            const { type, userId, targetUserId } = data
-            notifySocket.emit('mergeNotify', { type, userId, targetUserId });
-        })
+      notifySocket.on('mergeNotify', (data) => {
+        const { type, userId, message } = data;
+        notifySocket.emit('mergeNotify', { type, userId, message });
+      });
 
-        notifySocket.on('exitNotify', (data) => {
-            const { partnerId, type, partnerNickname } = data
-            notifySocket.emit('exitNotify', { type, partnerId, partnerNickname });
-        })
+      notifySocket.on('exitNotify', (data) => {
+        const { userId, type, message } = data;
+        notifySocket.emit('exitNotify', { type, userId, message });
+      });
 
-        notifySocket.on('reception', (data) => {
-            const { type, message } = data
-            const item = document.createElement('li');
-            item.textContent = `[알림][${type}] ${message}`;
-            notificationsList.appendChild(item);
-        })
-
+      notifySocket.on('reception', (data) => {
+        const { type, message } = data;
+        const item = document.createElement('li');
+        item.textContent = `[알림][${type}] ${message}`;
+        notificationsList.appendChild(item);
+      });
     </script>
-</body>
-
+  </body>
 </html>
