@@ -38,16 +38,6 @@ export class ChatRoomGateway extends SocketGateway implements OnGatewayInit, OnG
     );
   }
 
-  @SubscribeMessage('createChatRoom')
-  async handleCreateChatRoom(
-    @MessageBody() data: { chatRoomId: number; user1Id: number; user2Id: number },
-    @ConnectedSocket() socket: Socket,
-  ) {
-    const { chatRoomId, user1Id, user2Id } = data;
-    socket.join(chatRoomId.toString());
-    this.logger.log(`유저 ${user1Id}번님과 유저 ${user2Id}번님이 ${chatRoomId}번방에 머지하였습니다.`);
-  }
-
   @SubscribeMessage('join')
   async handleJoinChatRoom(
     @MessageBody() data: { roomId: number; joinCheck: boolean },
@@ -55,6 +45,7 @@ export class ChatRoomGateway extends SocketGateway implements OnGatewayInit, OnG
   ) {
     const { roomId, joinCheck } = data;
     await this.chatRoomService.isUserInChatRoom(socket.data.userId, roomId);
+
     if (!joinCheck) {
       socket.join(roomId.toString());
       this.server.to(roomId.toString()).emit('join', { roomId, nickname: await socket.data.nickname });
@@ -74,7 +65,6 @@ export class ChatRoomGateway extends SocketGateway implements OnGatewayInit, OnG
   async handleExitChatRoom(@MessageBody() data: { roomId: number }, @ConnectedSocket() socket: Socket) {
     const { roomId } = data;
     socket.leave(roomId.toString());
-    this.logger.log(`${await socket.data.nickname}님께서 ${roomId}번 방에서 퇴장하셨습니다.`);
   }
 
   @SubscribeMessage('message')

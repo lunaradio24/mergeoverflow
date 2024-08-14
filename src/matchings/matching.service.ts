@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, IsNull, DataSource, Not } from 'typeorm';
 import { User } from '../users/entities/user.entity';
@@ -14,16 +14,18 @@ import { Gender } from '../users/types/gender.type';
 import { PreferredAgeGap } from '../preferences/types/preferred-age-gap.type';
 import { PreferredHeight } from '../preferences/types/preferred-height.type';
 import { Heart } from '../hearts/entities/heart.entity';
-import { LocationService } from '../locations/location.service';
 import { PreferredDistance } from '../preferences/types/preferred-distance.type';
 import { InteractionDto } from './dto/interaction.dto';
 import { UserService } from 'src/users/user.service';
 import { PreferredBodyShape } from 'src/preferences/types/preferred-body-shape.type';
 import { PreferredFrequency } from 'src/preferences/types/preferred-frequency.type';
 import { Location } from 'src/locations/entities/location.entity';
+import { NotificationService } from 'src/notifications/notification.service';
 
 @Injectable()
 export class MatchingService {
+  private readonly logger: Logger;
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -34,11 +36,13 @@ export class MatchingService {
     @InjectRepository(Heart)
     private readonly heartRepository: Repository<Heart>,
     private readonly chatRoomService: ChatRoomService,
+    private readonly notificationService: NotificationService,
     private readonly notificationGateway: NotificationGateway,
-    private readonly locationService: LocationService,
     private readonly userService: UserService,
     private readonly dataSource: DataSource,
-  ) {}
+  ) {
+    this.logger = new Logger('matching');
+  }
 
   // 필터링 함수들 추가
   private applyGenderFilter(queryBuilder: any, preferences: Preferences, userGender: Gender) {
@@ -301,6 +305,20 @@ export class MatchingService {
       }
       // 매칭 정보 업데이트
       await queryRunner.manager.update(Matching, { userId, targetUserId }, { interactionType });
+
+      // 좋아요 알림 저장
+      const userNickname = await this.userService.findNicknameByUserId(userId);
+      const messageToTargetUser = `${userNickname}님께서 당신에게 좋아요를 눌렀어요 !`;
+      await this.notificationService.saveNotification(targetUserId, messageToTargetUser, NotificationType.LIKE);
+
+      // 좋아요 로그
+      this.logger.log(`${userId}번 user가 ${targetUserId}번 user에게 좋아요를 눌렀습니다.`);
+
+      // 좋아요 알림 전송
+      this.notificationGateway.server
+        .to(targetUserId.toString())
+        .emit('likeNotify', { type: NotificationType.LIKE, userId: targetUserId, message: messageToTargetUser });
+
       // 상대방이 이미 좋아요를 눌렀는지 확인
       const targetUserMatching = await queryRunner.manager.findOne(Matching, {
         where: {
@@ -310,24 +328,34 @@ export class MatchingService {
         },
       });
 
-      // 서로 좋아요를 눌렀다면 채팅방 생성
+      // 서로 좋아요를 눌렀다면
       if (interactionType === InteractionType.LIKE && targetUserMatching) {
         const user1Id = targetUserMatching ? targetUserId : userId;
         const user2Id = targetUserMatching ? userId : targetUserId;
 
-        await this.chatRoomService.createChatRoom(user1Id, user2Id);
+        // 채팅방 생성
+        const createdChatRoomId = await this.chatRoomService.createChatRoom(user1Id, user2Id);
+        this.logger.log(`${user1Id}번 user와 ${user2Id}번 user의 채팅방 #${createdChatRoomId}이 개설되었습니다.`);
+
+        // 채팅방 생성 알림 메시지 저장
+        const user1Nickname = await this.userService.findNicknameByUserId(user1Id);
+        const user2Nickname = await this.userService.findNicknameByUserId(user2Id);
+
+        const messageToUser1 = `${user2Nickname}님과 merge 되었습니다. 먼저 채팅을 시작해보세요`;
+        const messageToUser2 = `${user1Nickname}님과 merge 되었습니다. 먼저 채팅을 시작해보세요`;
+
+        await this.notificationService.saveNotification(user1Id, messageToUser1, NotificationType.LIKE);
+        await this.notificationService.saveNotification(user2Id, messageToUser2, NotificationType.LIKE);
+
+        // 채팅방 생성 알림 메시지 전송
         this.notificationGateway.server
           .to(user1Id.toString())
-          .emit('mergeNotify', { type: NotificationType.MERGED, userId: user1Id, targetUserId: user2Id });
+          .emit('mergeNotify', { type: NotificationType.MERGED, userId: user1Id, message: messageToUser1 });
 
         this.notificationGateway.server
           .to(user2Id.toString())
-          .emit('mergeNotify', { type: NotificationType.MERGED, userId: user2Id, targetUserId: user1Id });
+          .emit('mergeNotify', { type: NotificationType.MERGED, userId: user2Id, message: messageToUser2 });
       }
-      // 좋아요 알람을 상대방에게 보냄
-      this.notificationGateway.server
-        .to(targetUserId.toString())
-        .emit('likeNotify', { type: NotificationType.LIKE, userId: targetUserId, mergeRequesterId: userId });
       await queryRunner.commitTransaction();
     } catch (error) {
       console.error('Transaction failed:', error);
