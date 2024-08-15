@@ -344,8 +344,8 @@ export class MatchingService {
         const messageToUser1 = `${user2Nickname}님과 merge 되었습니다. 먼저 채팅을 시작해보세요`;
         const messageToUser2 = `${user1Nickname}님과 merge 되었습니다. 먼저 채팅을 시작해보세요`;
 
-        await this.notificationService.saveNotification(user1Id, messageToUser1, NotificationType.LIKE);
-        await this.notificationService.saveNotification(user2Id, messageToUser2, NotificationType.LIKE);
+        await this.notificationService.saveNotification(user1Id, messageToUser1, NotificationType.MERGED);
+        await this.notificationService.saveNotification(user2Id, messageToUser2, NotificationType.MERGED);
 
         // 채팅방 생성 알림 메시지 전송
         this.notificationGateway.server

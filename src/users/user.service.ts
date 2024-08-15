@@ -106,18 +106,19 @@ export class UserService {
   }
 
   // 닉네임 중복 확인
-  async checkName(checkNicknameDto: CheckNicknameDto) {
+  async checkNickname(checkNicknameDto: CheckNicknameDto): Promise<boolean> {
     // 1.userRepository에 같은 닉네임이 있는지 확인
-    const checkName = await this.userRepository.findOne({
+    const existingNickname = await this.userRepository.findOne({
       where: { nickname: checkNicknameDto.nickname },
     });
 
-    // 2, 있다면 에러를 발생
-    if (checkName) {
-      throw new ConflictException(USER_MESSAGES.NICKNAME.DUPLICATE);
+    // 2, 있다면 false 반환
+    if (existingNickname) {
+      return false;
     }
 
-    return;
+    // 3. 없다면 true 반환
+    return true;
   }
 
   async findNicknameByUserId(userId: number): Promise<string> {
