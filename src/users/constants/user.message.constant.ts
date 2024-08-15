@@ -24,6 +24,9 @@ export const USER_MESSAGES = {
     },
   },
   NICKNAME: {
-    DUPLICATE: '이미 존재하는 닉네임입니다.',
+    SUCCEED: '사용 가능한 닉네임입니다.',
+    FAILURE: {
+      DUPLICATE: '이미 존재하는 닉네임입니다.',
+    },
   },
 };
