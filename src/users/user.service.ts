@@ -9,6 +9,7 @@ import { CheckNicknameDto } from './dto/check-nickname.dto';
 import { compare, hash } from 'bcrypt';
 import { USER_MESSAGES } from './constants/user.message.constant';
 import { ConfigService } from '@nestjs/config';
+import { AUTH_MESSAGES } from 'src/auth/constants/auth.message.constant';
 
 @Injectable()
 export class UserService {
@@ -106,7 +107,7 @@ export class UserService {
   }
 
   // 닉네임 중복 확인
-  async checkNickname(checkNicknameDto: CheckNicknameDto): Promise<boolean> {
+  async isAvailableNickname(checkNicknameDto: CheckNicknameDto): Promise<boolean> {
     // 1.userRepository에 같은 닉네임이 있는지 확인
     const existingNickname = await this.userRepository.findOne({
       where: { nickname: checkNicknameDto.nickname },
@@ -114,7 +115,7 @@ export class UserService {
 
     // 2, 있다면 false 반환
     if (existingNickname) {
-      return false;
+      throw new ConflictException(USER_MESSAGES.NICKNAME.FAILURE.DUPLICATE);
     }
 
     // 3. 없다면 true 반환
