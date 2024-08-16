@@ -9,7 +9,6 @@ import { CheckNicknameDto } from './dto/check-nickname.dto';
 import { compare, hash } from 'bcrypt';
 import { USER_MESSAGES } from './constants/user.message.constant';
 import { ConfigService } from '@nestjs/config';
-import { AUTH_MESSAGES } from 'src/auth/constants/auth.message.constant';
 
 @Injectable()
 export class UserService {

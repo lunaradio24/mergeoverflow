@@ -123,7 +123,7 @@ export class ChatRoomService {
   async getUserChatRooms(userId: number) {
     const chatRooms = await this.chatRoomRepository.find({
       where: [{ user1Id: userId }, { user2Id: userId }],
-      relations: ['user1', 'user2', 'user1.images', 'user2.images'],
+      relations: ['messages', 'user1', 'user2', 'user1.images', 'user2.images'],
       select: {
         id: true,
         createdAt: true,
@@ -137,6 +137,12 @@ export class ChatRoomService {
           nickname: true,
           images: { imageUrl: true },
         },
+        messages: true,
+      },
+      order: {
+        messages: {
+          createdAt: 'DESC',
+        },
       },
     });
 
@@ -144,11 +150,8 @@ export class ChatRoomService {
       chatRooms.map(async (chatRoom) => {
         const otherUser = chatRoom.user1.id === userId ? chatRoom.user2 : chatRoom.user1;
         const otherUserImages = otherUser.images.map((image) => image.imageUrl);
-        const latestMessage = await this.chatMessageRepository.findOne({
-          where: { roomId: chatRoom.id },
-          order: { createdAt: 'DESC' },
-          select: { text: true, createdAt: true },
-        });
+        const sortedMessages = chatRoom.messages.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+        const latestMessage = sortedMessages[0];
         return {
           id: chatRoom.id,
           createdAt: chatRoom.createdAt,
