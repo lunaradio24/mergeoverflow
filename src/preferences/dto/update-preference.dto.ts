@@ -13,7 +13,7 @@ export class UpdatePreferenceDto {
 
   @IsOptional()
   @IsEnum(PreferredAgeGap, {
-    message: 'ageGap은 [3살 이내], [5살 이내], [10살 이내], [상관없음] 중에 선택해주세요',
+    message: 'ageGap은 [3살 이내], [5살 이내], [10살 이내], [상관 없음] 중에 선택해주세요',
   })
   ageGap?: PreferredAgeGap;
 

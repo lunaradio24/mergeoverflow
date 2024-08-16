@@ -1,7 +1,5 @@
-import { PartialType } from '@nestjs/swagger';
-import { IsEnum, IsNumber, IsOptional, IsString, IsUrl } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Frequency } from '../types/frequency.type';
-import { Column } from 'typeorm';
 import { Religion } from '../types/religion.type';
 import { Mbti } from '../types/mbti.type';
 import { BodyShape } from '../types/bodyshape.type';
