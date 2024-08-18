@@ -7,6 +7,10 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/utils/decorators/roles.decorator';
 import { Role } from 'src/auth/types/role.type';
 import { INTEREST_MESSAGES } from './constants/interest.message.constant';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { UserInfo } from 'src/utils/decorators/user-info.decorator';
+import { User } from 'src/users/entities/user.entity';
+import { UserToInterest } from 'src/users/entities/user-to-interest.entity';
 
 @Controller('interests')
 export class InterestController {
@@ -34,6 +38,20 @@ export class InterestController {
     return {
       statusCode: HttpStatus.OK,
       message: INTEREST_MESSAGES.READ_ALL.SUCCEED,
+      data: interestList,
+    };
+  }
+
+  // 유저 관심사 목록 조회
+  @UseGuards(AccessTokenGuard)
+  @Get('my')
+  async findUserInterests(@UserInfo() user: User): Promise<ApiResponse<UserToInterest[]>> {
+    const userId = user.id;
+    const interestList = await this.interestService.findUserInterests(userId);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: '내 관심사 목록 조회에 성공했습니다.',
       data: interestList,
     };
   }

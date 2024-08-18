@@ -5,10 +5,13 @@ import { Repository } from 'typeorm';
 import { Interest } from './entities/interest.entity';
 import { InterestDto } from './dto/interest.dto';
 import { INTEREST_MESSAGES } from './constants/interest.message.constant';
+import { UserToInterest } from 'src/users/entities/user-to-interest.entity';
 
 @Injectable()
 export class InterestService {
   constructor(
+    @InjectRepository(UserToInterest)
+    private readonly userToInterestRepository: Repository<UserToInterest>,
     @InjectRepository(Interest)
     private readonly interestRepository: Repository<Interest>,
   ) {}
@@ -36,6 +39,15 @@ export class InterestService {
   async findAll(): Promise<Interest[]> {
     const interestList = await this.interestRepository.find({ order: { id: 'ASC' } });
     return interestList;
+  }
+
+  // 유저 관심사 목록 조회
+  async findUserInterests(userId: number): Promise<UserToInterest[]> {
+    const userInterests = await this.userToInterestRepository.find({
+      where: { userId },
+    });
+
+    return userInterests;
   }
 
   // 관심사 수정

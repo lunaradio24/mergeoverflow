@@ -5,12 +5,15 @@ import { Repository } from 'typeorm';
 import { TechDto } from './dto/tech.dto';
 import { Tech } from './entities/tech.entity';
 import { TECH_MESSAGES } from './constants/tech.message.constant';
+import { UserToTech } from 'src/users/entities/user-to-tech.entity';
 
 @Injectable()
 export class TechService {
   constructor(
     @InjectRepository(Tech)
     private readonly techRepository: Repository<Tech>,
+    @InjectRepository(UserToTech)
+    private readonly userToTechRepository: Repository<UserToTech>,
   ) {}
 
   // 기술 목록 생성
@@ -36,6 +39,15 @@ export class TechService {
   async findAll(): Promise<Tech[]> {
     const techList = await this.techRepository.find({ order: { id: 'ASC' } });
     return techList;
+  }
+
+  // 유저 기술 목록 조회
+  async findUserTechs(userId: number): Promise<UserToTech[]> {
+    const userTechs = await this.userToTechRepository.find({
+      where: { userId },
+    });
+
+    return userTechs;
   }
 
   // 기술 수정
