@@ -66,7 +66,7 @@ export class AuthController {
   async googleAuthCallback(@Req() req: any, @Res() res: any): Promise<ApiResponse<TokensRO>> {
     const socialLoginDto = req.user;
     const tokens = await this.authService.socialSignIn(socialLoginDto);
-    const redirectUrl = `https://your-bubble-app-url.com/google-callback?token=${tokens.accessToken}`;
+    const redirectUrl = `https://thdtkandpf.bubbleapps.io/version-test/google-callback?token=${tokens.accessToken}`;
     res.redirect(redirectUrl);
     return {
       statusCode: HttpStatus.CREATED,
@@ -81,9 +81,11 @@ export class AuthController {
 
   @Get('sign-in/github/callback')
   @UseGuards(GithubAuthGuard)
-  async githubAuthCallback(@Req() req: any): Promise<ApiResponse<TokensRO>> {
+  async githubAuthCallback(@Req() req: any, @Res() res: any): Promise<ApiResponse<TokensRO>> {
     const socialLoginDto = req.user;
     const tokens = await this.authService.socialSignIn(socialLoginDto);
+    const redirectUrl = `https://thdtkandpf.bubbleapps.io/version-test/github-callback?token=${tokens.accessToken}`;
+    res.redirect(redirectUrl);
     return {
       statusCode: HttpStatus.CREATED,
       message: AUTH_MESSAGES.SIGN_IN.SUCCEED,
