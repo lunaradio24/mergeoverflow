@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Req, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Req, HttpStatus, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { UserService } from 'src/users/user.service';
@@ -63,9 +63,11 @@ export class AuthController {
 
   @Get('sign-in/google/callback')
   @UseGuards(GoogleAuthGuard)
-  async googleAuthCallback(@Req() req: any): Promise<ApiResponse<TokensRO>> {
+  async googleAuthCallback(@Req() req: any, @Res() res: any): Promise<ApiResponse<TokensRO>> {
     const socialLoginDto = req.user;
     const tokens = await this.authService.socialSignIn(socialLoginDto);
+    const redirectUrl = `https://your-bubble-app-url.com/google-callback?token=${tokens.accessToken}`;
+    res.redirect(redirectUrl);
     return {
       statusCode: HttpStatus.CREATED,
       message: AUTH_MESSAGES.SIGN_IN.SUCCEED,
