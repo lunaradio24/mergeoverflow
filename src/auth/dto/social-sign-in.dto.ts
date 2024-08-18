@@ -1,3 +1,4 @@
+import { Optional } from '@nestjs/common';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 export class SocialSignInDto {
@@ -8,4 +9,8 @@ export class SocialSignInDto {
   @IsNotEmpty()
   @IsString()
   providerId: string;
+
+  @Optional()
+  @IsString()
+  email: string;
 }
