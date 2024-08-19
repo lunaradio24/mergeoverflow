@@ -9,5 +9,6 @@ import { UserToTech } from 'src/users/entities/user-to-tech.entity';
   imports: [TypeOrmModule.forFeature([Tech, UserToTech])],
   controllers: [TechController],
   providers: [TechService],
+  exports: [TypeOrmModule],
 })
 export class TechModule {}

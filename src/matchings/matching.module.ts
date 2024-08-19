@@ -13,11 +13,15 @@ import { Location } from '../locations/entities/location.entity';
 import { LocationService } from '../locations/location.service';
 import { LocationController } from '../locations/location.controller';
 import { UserModule } from 'src/users/user.module';
+import { Tech } from 'src/techs/entities/tech.entity';
+import { UserToTech } from 'src/users/entities/user-to-tech.entity';
+import { TechModule } from 'src/techs/tech.module';
 import { SmsModule } from 'src/sms/sms.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Heart, Matching, Preferences, Location]),
+    TypeOrmModule.forFeature([User, Heart, Matching, Preferences, Location, Tech, UserToTech]),
+    TechModule,
     ChatRoomModule,
     NotificationModule,
     UserModule,

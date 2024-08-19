@@ -22,7 +22,9 @@ import { PreferredFrequency } from 'src/preferences/types/preferred-frequency.ty
 import { Location } from 'src/locations/entities/location.entity';
 import { NotificationService } from 'src/notifications/notification.service';
 import { LocationService } from 'src/locations/location.service';
+import { Tech } from 'src/techs/entities/tech.entity';
 import { SmsService } from 'src/sms/sms.service';
+
 
 @Injectable()
 export class MatchingService {
@@ -35,6 +37,8 @@ export class MatchingService {
     private readonly matchingRepository: Repository<Matching>,
     @InjectRepository(Preferences)
     private readonly preferencesRepository: Repository<Preferences>,
+    @InjectRepository(Tech)
+    private readonly techRepository: Repository<Tech>,
     @InjectRepository(Heart)
     private readonly heartRepository: Repository<Heart>,
     private readonly chatRoomService: ChatRoomService,
@@ -149,7 +153,27 @@ export class MatchingService {
       }
     }
   }
+  private async applyTechFilter(queryBuilder: any, userId: number) {
+    // 선호하는 기술 스택을 가진 유저 필터링
+    const userPreferredTechIds = await this.getPreferredTechIds(userId);
 
+    if (userPreferredTechIds.length > 0) {
+      // user_to_techs 테이블과 join을 통해 선호하는 기술 스택을 가진 유저만 필터링
+      queryBuilder
+        .innerJoin('user.userToTechs', 'userToTechs')
+        .andWhere('userToTechs.techId IN (:...userPreferredTechIds)', { userPreferredTechIds });
+    }
+  }
+
+  private async getPreferredTechIds(userId: number): Promise<number[]> {
+    const preferredTechs = await this.techRepository
+      .createQueryBuilder('tech')
+      .innerJoin('tech.userToTechs', 'userToTechs', 'userToTechs.userId = :userId', { userId })
+      .select('tech.id')
+      .getMany();
+
+    return preferredTechs.map((tech) => tech.id);
+  }
   public async createNewMatchings(userId: number): Promise<Matching[]> {
     // 사용자의 매칭 선호도 가져오기
     const preferences = await this.preferencesRepository.findOne({ where: { user: { id: userId } } });
@@ -172,6 +196,9 @@ export class MatchingService {
 
       // 거리 필터링
       this.applyDistanceFilter(queryBuilder, preferences.distance, user.location);
+
+      // 기술 필터링
+      await this.applyTechFilter(queryBuilder, userId);
 
       // 나이차이 필터링
       // this.applyAgeGapFilter(queryBuilder, preferences, user.birthDate);
