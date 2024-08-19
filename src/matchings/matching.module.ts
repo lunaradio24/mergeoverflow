@@ -16,6 +16,7 @@ import { UserModule } from 'src/users/user.module';
 import { Tech } from 'src/techs/entities/tech.entity';
 import { UserToTech } from 'src/users/entities/user-to-tech.entity';
 import { TechModule } from 'src/techs/tech.module';
+import { SmsModule } from 'src/sms/sms.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { TechModule } from 'src/techs/tech.module';
     ChatRoomModule,
     NotificationModule,
     UserModule,
+    SmsModule,
   ],
   controllers: [MatchingController, LocationController],
   providers: [MatchingService, HeartService, LocationService],

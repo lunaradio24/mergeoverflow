@@ -23,6 +23,8 @@ import { Location } from 'src/locations/entities/location.entity';
 import { NotificationService } from 'src/notifications/notification.service';
 import { LocationService } from 'src/locations/location.service';
 import { Tech } from 'src/techs/entities/tech.entity';
+import { SmsService } from 'src/sms/sms.service';
+
 
 @Injectable()
 export class MatchingService {
@@ -45,6 +47,7 @@ export class MatchingService {
     private readonly locationService: LocationService,
     private readonly userService: UserService,
     private readonly dataSource: DataSource,
+    private readonly smsService: SmsService,
   ) {
     this.logger = new Logger('matching');
   }
@@ -398,16 +401,16 @@ export class MatchingService {
         this.logger.log(`${user1Id}번 user와 ${user2Id}번 user의 채팅방 #${createdChatRoomId}이 개설되었습니다.`);
 
         // 채팅방 생성 알림 메시지 저장
-        const user1Nickname = await this.userService.findNicknameByUserId(user1Id);
-        const user2Nickname = await this.userService.findNicknameByUserId(user2Id);
+        const user1 = await this.userService.findByUserId(user1Id);
+        const user2 = await this.userService.findByUserId(user2Id);
 
-        const messageToUser1 = `${user2Nickname}님과 merge 되었습니다. 먼저 채팅을 시작해보세요`;
-        const messageToUser2 = `${user1Nickname}님과 merge 되었습니다. 먼저 채팅을 시작해보세요`;
+        const messageToUser1 = `${user2.nickname}님과 merge 되었습니다. 먼저 채팅을 시작해보세요`;
+        const messageToUser2 = `${user1.nickname}님과 merge 되었습니다. 먼저 채팅을 시작해보세요`;
 
         await this.notificationService.saveNotification(user1Id, messageToUser1, NotificationType.MERGED);
         await this.notificationService.saveNotification(user2Id, messageToUser2, NotificationType.MERGED);
 
-        // 채팅방 생성 알림 메시지 전송
+        // 채팅방 생성 알림 메시지 전송 - socket
         this.notificationGateway.server
           .to(user1Id.toString())
           .emit('mergeNotify', { type: NotificationType.MERGED, userId: user1Id, message: messageToUser1 });
@@ -415,6 +418,10 @@ export class MatchingService {
         this.notificationGateway.server
           .to(user2Id.toString())
           .emit('mergeNotify', { type: NotificationType.MERGED, userId: user2Id, message: messageToUser2 });
+
+        // 채팅방 생성 알림 메시지 전송 - sms
+        await this.smsService.sendOne(user1.account.phoneNum, `[MergeOverflow] ${messageToUser1}`);
+        await this.smsService.sendOne(user2.account.phoneNum, `[MergeOverflow] ${messageToUser2}`);
       }
       await queryRunner.commitTransaction();
     } catch (error) {
