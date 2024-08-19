@@ -59,11 +59,14 @@ export class AuthController {
 
   @Get('sign-in/google')
   @UseGuards(GoogleAuthGuard)
-  async googleAuth(@Req() req: Request) {}
+  async googleAuth(@Req() req: Request) {
+    console.log('google');
+  }
 
   @Get('sign-in/google/callback')
   @UseGuards(GoogleAuthGuard)
   async googleAuthCallback(@Req() req: any, @Res() res: any): Promise<ApiResponse<TokensRO>> {
+    console.log('google');
     const socialLoginDto = req.user;
     const tokens = await this.authService.socialSignIn(socialLoginDto);
     const redirectUrl = `https://thdtkandpf.bubbleapps.io/version-test/google-callback?token=${tokens.accessToken}`;
