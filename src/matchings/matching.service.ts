@@ -21,6 +21,7 @@ import { PreferredBodyShape } from 'src/preferences/types/preferred-body-shape.t
 import { PreferredFrequency } from 'src/preferences/types/preferred-frequency.type';
 import { Location } from 'src/locations/entities/location.entity';
 import { NotificationService } from 'src/notifications/notification.service';
+import { LocationService } from 'src/locations/location.service';
 
 @Injectable()
 export class MatchingService {
@@ -38,6 +39,7 @@ export class MatchingService {
     private readonly chatRoomService: ChatRoomService,
     private readonly notificationService: NotificationService,
     private readonly notificationGateway: NotificationGateway,
+    private readonly locationService: LocationService,
     private readonly userService: UserService,
     private readonly dataSource: DataSource,
   ) {
@@ -221,8 +223,6 @@ export class MatchingService {
 
     return newMatchings;
   }
-
-  // 매칭된 유저들을 조회
   async getMatchingUsers(userId: number): Promise<User[]> {
     // interactionType이 null인 매칭 엔티티를 조회
     let existingMatchings = await this.matchingRepository.find({
@@ -246,9 +246,23 @@ export class MatchingService {
     const targetUserIds = existingMatchings.map((matching) => matching.targetUserId);
     const users = await this.userRepository.find({
       where: { id: In(targetUserIds) },
-      relations: ['images'],
+      relations: ['images', 'location'],
       order: { id: 'ASC' },
     });
+
+    // 현재 유저의 위치 가져오기
+    const currentUserLocation = await this.locationService.getLocationByUserId(userId);
+
+    // 각 매칭된 유저와의 거리 계산 및 추가
+    for (const user of users) {
+      const distance = this.locationService.calculateDistance(
+        currentUserLocation.latitude,
+        currentUserLocation.longitude,
+        user.location.latitude,
+        user.location.longitude,
+      );
+      user['distance'] = distance; // 유저 객체에 거리 추가
+    }
 
     return users;
   }
