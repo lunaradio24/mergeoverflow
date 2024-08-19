@@ -1,7 +1,8 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { ChatRoom } from './chat-room.entity';
 import { User } from '../../users/entities/user.entity';
-import { IsBoolean, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { MessageType } from '../types/message.type';
 
 @Entity({ name: 'chat_messages' })
 export class ChatMessage {
@@ -21,7 +22,11 @@ export class ChatMessage {
   @IsNotEmpty()
   @IsString()
   @Column({ type: 'text' })
-  text: string;
+  content: string;
+
+  @IsEnum(MessageType)
+  @Column({ type: 'enum', enum: MessageType, default: MessageType.TEXT })
+  type: MessageType;
 
   @IsBoolean()
   @Column({ type: 'boolean', default: false })

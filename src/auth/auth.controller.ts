@@ -123,13 +123,13 @@ export class AuthController {
   @Post('sign-out')
   @ApiBearerAuth()
   @UseGuards(RefreshTokenGuard)
-  async signOut(@UserInfo() user: User): Promise<ApiResponse<null>> {
+  async signOut(@UserInfo() user: User): Promise<ApiResponse<boolean>> {
     const userId = user.id;
     await this.authService.signOut(userId);
     return {
       statusCode: HttpStatus.OK,
       message: AUTH_MESSAGES.SIGN_OUT.SUCCEED,
-      data: null,
+      data: true,
     };
   }
 

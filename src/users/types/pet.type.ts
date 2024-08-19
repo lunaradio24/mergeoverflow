@@ -1,7 +1,7 @@
 export enum Pet {
-  DOG = 'DOG',
-  CAT = 'CAT',
-  ETC = 'ETC',
-  NONE = 'NONE',
-  VSCODE_PET = 'VSCODE_PET',
+  DOG = '반려견',
+  CAT = '반려묘',
+  ETC = '기타 반려동물',
+  NONE = '없음',
+  VSCODE_PET = 'VSCODE PET',
 }

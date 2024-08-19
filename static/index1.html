@@ -77,7 +77,7 @@
         if (!joinCheck) {
           data.messages.forEach((msg) => {
             const item = document.createElement('li');
-            item.textContent = `${msg.nickname}:${msg.text}`;
+            item.textContent = `${msg.nickname}:${msg.content}`;
             messagesList.appendChild(item);
           });
         }
@@ -91,7 +91,7 @@
 
       chatSocket.on('message', (message) => {
         const item = document.createElement('li');
-        item.textContent = `${message.nickname}: ${message.text}`;
+        item.textContent = `${message.nickname}: ${message.content}`;
         messagesList.appendChild(item);
       });
 
