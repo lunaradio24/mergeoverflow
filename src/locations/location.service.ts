@@ -35,7 +35,7 @@ export class LocationService {
     }
   }
 
-  async addLocation(userId: number, latitude: number, longitude: number): Promise<boolean> {
+  async updateLocation(userId: number, latitude: number, longitude: number): Promise<boolean> {
     await this.userService.validateUserExists(userId);
 
     // 기존 위치 정보가 있는지 확인

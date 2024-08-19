@@ -8,10 +8,10 @@ export class LocationController {
 
   @UseGuards(AccessTokenGuard)
   @Post()
-  async addLocation(@Request() req: any, @Body() body: { latitude: number; longitude: number }) {
+  async updateLocation(@Request() req: any, @Body() body: { latitude: number; longitude: number }) {
     const userId = req.user.id;
     const { latitude, longitude } = body;
-    return this.locationService.addLocation(userId, latitude, longitude);
+    return this.locationService.updateLocation(userId, latitude, longitude);
   }
 
   // 거리 계산을 위한 엔드포인트 추가
