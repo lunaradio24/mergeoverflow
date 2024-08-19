@@ -153,15 +153,22 @@ export class MatchingService {
       }
     }
   }
-  private async applyTechFilter(queryBuilder: any, userId: number) {
-    // 선호하는 기술 스택을 가진 유저 필터링
-    const userPreferredTechIds = await this.getPreferredTechIds(userId);
 
-    if (userPreferredTechIds.length > 0) {
-      // user_to_techs 테이블과 join을 통해 선호하는 기술 스택을 가진 유저만 필터링
+  private async applyTechFilter(queryBuilder: any, preferredTechNames: string[]) {
+    if (preferredTechNames && preferredTechNames.length > 0) {
+      // 사용자가 설정한 선호 기술 이름을 기반으로 techId를 가져옴
+      const preferredTechIds = await this.techRepository
+        .createQueryBuilder('tech')
+        .where('tech.techName IN (:...preferredTechNames)', { preferredTechNames })
+        .select('tech.id')
+        .getMany();
+
+      const techIds = preferredTechIds.map((tech) => tech.id);
+
+      // user_to_techs 테이블과 조인하여 선호 기술을 가진 유저를 필터링
       queryBuilder
         .innerJoin('user.userToTechs', 'userToTechs')
-        .andWhere('userToTechs.techId IN (:...userPreferredTechIds)', { userPreferredTechIds });
+        .andWhere('userToTechs.techId IN (:...techIds)', { techIds });
     }
   }
 
@@ -174,6 +181,17 @@ export class MatchingService {
 
     return preferredTechs.map((tech) => tech.id);
   }
+
+  private async getTechNamesForUser(userId: number): Promise<string[]> {
+    const techs = await this.techRepository
+      .createQueryBuilder('tech')
+      .innerJoin('tech.userToTechs', 'userToTechs', 'userToTechs.userId = :userId', { userId })
+      .select('tech.techName')
+      .getMany();
+
+    return techs.map((tech) => tech.techName);
+  }
+
   public async createNewMatchings(userId: number): Promise<Matching[]> {
     // 사용자의 매칭 선호도 가져오기
     const preferences = await this.preferencesRepository.findOne({ where: { user: { id: userId } } });
@@ -185,6 +203,8 @@ export class MatchingService {
     if (!user) {
       throw new NotFoundException(`사용자 ID ${userId}를 찾을 수 없습니다.`);
     }
+
+    const preferredTechNames = preferences.techs || [];
 
     const queryBuilder = this.userRepository.createQueryBuilder('user');
     queryBuilder.where('user.id != :userId', { userId });
@@ -198,7 +218,7 @@ export class MatchingService {
       this.applyDistanceFilter(queryBuilder, preferences.distance, user.location);
 
       // 기술 필터링
-      await this.applyTechFilter(queryBuilder, userId);
+      await this.applyTechFilter(queryBuilder, preferredTechNames);
 
       // 나이차이 필터링
       // this.applyAgeGapFilter(queryBuilder, preferences, user.birthDate);
@@ -287,6 +307,10 @@ export class MatchingService {
         user.location.longitude,
       );
       user['distance'] = distance; // 유저 객체에 거리 추가
+
+      // 해당 유저의 기술 스택 조회
+      const techNames = await this.getTechNamesForUser(user.id);
+      user['techs'] = techNames; // 유저 객체에 기술 스택 추가
     }
 
     return users;
