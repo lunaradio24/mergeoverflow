@@ -24,6 +24,9 @@ export class Preferences {
   @Column({ type: 'int', nullable: false })
   userId: number;
 
+  @Column({ type: 'json', nullable: true })
+  techs: string[];
+
   @Column({ type: 'enum', enum: PreferredCodingLevel, nullable: true })
   codingLevel: PreferredCodingLevel;
 
