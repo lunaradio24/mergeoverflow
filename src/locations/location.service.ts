@@ -58,23 +58,4 @@ export class LocationService {
   async getLocationByUserId(userId: number): Promise<Location> {
     return this.locationRepository.findOne({ where: { userId } });
   }
-
-  // 거리 계산 테스트를 위한 메서드 추가
-  async testCalculateDistance(userId1: number, userId2: number): Promise<number> {
-    const location1 = await this.locationRepository.findOne({ where: { userId: userId1 } });
-    const location2 = await this.locationRepository.findOne({ where: { userId: userId2 } });
-
-    if (!location1 || !location2) {
-      throw new Error('두 유저 모두의 위치정보가 필요합니다.');
-    }
-
-    const distance = this.calculateDistance(
-      location1.latitude,
-      location1.longitude,
-      location2.latitude,
-      location2.longitude,
-    );
-
-    return distance;
-  }
 }

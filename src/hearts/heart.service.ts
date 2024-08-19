@@ -14,8 +14,8 @@ export class HeartService {
 
   private readonly logger = new Logger();
 
-  // 매일 오전 9시에 초기화
-  @Cron('0 0 9 * * *', { timeZone: 'Asia/Seoul' })
+  // 매일 오전 9시, 오후 9시에 초기화
+  @Cron('0 0 9,21 * * *', { timeZone: 'Asia/Seoul' })
   async handleCron(): Promise<void> {
     await this.resetHearts();
     const now = new Date().toISOString();

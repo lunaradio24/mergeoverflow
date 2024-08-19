@@ -13,11 +13,4 @@ export class LocationController {
     const { latitude, longitude } = body;
     return this.locationService.updateLocation(userId, latitude, longitude);
   }
-
-  // 거리 계산을 위한 엔드포인트 추가
-  @Get('calculate-distance')
-  async calculateDistance(@Query('userId1') userId1: number, @Query('userId2') userId2: number) {
-    const distance = await this.locationService.testCalculateDistance(userId1, userId2);
-    return { message: `User ${userId1}와 User ${userId2} 간의 거리: ${distance} km`, distance };
-  }
 }
