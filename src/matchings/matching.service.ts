@@ -63,10 +63,6 @@ export class MatchingService {
       let maxBirthYear: number;
 
       switch (preferences.ageGap) {
-        case PreferredAgeGap.WITHIN_3_YEARS:
-          minBirthYear = birthYear - 3;
-          maxBirthYear = birthYear + 3;
-          break;
         case PreferredAgeGap.WITHIN_5_YEARS:
           minBirthYear = birthYear - 5;
           maxBirthYear = birthYear + 5;
@@ -170,23 +166,23 @@ export class MatchingService {
       // 성별 필터링
       this.applyGenderFilter(queryBuilder, preferences, user.gender);
 
-      // 나이차이 필터링
-      this.applyAgeGapFilter(queryBuilder, preferences, user.birthDate);
-
-      // 키 필터링
-      this.applyHeightFilter(queryBuilder, preferences.height);
-
-      // 체형 필터링
-      this.applyBodyShapeFilter(queryBuilder, preferences.bodyShape);
-
-      // 흡연빈도 필터링
-      this.applySmokingFrequencyFilter(queryBuilder, preferences.smokingFreq);
-
-      // 움주빈도 필터링
-      this.applyDrinkingFrequencyFilter(queryBuilder, preferences.drinkingFreq);
-
       // 거리 필터링
       this.applyDistanceFilter(queryBuilder, preferences.distance, user.location);
+
+      // 나이차이 필터링
+      // this.applyAgeGapFilter(queryBuilder, preferences, user.birthDate);
+
+      // // 키 필터링
+      // this.applyHeightFilter(queryBuilder, preferences.height);
+
+      // // 체형 필터링
+      // this.applyBodyShapeFilter(queryBuilder, preferences.bodyShape);
+
+      // // 흡연빈도 필터링
+      // this.applySmokingFrequencyFilter(queryBuilder, preferences.smokingFreq);
+
+      // // 움주빈도 필터링
+      // this.applyDrinkingFrequencyFilter(queryBuilder, preferences.drinkingFreq);
     }
 
     // 기존 매칭이 되어 좋아요/싫어요 한 사용자는 제외

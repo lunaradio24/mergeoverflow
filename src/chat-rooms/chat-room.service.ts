@@ -9,6 +9,7 @@ import { NotificationGateway } from 'src/notifications/notification.gateway';
 import { UserService } from 'src/users/user.service';
 import { NotificationService } from 'src/notifications/notification.service';
 import { PartnersRO } from './ro/partners.ro';
+import { MessageType } from './types/message.type';
 
 @Injectable()
 export class ChatRoomService {
@@ -71,23 +72,26 @@ export class ChatRoomService {
   async getRoomMessage(roomId: number) {
     const data = await this.chatMessageRepository.find({
       where: { roomId },
-      select: { text: true, senderId: true, sender: { nickname: true } },
+      select: { content: true, type: true, sender: { nickname: true } },
       order: { createdAt: 'ASC' },
       relations: ['sender'],
     });
+
     const messages = data.map((msg) => ({
       nickname: msg.sender.nickname,
-      text: msg.text,
+      content: msg.content,
+      type: msg.type,
     }));
+
     return messages;
   }
 
-  async saveMessage(userId: number, roomId: number, message: string): Promise<void> {
+  async saveMessage({ userId, roomId, content, type }): Promise<void> {
     const chatRoom = await this.chatRoomRepository.findOne({ where: { id: roomId } });
     if (!chatRoom) {
       throw new NotFoundException('존재하지 않는 방이거나 접근 권한이 없습니다.');
     }
-    await this.chatMessageRepository.save({ roomId, senderId: userId, text: message });
+    await this.chatMessageRepository.save({ roomId, senderId: userId, content, type });
   }
 
   async isUserInChatRoom(userId: number, roomId: number): Promise<boolean> {
@@ -152,11 +156,15 @@ export class ChatRoomService {
         const otherUserImages = otherUser.images.map((image) => image.imageUrl);
         const sortedMessages = chatRoom.messages.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
         const latestMessage = sortedMessages[0];
+
         return {
           id: chatRoom.id,
           createdAt: chatRoom.createdAt,
           otherUser: { id: otherUser.id, nickname: otherUser.nickname, images: otherUserImages },
-          latestMessageText: { text: latestMessage?.text, createdAt: latestMessage?.createdAt },
+          latestMessage: {
+            content: latestMessage?.type === MessageType.TEXT ? latestMessage?.content : '[사진]',
+            createdAt: latestMessage?.createdAt,
+          },
         };
       }),
     );

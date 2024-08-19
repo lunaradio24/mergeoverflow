@@ -4,7 +4,7 @@ import { setSeederFactory } from 'typeorm-extension';
 
 export const profileImageFactory = setSeederFactory(ProfileImage, (faker: Faker) => {
   const profileImage = new ProfileImage();
-  profileImage.imageUrl = faker.image.avatar();
+  profileImage.imageUrl = faker.image.urlPicsumPhotos();
 
   return profileImage;
 });

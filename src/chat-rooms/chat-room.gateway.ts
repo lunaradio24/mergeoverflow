@@ -13,6 +13,7 @@ import { Inject, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { SocketGateway } from 'src/common/sockets/gateway';
 import { UserService } from 'src/users/user.service';
+import { MessageType } from './types/message.type';
 
 @WebSocketGateway({ namespace: 'chat', cors: { origin: '*' } })
 export class ChatRoomGateway extends SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -57,8 +58,8 @@ export class ChatRoomGateway extends SocketGateway implements OnGatewayInit, OnG
   async handleRequestHistory(@MessageBody() data: { roomId: number }, @ConnectedSocket() socket: Socket) {
     const { roomId } = data;
     const messages = await this.chatRoomService.getRoomMessage(roomId);
-    const checkhistory = true;
-    this.server.to(roomId.toString()).emit('history', { messages, roomId, checkhistory });
+    const checkHistory = true;
+    this.server.to(roomId.toString()).emit('history', { messages, roomId, checkHistory });
   }
 
   @SubscribeMessage('exit')
@@ -68,12 +69,15 @@ export class ChatRoomGateway extends SocketGateway implements OnGatewayInit, OnG
   }
 
   @SubscribeMessage('message')
-  async handleMessage(@MessageBody() data: { roomId: number; message: string }, @ConnectedSocket() socket: Socket) {
-    const { roomId, message } = data;
+  async handleMessage(
+    @MessageBody() data: { roomId: number; content: string; type: MessageType },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const { roomId, content, type } = data;
     this.logger.log(`데이터: ${data}`);
-    await this.chatRoomService.saveMessage(socket.data.userId, roomId, message);
+    await this.chatRoomService.saveMessage({ userId: socket.data.userId, roomId, content, type });
     this.logger.log(`데이터 저장 성공: true`);
-    this.server.to(roomId.toString()).emit('message', { nickname: await socket.data.nickname, text: message });
-    this.logger.log(`방번호:${roomId}번 / ${await socket.data.nickname}:${message}`);
+    this.server.to(roomId.toString()).emit('message', { nickname: await socket.data.nickname, content });
+    this.logger.log(`방번호:${roomId}번 / ${await socket.data.nickname}:${content}`);
   }
 }

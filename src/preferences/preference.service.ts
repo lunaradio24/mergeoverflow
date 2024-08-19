@@ -15,11 +15,11 @@ export class PreferenceService {
   ) {}
 
   async get(userId: number): Promise<Preferences> {
-    return await this.preferenceRepository.findOne({ where: { user: { id: userId } } });
+    return await this.preferenceRepository.findOne({ where: { userId } });
   }
 
   async update(userId: number, updatePreferenceDto: UpdatePreferenceDto): Promise<void> {
-    const preferences = await this.preferenceRepository.findOne({ where: { user: { id: userId } } });
+    const preferences = await this.preferenceRepository.findOne({ where: { userId } });
     if (!preferences) {
       throw new NotFoundException(`사용자 ID ${userId}의 매칭 선호도를 찾을 수 없습니다.`);
     }
