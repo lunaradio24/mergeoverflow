@@ -13,6 +13,7 @@ import { Location } from '../locations/entities/location.entity';
 import { LocationService } from '../locations/location.service';
 import { LocationController } from '../locations/location.controller';
 import { UserModule } from 'src/users/user.module';
+import { SmsModule } from 'src/sms/sms.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { UserModule } from 'src/users/user.module';
     ChatRoomModule,
     NotificationModule,
     UserModule,
+    SmsModule,
   ],
   controllers: [MatchingController, LocationController],
   providers: [MatchingService, HeartService, LocationService],

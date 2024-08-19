@@ -49,7 +49,7 @@ export class SmsService implements OnModuleInit {
     }
 
     const verificationCode = this.createVerificationCode();
-    await this.sendOne(formattedPhoneNum, `[mergeOverflow] 인증번호를 입력해주세요\n${verificationCode}`);
+    await this.sendOne(formattedPhoneNum, `[MergeOverflow] 인증번호를 입력해주세요\n${verificationCode}`);
 
     // 인증코드 유효기간 설정
     const expireAt = Math.floor(Date.now() / 1000) + VERIFICATION_CODE_EXPIRATION;
