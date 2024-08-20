@@ -39,17 +39,16 @@ export class TechController {
     };
   }
 
-  //
   @UseGuards(AccessTokenGuard)
   @Get('my')
-  async findUserTechs(@UserInfo() user: User): Promise<ApiResponse<UserToTech[]>> {
+  async findUserTechIds(@UserInfo() user: User): Promise<ApiResponse<number[]>> {
     const userId = user.id;
-    const techList = await this.techService.findUserTechs(userId);
+    const userTechIds = await this.techService.findUserTechIds(userId);
 
     return {
       statusCode: HttpStatus.OK,
       message: '내 기술 목록 조회에 성공했습니다.',
-      data: techList,
+      data: userTechIds,
     };
   }
 
