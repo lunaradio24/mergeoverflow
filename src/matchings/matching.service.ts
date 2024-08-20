@@ -25,7 +25,6 @@ import { LocationService } from 'src/locations/location.service';
 import { Tech } from 'src/techs/entities/tech.entity';
 import { SmsService } from 'src/sms/sms.service';
 
-
 @Injectable()
 export class MatchingService {
   private readonly logger: Logger;
@@ -291,7 +290,12 @@ export class MatchingService {
     const targetUserIds = existingMatchings.map((matching) => matching.targetUserId);
     const users = await this.userRepository.find({
       where: { id: In(targetUserIds) },
-      relations: ['images', 'location'],
+      relations: {
+        images: true,
+        location: true,
+        userToInterests: { interest: true },
+        userToTechs: { tech: true },
+      },
       order: { id: 'ASC' },
     });
 
