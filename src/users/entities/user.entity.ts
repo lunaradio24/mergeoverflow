@@ -76,9 +76,9 @@ export class User {
   @Column({ type: 'enum', enum: Mbti })
   mbti: Mbti;
 
-  @IsNotEmpty({ message: '키를 해주세요.' })
+  @IsNotEmpty({ message: '키를 선택해주세요.' })
   @IsNumber()
-  @Column({ type: 'float' })
+  @Column({ type: 'decimal', precision: 4, scale: 1 })
   height: number;
 
   @IsNotEmpty({ message: '체형을 선택해주세요.' })
