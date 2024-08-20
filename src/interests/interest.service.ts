@@ -6,6 +6,7 @@ import { Interest } from './entities/interest.entity';
 import { InterestDto } from './dto/interest.dto';
 import { INTEREST_MESSAGES } from './constants/interest.message.constant';
 import { UserToInterest } from 'src/users/entities/user-to-interest.entity';
+import { InterestRO } from './ro/interest.ro';
 
 @Injectable()
 export class InterestService {
@@ -42,14 +43,20 @@ export class InterestService {
   }
 
   // 유저 관심사 목록 조회
-  async findUserInterestIds(userId: number): Promise<number[]> {
-    const userInterests = await this.userToInterestRepository.find({
+  async findUserInterests(userId: number): Promise<InterestRO[]> {
+    const userToInterests = await this.userToInterestRepository.find({
       where: { userId },
+      relations: { interest: true },
     });
 
-    const userInterestIds = userInterests.map((userInterest) => userInterest.interestId);
+    const userInterests = userToInterests.map((userToInterest) => {
+      return {
+        interestId: userToInterest.interest.id,
+        interestName: userToInterest.interest.interestName,
+      };
+    });
 
-    return userInterestIds;
+    return userInterests;
   }
 
   // 관심사 수정
