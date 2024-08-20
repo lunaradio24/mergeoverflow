@@ -200,13 +200,16 @@ export class AuthService {
     }
   }
 
-  async socialSignIn(socialSignInDto: SocialSignInDto): Promise<TokensRO> {
+  async socialSignIn(socialSignInDto: SocialSignInDto): Promise<{ tokens: TokensRO; isNewUser: boolean }> {
     try {
       const { provider, providerId } = socialSignInDto;
 
       let account = await this.accountRepository.findOne({ where: { provider, providerId }, relations: ['user'] });
 
+      let isNewUser = false;
+
       if (!account) {
+        isNewUser = true; // 새로운 사용자임을 표시
         // 트랜잭션 시작
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -237,7 +240,7 @@ export class AuthService {
 
       const payload = { userId: account.user.id, provider, providerId };
       const tokens = await this.issueTokens(payload);
-      return tokens;
+      return { tokens, isNewUser };
     } catch (error) {
       throw new UnauthorizedException(AUTH_MESSAGES.SIGN_IN.FAILURE);
     }
