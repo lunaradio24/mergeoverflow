@@ -10,7 +10,6 @@ import {
   ArrayMaxSize,
   MinLength,
   MaxLength,
-  IsOptional,
 } from 'class-validator';
 import { Gender } from '../../users/types/gender.type';
 import { Region } from '../../users/types/region.type';
@@ -23,22 +22,23 @@ import { IsPasswordMatchingConstraint } from 'src/utils/decorators/password-matc
 import { Type } from 'class-transformer';
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '../constants/auth.constant';
 import { MAX_NUM_IMAGES } from 'src/images/constants/image.constant';
+import { AUTH_MESSAGES } from '../constants/auth.message.constant';
 
 export class LocalSignUpDto {
-  @IsOptional()
+  @IsNotEmpty({ message: AUTH_MESSAGES.COMMON.PHONE_NUM.REQUIRED })
   @IsString()
-  @Matches(/^010-\d{4}-\d{4}$/, { message: '전화번호 형식이 올바르지 않습니다. (예: 010-1234-5678)' })
-  phoneNum?: string;
+  @Matches(/^010-\d{4}-\d{4}$/, { message: AUTH_MESSAGES.COMMON.PHONE_NUM.INVALID_FORMAT })
+  phoneNum: string;
 
-  @IsOptional()
+  @IsNotEmpty({ message: AUTH_MESSAGES.COMMON.PASSWORD.REQUIRED })
   @IsString()
-  @MinLength(MIN_PASSWORD_LENGTH, { message: `비밀번호는 최소 ${MIN_PASSWORD_LENGTH}자리입니다.` })
-  @MaxLength(MAX_PASSWORD_LENGTH, { message: `비밀번호는 최대 ${MAX_PASSWORD_LENGTH}자리입니다.` })
-  password?: string;
+  @MinLength(MIN_PASSWORD_LENGTH, { message: AUTH_MESSAGES.COMMON.PASSWORD.MIN_LENGTH })
+  @MaxLength(MAX_PASSWORD_LENGTH, { message: AUTH_MESSAGES.COMMON.PASSWORD.MAX_LENGTH })
+  password: string;
 
-  @IsOptional()
+  @IsNotEmpty({ message: AUTH_MESSAGES.COMMON.PASSWORD_CONFIRM.REQUIRED })
   @IsString()
-  @Validate(IsPasswordMatchingConstraint, { message: '비밀번호가 일치하지 않습니다.' })
+  @Validate(IsPasswordMatchingConstraint, { message: AUTH_MESSAGES.COMMON.PASSWORD_CONFIRM.NOT_MATCHED_WITH_PASSWORD })
   readonly passwordConfirm: string;
 
   @IsNotEmpty()
