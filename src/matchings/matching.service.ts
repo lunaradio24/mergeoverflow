@@ -25,7 +25,6 @@ import { LocationService } from 'src/locations/location.service';
 import { Tech } from 'src/techs/entities/tech.entity';
 import { SmsService } from 'src/sms/sms.service';
 
-
 @Injectable()
 export class MatchingService {
   private readonly logger: Logger;
@@ -129,9 +128,7 @@ export class MatchingService {
     if (distancePreference && distancePreference !== PreferredDistance.NO_PREFERENCE) {
       if (userLocation.latitude && userLocation.longitude) {
         const distanceInKm = {
-          [PreferredDistance.WITHIN_10_KM]: 10,
-          [PreferredDistance.WITHIN_20_KM]: 20,
-          [PreferredDistance.WITHIN_50_KM]: 50,
+          [PreferredDistance.WITHIN_30_KM]: 30,
           [PreferredDistance.WITHIN_100_KM]: 100,
         };
 

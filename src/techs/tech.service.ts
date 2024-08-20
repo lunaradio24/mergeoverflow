@@ -6,6 +6,7 @@ import { TechDto } from './dto/tech.dto';
 import { Tech } from './entities/tech.entity';
 import { TECH_MESSAGES } from './constants/tech.message.constant';
 import { UserToTech } from 'src/users/entities/user-to-tech.entity';
+import { TechRO } from './ro/tech.ro';
 
 @Injectable()
 export class TechService {
@@ -42,9 +43,17 @@ export class TechService {
   }
 
   // 유저 기술 목록 조회
-  async findUserTechs(userId: number): Promise<UserToTech[]> {
-    const userTechs = await this.userToTechRepository.find({
+  async findUserTechs(userId: number): Promise<TechRO[]> {
+    const userToTechs = await this.userToTechRepository.find({
       where: { userId },
+      relations: { tech: true },
+    });
+
+    const userTechs = userToTechs.map((userToTech) => {
+      return {
+        techId: userToTech.tech.id,
+        techName: userToTech.tech.techName,
+      };
     });
 
     return userTechs;

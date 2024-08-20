@@ -11,6 +11,7 @@ import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { UserInfo } from 'src/utils/decorators/user-info.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { UserToInterest } from 'src/users/entities/user-to-interest.entity';
+import { InterestRO } from './ro/interest.ro';
 
 @Controller('interests')
 export class InterestController {
@@ -45,14 +46,14 @@ export class InterestController {
   // 유저 관심사 목록 조회
   @UseGuards(AccessTokenGuard)
   @Get('my')
-  async findUserInterests(@UserInfo() user: User): Promise<ApiResponse<UserToInterest[]>> {
+  async findUserInterests(@UserInfo() user: User): Promise<ApiResponse<InterestRO[]>> {
     const userId = user.id;
-    const interestList = await this.interestService.findUserInterests(userId);
+    const userInterests = await this.interestService.findUserInterests(userId);
 
     return {
       statusCode: HttpStatus.OK,
       message: '내 관심사 목록 조회에 성공했습니다.',
-      data: interestList,
+      data: userInterests,
     };
   }
 

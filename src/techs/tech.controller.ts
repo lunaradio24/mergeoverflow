@@ -11,6 +11,7 @@ import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { User } from 'src/users/entities/user.entity';
 import { UserInfo } from 'src/utils/decorators/user-info.decorator';
 import { UserToTech } from 'src/users/entities/user-to-tech.entity';
+import { TechRO } from './ro/tech.ro';
 
 @Controller('techs')
 export class TechController {
@@ -39,17 +40,16 @@ export class TechController {
     };
   }
 
-  //
   @UseGuards(AccessTokenGuard)
   @Get('my')
-  async findUserTechs(@UserInfo() user: User): Promise<ApiResponse<UserToTech[]>> {
+  async findUserTechs(@UserInfo() user: User): Promise<ApiResponse<TechRO[]>> {
     const userId = user.id;
-    const techList = await this.techService.findUserTechs(userId);
+    const userTechs = await this.techService.findUserTechs(userId);
 
     return {
       statusCode: HttpStatus.OK,
       message: '내 기술 목록 조회에 성공했습니다.',
-      data: techList,
+      data: userTechs,
     };
   }
 
