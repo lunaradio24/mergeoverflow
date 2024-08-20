@@ -41,14 +41,14 @@ export class TechController {
 
   @UseGuards(AccessTokenGuard)
   @Get('my')
-  async findUserTechIds(@UserInfo() user: User): Promise<ApiResponse<number[]>> {
+  async findUserTechIds(@UserInfo() user: User): Promise<ApiResponse<{ userTechIds: number[] }>> {
     const userId = user.id;
     const userTechIds = await this.techService.findUserTechIds(userId);
 
     return {
       statusCode: HttpStatus.OK,
       message: '내 기술 목록 조회에 성공했습니다.',
-      data: userTechIds,
+      data: { userTechIds },
     };
   }
 
