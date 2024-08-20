@@ -66,10 +66,9 @@ export class AuthController {
   @Get('sign-in/google/callback')
   @UseGuards(GoogleAuthGuard)
   async googleAuthCallback(@Req() req: any, @Res() res: any): Promise<ApiResponse<TokensRO>> {
-    console.log('google');
     const socialLoginDto = req.user;
-    const tokens = await this.authService.socialSignIn(socialLoginDto);
-    const redirectUrl = `https://thdtkandpf.bubbleapps.io/version-test/google-callback?token=${tokens.accessToken}`;
+    const { tokens, isNewUser } = await this.authService.socialSignIn(socialLoginDto);
+    const redirectUrl = `https://mergeoverflow.shop/version-test/google-callback?token=${tokens.accessToken}&newUser=${isNewUser}`;
     res.redirect(redirectUrl);
     return {
       statusCode: HttpStatus.CREATED,
@@ -86,8 +85,8 @@ export class AuthController {
   @UseGuards(GithubAuthGuard)
   async githubAuthCallback(@Req() req: any, @Res() res: any): Promise<ApiResponse<TokensRO>> {
     const socialLoginDto = req.user;
-    const tokens = await this.authService.socialSignIn(socialLoginDto);
-    const redirectUrl = `https://thdtkandpf.bubbleapps.io/version-test/github-callback?token=${tokens.accessToken}`;
+    const { tokens, isNewUser } = await this.authService.socialSignIn(socialLoginDto);
+    const redirectUrl = `https://mergeoverflow.shop/version-test/github-callback?token=${tokens.accessToken}&newUser=${isNewUser}`;
     res.redirect(redirectUrl);
     return {
       statusCode: HttpStatus.CREATED,
