@@ -30,7 +30,7 @@ export class UserService {
   async findByUserId(userId: number): Promise<User | null> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['account', 'images'],
+      relations: ['account', 'images', 'userToInterests', 'userToTechs'],
       cache: true,
     });
     if (user) {
