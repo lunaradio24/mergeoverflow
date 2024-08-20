@@ -42,12 +42,14 @@ export class InterestService {
   }
 
   // 유저 관심사 목록 조회
-  async findUserInterests(userId: number): Promise<UserToInterest[]> {
+  async findUserInterestIds(userId: number): Promise<number[]> {
     const userInterests = await this.userToInterestRepository.find({
       where: { userId },
     });
 
-    return userInterests;
+    const userInterestIds = userInterests.map((userInterest) => userInterest.interestId);
+
+    return userInterestIds;
   }
 
   // 관심사 수정

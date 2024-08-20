@@ -45,14 +45,14 @@ export class InterestController {
   // 유저 관심사 목록 조회
   @UseGuards(AccessTokenGuard)
   @Get('my')
-  async findUserInterests(@UserInfo() user: User): Promise<ApiResponse<UserToInterest[]>> {
+  async findUserInterestIds(@UserInfo() user: User): Promise<ApiResponse<number[]>> {
     const userId = user.id;
-    const interestList = await this.interestService.findUserInterests(userId);
+    const userInterestIds = await this.interestService.findUserInterestIds(userId);
 
     return {
       statusCode: HttpStatus.OK,
       message: '내 관심사 목록 조회에 성공했습니다.',
-      data: interestList,
+      data: userInterestIds,
     };
   }
 

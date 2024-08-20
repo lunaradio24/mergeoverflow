@@ -42,12 +42,14 @@ export class TechService {
   }
 
   // 유저 기술 목록 조회
-  async findUserTechs(userId: number): Promise<UserToTech[]> {
+  async findUserTechIds(userId: number): Promise<number[]> {
     const userTechs = await this.userToTechRepository.find({
       where: { userId },
     });
 
-    return userTechs;
+    const userTechIds = userTechs.map((userTech) => userTech.techId);
+
+    return userTechIds;
   }
 
   // 기술 수정
