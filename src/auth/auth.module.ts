@@ -18,6 +18,7 @@ import { ProfileImage } from 'src/images/entities/profile-image.entity';
 import { Heart } from 'src/hearts/entities/heart.entity';
 import { GithubStrategy } from './strategies/github.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
     ConfigModule,
     UserModule,
     SmsModule,
+    PassportModule.register({ defaultStrategy: 'google' }),
   ],
   controllers: [AuthController],
   providers: [

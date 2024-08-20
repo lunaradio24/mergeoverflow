@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Google OAuth Test</title>
+  </head>
+  <body>
+    <h1>Google OAuth Test</h1>
+    <button id="google-login">Login with Google</button>
+
+    <script>
+      // Google 로그인 버튼 클릭 시 실행되는 함수
+      document.getElementById('google-login').onclick = function () {
+        // 여기에 실제 배포된 백엔드 엔드포인트를 입력하세요
+        const googleAuthUrl = 'http://localhost:3000/auth/sign-in/google';
+
+        // Google OAuth 로그인 페이지로 리디렉션
+        window.location.href = googleAuthUrl;
+      };
+
+      // URL에서 쿼리 파라미터 가져오기 (토큰 및 상태 확인)
+      function getQueryParams() {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        const newUser = params.get('newUser');
+        console.log('Token:', token);
+        console.log('Is New User:', newUser);
+      }
+
+      // 페이지가 로드될 때 URL의 파라미터를 확인
+      window.onload = function () {
+        console.log('Page loaded');
+        getQueryParams();
+      };
+    </script>
+  </body>
+</html>
