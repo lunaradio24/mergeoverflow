@@ -156,13 +156,21 @@ export class ChatRoomService {
         const otherUserImages = otherUser.images.map((image) => image.imageUrl);
         const sortedMessages = chatRoom.messages.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
         const latestMessage = sortedMessages[0];
+        let content = '';
+        if (latestMessage?.type) {
+          if (latestMessage.type === MessageType.TEXT) {
+            content = latestMessage.content;
+          } else {
+            content = '[사진]';
+          }
+        }
 
         return {
           id: chatRoom.id,
           createdAt: chatRoom.createdAt,
           otherUser: { id: otherUser.id, nickname: otherUser.nickname, images: otherUserImages },
           latestMessage: {
-            content: latestMessage?.type === MessageType.TEXT ? latestMessage?.content : '[사진]',
+            content,
             createdAt: latestMessage?.createdAt,
           },
         };

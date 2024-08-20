@@ -288,7 +288,12 @@ export class MatchingService {
     const targetUserIds = existingMatchings.map((matching) => matching.targetUserId);
     const users = await this.userRepository.find({
       where: { id: In(targetUserIds) },
-      relations: ['images', 'location'],
+      relations: {
+        images: true,
+        location: true,
+        userToInterests: { interest: true },
+        userToTechs: { tech: true },
+      },
       order: { id: 'ASC' },
     });
 
