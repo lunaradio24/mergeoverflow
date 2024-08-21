@@ -287,6 +287,7 @@ export class AuthService {
       // User 데이터 업데이트
       const user = account.user;
       Object.assign(user, userData);
+      await queryRunner.manager.save(user); // 업데이트 후 저장
 
       // User 데이터 생성
       if (interests.length < MIN_NUM_INTERESTS) {
