@@ -260,8 +260,8 @@ export class AuthService {
     }
   }
 
-  async socialSignUp(socialSignUpDto: SocialSignUpDto): Promise<boolean> {
-    const { provider, providerId, interests, techs, profileImageUrls, ...userData } = socialSignUpDto;
+  async socialSignUp(socialSignUpDto: SocialSignUpDto, provider: string, providerId: string): Promise<boolean> {
+    const { interests, techs, profileImageUrls, ...userData } = socialSignUpDto;
 
     // profileImageUrls 검증
     if (profileImageUrls.length > MAX_NUM_IMAGES) {
