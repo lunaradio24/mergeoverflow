@@ -81,7 +81,7 @@ export class AuthController {
     const { tokens, isNewUser } = await this.authService.socialSignIn(socialLoginDto);
     const redirectUrl = `https://mergeoverflow.shop/version-test/github-callback?token=${tokens.accessToken}&newUser=${isNewUser}`;
     res.redirect(redirectUrl);
-  } 
+  }
 
   @Post('sign-up/social')
   async socialSignUp(@Body() socialSignUpDto: SocialSignUpDto): Promise<ApiResponse<boolean>> {

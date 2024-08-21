@@ -37,13 +37,6 @@ import { Preferences } from 'src/preferences/entities/preferences.entity';
 import { TokensRO } from './ro/tokens.ro';
 import { SocialSignInDto } from './dto/social-sign-in.dto';
 import { SocialSignUpDto } from './dto/social-sign-up.dto';
-import { PreferredAgeGap } from 'src/preferences/types/preferred-age-gap.type';
-import { PreferredBodyShape } from 'src/preferences/types/preferred-body-shape.type';
-import { PreferredCodingLevel } from 'src/preferences/types/preferred-coding-level.type';
-import { PreferredDistance } from 'src/preferences/types/preferred-distance.type';
-import { PreferredFrequency } from 'src/preferences/types/preferred-frequency.type';
-import { PreferredGender } from 'src/preferences/types/preferred-gender.type';
-import { PreferredHeight } from 'src/preferences/types/preferred-height.type';
 
 @Injectable()
 export class AuthService {
@@ -250,6 +243,13 @@ export class AuthService {
         }
       } else {
         userId = account.user.id;
+
+        //Redis에서 회원가입 완료 여부 확인
+        const isCompleted = await this.redisService.get(`signup_completed_${userId}`);
+
+        if (!isCompleted) {
+          isNewUser = true; // 회원가입이 완료되지 않은 경우
+        }
       }
 
       const payload = { userId, provider, providerId };
@@ -274,11 +274,19 @@ export class AuthService {
     await queryRunner.startTransaction();
 
     try {
-      // Account 생성 및 저장
-      const account = new Account();
-      account.provider = 'social';
+      //이미 존재하는 Account 조회
+      const account = await this.accountRepository.findOne({
+        where: { provider, providerId },
+        relations: ['user'],
+      });
 
-      const savedAccount = await queryRunner.manager.save(account);
+      if (!account || !account.user) {
+        throw new NotFoundException('계정이나 유저 데이터가 없습니다.');
+      }
+
+      // User 데이터 업데이트
+      const user = account.user;
+      Object.assign(user, userData);
 
       // User 데이터 생성
       if (interests.length < MIN_NUM_INTERESTS) {
@@ -297,58 +305,60 @@ export class AuthService {
         throw new BadRequestException(TECH_MESSAGES.CREATE.FAILURE.UPPER_LIMIT);
       }
 
-      const user = plainToClass(User, userData);
-      user.accountId = savedAccount.id;
-      const savedUser = await queryRunner.manager.save(user);
-
-      // UserToInterest 생성
+      // UserToInterest 업데이트
+      await queryRunner.manager.delete(UserToInterest, { userId: user.id }); // 기존 데이터 삭제
       const userToInterests = interests.map((interestId) => {
         const userToInterest = new UserToInterest();
-        userToInterest.userId = savedUser.id;
+        userToInterest.userId = user.id;
         userToInterest.interestId = interestId;
         return userToInterest;
       });
       await queryRunner.manager.save(userToInterests);
 
-      // UserToTech 생성
+      // UserToTech 업데이트
+      await queryRunner.manager.delete(UserToTech, { userId: user.id }); // 기존 데이터 삭제
       const userToTechs = techs.map((techId) => {
         const userToTech = new UserToTech();
-        userToTech.userId = savedUser.id;
+        userToTech.userId = user.id;
         userToTech.techId = techId;
         return userToTech;
       });
       await queryRunner.manager.save(userToTechs);
 
-      // ProfileImage 생성
+      // ProfileImage 업데이트
+      await queryRunner.manager.delete(ProfileImage, { userId: user.id }); // 기존 데이터 삭제
       if (profileImageUrls && profileImageUrls.length > 0) {
         const userProfileImages = profileImageUrls.map((url) => {
           const userProfileImage = new ProfileImage();
-          userProfileImage.userId = savedUser.id;
-          userProfileImage.imageUrl = url;
+          userProfileImage.userId = user.id;
           userProfileImage.imageUrl = url;
           return userProfileImage;
         });
         await queryRunner.manager.save(userProfileImages);
       }
 
-      // Heart 데이터 생성 및 저장
+      // Heart 데이터 생성 및 저장 (필요하다면)
       const heart = new Heart();
-      heart.userId = savedUser.id;
+      heart.userId = user.id;
       heart.remainHearts = RESET_HEART_COUNT;
       await queryRunner.manager.save(heart);
 
-      // Location 데이터 생성 및 저장
+      // Location 데이터 생성 및 저장 (필요하다면)
       const location = new Location();
-      location.userId = savedUser.id;
+      location.userId = user.id;
       await queryRunner.manager.save(location);
 
-      // Preferences 데이터 생성 및 저장
+      // Preferences 데이터 생성 및 저장 (필요하다면)
       const preferences = new Preferences();
-      preferences.userId = savedUser.id;
+      preferences.userId = user.id;
       await queryRunner.manager.save(preferences);
 
       // 트랜잭션 종료
       await queryRunner.commitTransaction();
+
+      // 회원가입 완료 상태를 Redis에 저장
+      await this.redisService.set(`signup_completed_${user.id}`, 'true');
+
       return true;
     } catch (error) {
       await queryRunner.rollbackTransaction();
