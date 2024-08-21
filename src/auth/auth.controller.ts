@@ -59,22 +59,15 @@ export class AuthController {
 
   @Get('sign-in/google')
   @UseGuards(GoogleAuthGuard)
-  async googleAuth(@Req() req: Request) {
-    console.log('google');
-  }
+  async googleAuth(@Req() req: Request) {}
 
   @Get('sign-in/google/callback')
   @UseGuards(GoogleAuthGuard)
-  async googleAuthCallback(@Req() req: any, @Res() res: any): Promise<ApiResponse<TokensRO>> {
+  async googleAuthCallback(@Req() req: any, @Res() res: any): Promise<void> {
     const socialLoginDto = req.user;
     const { tokens, isNewUser } = await this.authService.socialSignIn(socialLoginDto);
     const redirectUrl = `https://mergeoverflow.shop/version-test/google-callback?token=${tokens.accessToken}&newUser=${isNewUser}`;
     res.redirect(redirectUrl);
-    return {
-      statusCode: HttpStatus.CREATED,
-      message: AUTH_MESSAGES.SIGN_IN.SUCCEED,
-      data: tokens,
-    };
   }
 
   @Get('sign-in/github')
@@ -83,16 +76,14 @@ export class AuthController {
 
   @Get('sign-in/github/callback')
   @UseGuards(GithubAuthGuard)
-  async githubAuthCallback(@Req() req: any, @Res() res: any): Promise<ApiResponse<TokensRO>> {
+  async githubAuthCallback(@Req() req: any, @Res() res: any): Promise<void> {
     const socialLoginDto = req.user;
     const { tokens, isNewUser } = await this.authService.socialSignIn(socialLoginDto);
     const redirectUrl = `https://mergeoverflow.shop/version-test/github-callback?token=${tokens.accessToken}&newUser=${isNewUser}`;
     res.redirect(redirectUrl);
-    return {
-      statusCode: HttpStatus.CREATED,
-      message: AUTH_MESSAGES.SIGN_IN.SUCCEED,
-      data: tokens,
-    };
+  }
+  catch(error) {
+    console.error('Google Auth Callback Error:', error); // 오류가 발생한 경우 로그 출력
   }
 
   @Post('sign-up/social')
