@@ -37,13 +37,6 @@ import { Preferences } from 'src/preferences/entities/preferences.entity';
 import { TokensRO } from './ro/tokens.ro';
 import { SocialSignInDto } from './dto/social-sign-in.dto';
 import { SocialSignUpDto } from './dto/social-sign-up.dto';
-import { PreferredAgeGap } from 'src/preferences/types/preferred-age-gap.type';
-import { PreferredBodyShape } from 'src/preferences/types/preferred-body-shape.type';
-import { PreferredCodingLevel } from 'src/preferences/types/preferred-coding-level.type';
-import { PreferredDistance } from 'src/preferences/types/preferred-distance.type';
-import { PreferredFrequency } from 'src/preferences/types/preferred-frequency.type';
-import { PreferredGender } from 'src/preferences/types/preferred-gender.type';
-import { PreferredHeight } from 'src/preferences/types/preferred-height.type';
 
 @Injectable()
 export class AuthService {
