@@ -81,10 +81,7 @@ export class AuthController {
     const { tokens, isNewUser } = await this.authService.socialSignIn(socialLoginDto);
     const redirectUrl = `https://mergeoverflow.shop/version-test/github-callback?token=${tokens.accessToken}&newUser=${isNewUser}`;
     res.redirect(redirectUrl);
-  }
-  catch(error) {
-    console.error('Google Auth Callback Error:', error); // 오류가 발생한 경우 로그 출력
-  }
+  } 
 
   @Post('sign-up/social')
   async socialSignUp(@Body() socialSignUpDto: SocialSignUpDto): Promise<ApiResponse<boolean>> {
