@@ -201,7 +201,8 @@ export class MatchingService {
       throw new NotFoundException(`사용자 ID ${userId}를 찾을 수 없습니다.`);
     }
 
-    const preferredTechNames = preferences.techs || [];
+    // 선호 기술 스택 설정이 없을 경우 빈 배열을 기본값으로 설정
+    const preferredTechNames = preferences?.techs || [];
 
     const queryBuilder = this.userRepository.createQueryBuilder('user');
     queryBuilder.where('user.id != :userId', { userId });
@@ -214,8 +215,10 @@ export class MatchingService {
       // 거리 필터링
       this.applyDistanceFilter(queryBuilder, preferences.distance, user.location);
 
-      // 기술 필터링
-      await this.applyTechFilter(queryBuilder, preferredTechNames);
+      // 기술 필터링 (선호 기술 스택이 설정된 경우에만 적용)
+      if (preferredTechNames.length > 0) {
+        await this.applyTechFilter(queryBuilder, preferredTechNames);
+      }
 
       // 나이차이 필터링
       // this.applyAgeGapFilter(queryBuilder, preferences, user.birthDate);
