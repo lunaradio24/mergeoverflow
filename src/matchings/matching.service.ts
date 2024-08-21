@@ -135,7 +135,7 @@ export class MatchingService {
         // User 엔티티와 Location 엔티티를 join (longitude와 latitude가 NULL인 경우, 해당 user는 결과에서 제외)
         queryBuilder.innerJoin('user.location', 'location');
 
-        // 거리 필터링을 SQL 쿼리 내에서 직접 처리
+        // 거리 필터링을 SQL 쿼리 내에서 직접처리
         queryBuilder.andWhere(
           `ST_Distance_Sphere(
           point(location.longitude, location.latitude),
