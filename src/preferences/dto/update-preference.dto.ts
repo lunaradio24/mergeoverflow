@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
 import { PreferredGender } from '../types/preferred-gender.type';
 import { PreferredBodyShape } from '../types/preferred-body-shape.type';
 import { PreferredFrequency } from '../types/preferred-frequency.type';
@@ -35,7 +35,12 @@ export class UpdatePreferenceDto {
 
   @IsOptional()
   @IsEnum(PreferredDistance, {
-    message: 'distance은 [10km 이내], [20km 이내], [50km 이내], [100km 이내], [상관 없음] 중에 선택해주세요',
+    message: 'distance은 [30km 이내], [100km 이내], [상관 없음] 중에 선택해주세요',
   })
   distance?: PreferredDistance;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  techs?: string[] | null;
 }

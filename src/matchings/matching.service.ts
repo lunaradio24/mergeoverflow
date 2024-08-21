@@ -201,7 +201,8 @@ export class MatchingService {
       throw new NotFoundException(`사용자 ID ${userId}를 찾을 수 없습니다.`);
     }
 
-    const preferredTechNames = preferences.techs || [];
+    // 선호 기술 스택 설정이 없을 경우 빈 배열을 기본값으로 설정
+    const preferredTechNames = preferences?.techs || [];
 
     const queryBuilder = this.userRepository.createQueryBuilder('user');
     queryBuilder.where('user.id != :userId', { userId });
@@ -214,8 +215,10 @@ export class MatchingService {
       // 거리 필터링
       this.applyDistanceFilter(queryBuilder, preferences.distance, user.location);
 
-      // 기술 필터링
-      await this.applyTechFilter(queryBuilder, preferredTechNames);
+      // 기술 필터링 (선호 기술 스택이 설정된 경우에만 적용)
+      if (preferredTechNames.length > 0) {
+        await this.applyTechFilter(queryBuilder, preferredTechNames);
+      }
 
       // 나이차이 필터링
       // this.applyAgeGapFilter(queryBuilder, preferences, user.birthDate);
@@ -336,38 +339,11 @@ export class MatchingService {
       await this.userService.validateUserExists(userId);
       await this.userService.validateUserExists(targetUserId);
 
-      // 하트 차감 로직 추가
+      // 하트 차감
       if (interactionType === InteractionType.LIKE) {
-        const userHearts = await queryRunner.manager.findOne(Heart, { where: { userId } });
-        if (userHearts.remainHearts <= 0) {
-          throw new BadRequestException('남은 하트가 없습니다.');
-        }
         await queryRunner.manager.decrement(Heart, { userId }, 'remainHearts', 1);
       }
 
-      // 순차적으로 처리되었는지 확인
-      let existingMatchings = await queryRunner.manager.find(Matching, {
-        where: {
-          userId,
-          interactionType: IsNull(), // interaction 타입이 null인 매칭을 가져옴
-        },
-        order: { createdAt: 'ASC' }, // 생성된 순서대로 정렬
-      });
-
-      if (existingMatchings.length === 0) {
-        // interaction 타입이 null인 매칭이 0이면 새로운 생성 메소드로 다시 가져옴
-        existingMatchings = await this.createNewMatchings(userId);
-      }
-
-      if (existingMatchings.length > 0) {
-        // interaction 타입이 null인 가장 첫 번째 매칭의 targetUserId 가져오기
-        const nextTargetUserId = existingMatchings[0].targetUserId;
-
-        // 상호작용해야 하는 대상 사용자 ID와 다른 경우 에러 메시지 출력
-        if (nextTargetUserId !== targetUserId) {
-          throw new BadRequestException('제공된 순서대로 사용자와 상호작용하세요.');
-        }
-      }
       // 매칭 정보 업데이트
       await queryRunner.manager.update(Matching, { userId, targetUserId }, { interactionType });
 
@@ -436,7 +412,7 @@ export class MatchingService {
   }
 
   async deleteAllMatchingsForUser(userId: number): Promise<void> {
-    await this.matchingRepository.delete({ userId });
+    await this.matchingRepository.delete({ userId, interactionType: Not(InteractionType.LIKE) });
   }
 
   async likeUser(userId: number, targetUserId: number) {
@@ -447,28 +423,11 @@ export class MatchingService {
     }
 
     if (heart.remainHearts < 1) {
-      throw new ForbiddenException('남은 하트가 없습니다.');
+      throw new BadRequestException('남은 하트가 없습니다.');
     }
 
-    // 트랜잭션 시작
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      // 매칭 interaction 상태 변경 적용
-      const interactionDto = { userId, targetUserId, interactionType: InteractionType.LIKE };
-      await this.handleUserInteraction(interactionDto);
-
-      // 하트 차감
-      await queryRunner.manager.decrement(Heart, { userId }, 'remainHearts', 1);
-    } catch (error) {
-      console.error('Transaction failed:', error);
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+    const interactionDto = { userId, targetUserId, interactionType: InteractionType.LIKE };
+    await this.handleUserInteraction(interactionDto);
   }
 
   async dislikeUser(userId: number, targetUserId: number) {
