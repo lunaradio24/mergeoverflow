@@ -24,31 +24,31 @@ export class Preferences {
   @Column({ type: 'int', nullable: false })
   userId: number;
 
-  @Column({ type: 'json', nullable: true })
+  @Column({ type: 'json', nullable: true, default: [] })
   techs: string[];
 
-  @Column({ type: 'enum', enum: PreferredCodingLevel, nullable: true })
+  @Column({ type: 'enum', enum: PreferredCodingLevel, nullable: true, default: PreferredCodingLevel.NO_PREFERENCE })
   codingLevel: PreferredCodingLevel;
 
-  @Column({ type: 'enum', enum: PreferredGender, nullable: true })
+  @Column({ type: 'enum', enum: PreferredGender, nullable: true, default: PreferredGender.NO_PREFERENCE })
   gender: PreferredGender;
 
-  @Column({ type: 'enum', enum: PreferredAgeGap, nullable: true })
+  @Column({ type: 'enum', enum: PreferredAgeGap, nullable: true, default: PreferredAgeGap.NO_PREFERENCE })
   ageGap: PreferredAgeGap;
 
-  @Column({ type: 'enum', enum: PreferredHeight, nullable: true })
+  @Column({ type: 'enum', enum: PreferredHeight, nullable: true, default: PreferredHeight.NO_PREFERENCE })
   height: PreferredHeight;
 
-  @Column({ type: 'enum', enum: PreferredBodyShape, nullable: true })
+  @Column({ type: 'enum', enum: PreferredBodyShape, nullable: true, default: PreferredBodyShape.NO_PREFERENCE })
   bodyShape: PreferredBodyShape;
 
-  @Column({ type: 'enum', enum: PreferredFrequency, nullable: true })
+  @Column({ type: 'enum', enum: PreferredFrequency, nullable: true, default: PreferredFrequency.NO_PREFERENCE })
   smokingFreq: PreferredFrequency;
 
-  @Column({ type: 'enum', enum: PreferredFrequency, nullable: true })
+  @Column({ type: 'enum', enum: PreferredFrequency, nullable: true, default: PreferredFrequency.NO_PREFERENCE })
   drinkingFreq: PreferredFrequency;
 
-  @Column({ type: 'enum', enum: PreferredDistance, nullable: true })
+  @Column({ type: 'enum', enum: PreferredDistance, nullable: true, default: PreferredDistance.NO_PREFERENCE })
   distance: PreferredDistance;
 
   @CreateDateColumn()
