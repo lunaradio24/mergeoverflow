@@ -438,7 +438,7 @@ export class MatchingService {
   }
 
   async deleteAllMatchingsForUser(userId: number): Promise<void> {
-    await this.matchingRepository.delete({ userId });
+    await this.matchingRepository.delete({ userId, interactionType: Not(InteractionType.LIKE) });
   }
 
   async likeUser(userId: number, targetUserId: number) {
