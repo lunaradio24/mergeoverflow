@@ -326,7 +326,6 @@ export class AuthService {
       await queryRunner.manager.save(userToTechs);
 
       // ProfileImage 업데이트
-
       await queryRunner.manager.delete(ProfileImage, { userId: user.id }); // 기존 데이터 삭제
       if (profileImageUrls && profileImageUrls.length > 0) {
         const userProfileImages = profileImageUrls.map((url) => {
@@ -339,22 +338,20 @@ export class AuthService {
       }
 
       // Heart 데이터 생성 및 저장
-
-      const heart = await queryRunner.manager.save(Heart, {
-        userId: user.id,
-      });
+      const heart = new Heart();
+      heart.user = user;
+      heart.remainHearts = RESET_HEART_COUNT;
+      await queryRunner.manager.save(heart);
 
       // Location 데이터 생성 및 저장
-
-      const location = await queryRunner.manager.save(Location, {
-        userId: user.id,
-      });
+      const location = new Location();
+      location.user = user;
+      await queryRunner.manager.save(location);
 
       // Preferences 데이터 생성 및 저장
-
-      const preferences = await queryRunner.manager.save(Preferences, {
-        userId: user.id,
-      });
+      const preferences = new Preferences();
+      preferences.user = user;
+      await queryRunner.manager.save(preferences);
 
       // 트랜잭션 종료
       await queryRunner.commitTransaction();
