@@ -228,6 +228,7 @@ export class AuthService {
           // 사용자 생성
           const user = new User();
           user.accountId = account.id;
+          user.account = account;
           const savedUser = await queryRunner.manager.save(user);
 
           userId = savedUser.id;
