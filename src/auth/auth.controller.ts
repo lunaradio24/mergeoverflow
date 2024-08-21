@@ -84,8 +84,10 @@ export class AuthController {
   }
 
   @Post('sign-up/social')
-  async socialSignUp(@Body() socialSignUpDto: SocialSignUpDto): Promise<ApiResponse<boolean>> {
-    const newUser = await this.authService.socialSignUp(socialSignUpDto);
+  async socialSignUp(@Body() socialSignUpDto: SocialSignUpDto, @Req() req: any): Promise<ApiResponse<boolean>> {
+    const provider = req.account.provider;
+    const providerId = req.account.providerId;
+    const newUser = await this.authService.socialSignUp(socialSignUpDto, provider, providerId);
     return {
       statusCode: HttpStatus.CREATED,
       message: AUTH_MESSAGES.SIGN_UP.SUCCEED,
