@@ -194,16 +194,6 @@ export class AuthService {
       // Preferences 데이터 생성 및 저장
       const preferences = new Preferences();
       preferences.userId = savedUser.id;
-      preferences.ageGap = PreferredAgeGap.NO_PREFERENCE;
-      preferences.height = PreferredHeight.NO_PREFERENCE;
-      preferences.bodyShape = PreferredBodyShape.NO_PREFERENCE;
-      preferences.codingLevel = PreferredCodingLevel.NO_PREFERENCE;
-      preferences.drinkingFreq = PreferredFrequency.NO_PREFERENCE;
-      preferences.smokingFreq = PreferredFrequency.NO_PREFERENCE;
-      preferences.gender = PreferredGender.NO_PREFERENCE;
-      preferences.distance = PreferredDistance.NO_PREFERENCE;
-      preferences.techs = [];
-
       await queryRunner.manager.save(preferences);
 
       // 트랜잭션 종료
@@ -345,10 +335,10 @@ export class AuthService {
       location.userId = savedUser.id;
       await queryRunner.manager.save(location);
 
-      // MatchingPreferences 데이터 생성 및 저장
-      const matchingPreferences = new Preferences();
-      matchingPreferences.userId = savedUser.id;
-      await queryRunner.manager.save(matchingPreferences);
+      // Preferences 데이터 생성 및 저장
+      const preferences = new Preferences();
+      preferences.userId = savedUser.id;
+      await queryRunner.manager.save(preferences);
 
       // 트랜잭션 종료
       await queryRunner.commitTransaction();
