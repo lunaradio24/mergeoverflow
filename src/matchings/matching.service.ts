@@ -336,9 +336,8 @@ export class MatchingService {
       await this.userService.validateUserExists(userId);
       await this.userService.validateUserExists(targetUserId);
 
-      // 하트 차감 로직 추가
+      // 하트 차감
       if (interactionType === InteractionType.LIKE) {
-        const userHearts = await queryRunner.manager.findOne(Heart, { where: { userId } });
         await queryRunner.manager.decrement(Heart, { userId }, 'remainHearts', 1);
       }
 
@@ -424,25 +423,8 @@ export class MatchingService {
       throw new BadRequestException('남은 하트가 없습니다.');
     }
 
-    // 트랜잭션 시작
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      // 매칭 interaction 상태 변경 적용
-      const interactionDto = { userId, targetUserId, interactionType: InteractionType.LIKE };
-      await this.handleUserInteraction(interactionDto);
-
-      // 하트 차감
-      await queryRunner.manager.decrement(Heart, { userId }, 'remainHearts', 1);
-    } catch (error) {
-      console.error('Transaction failed:', error);
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+    const interactionDto = { userId, targetUserId, interactionType: InteractionType.LIKE };
+    await this.handleUserInteraction(interactionDto);
   }
 
   async dislikeUser(userId: number, targetUserId: number) {

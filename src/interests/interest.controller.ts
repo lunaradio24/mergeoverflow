@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus, Put } from '@nestjs/common';
 import { ApiResponse } from 'src/common/interceptors/response/response.interface';
 import { InterestService } from './interest.service';
 import { InterestDto } from './dto/interest.dto';
@@ -54,6 +54,20 @@ export class InterestController {
       statusCode: HttpStatus.OK,
       message: '내 관심사 목록 조회에 성공했습니다.',
       data: userInterests,
+    };
+  }
+
+  // 유저 관심사 수정
+  @UseGuards(AccessTokenGuard)
+  @Put('my')
+  async updateUserInterests(@UserInfo() user: User, @Body() interestIds: number[]): Promise<ApiResponse<null>> {
+    const userId = user.id;
+    await this.interestService.updateUserInterests(userId, interestIds);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: '내 관심사 목록 수정에 성공했습니다.',
+      data: null,
     };
   }
 

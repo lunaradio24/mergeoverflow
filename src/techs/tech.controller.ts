@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, UseGuards, Put } from '@nestjs/common';
 import { ApiResponse } from 'src/common/interceptors/response/response.interface';
 import { TechService } from './tech.service';
 import { TechDto } from './dto/tech.dto';
@@ -40,6 +40,7 @@ export class TechController {
     };
   }
 
+  // 유저 관심사 목록 조회
   @UseGuards(AccessTokenGuard)
   @Get('my')
   async findUserTechs(@UserInfo() user: User): Promise<ApiResponse<TechRO[]>> {
@@ -48,8 +49,22 @@ export class TechController {
 
     return {
       statusCode: HttpStatus.OK,
-      message: '내 기술 목록 조회에 성공했습니다.',
+      message: '내 기술스택 목록 조회에 성공했습니다.',
       data: userTechs,
+    };
+  }
+
+  // 유저 관심사 수정
+  @UseGuards(AccessTokenGuard)
+  @Put('my')
+  async updateUserTechs(@UserInfo() user: User, @Body() techIds: number[]): Promise<ApiResponse<null>> {
+    const userId = user.id;
+    await this.techService.updateUserTechs(userId, techIds);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: '내 기술스택 목록 수정에 성공했습니다.',
+      data: null,
     };
   }
 

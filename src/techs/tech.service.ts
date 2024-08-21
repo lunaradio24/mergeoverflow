@@ -59,6 +59,29 @@ export class TechService {
     return userTechs;
   }
 
+  // 유저 기술스택 목록 수정
+  async updateUserTechs(userId: number, techIds: number[]): Promise<null> {
+    // 존재하는 기술 ID인지 확인
+    for (const techId of techIds) {
+      await this.findOneById(techId);
+    }
+
+    // 기존 유저 기술스택 삭제
+    await this.userToTechRepository.delete({ userId });
+
+    // 새로 저장할 기술스택 entity 생성
+    const userTechs = techIds.map((techId) => {
+      const userTech = new UserToTech();
+      userTech.userId = userId;
+      userTech.techId = techId;
+      return userTech;
+    });
+
+    // 기술스택 추가
+    await this.userToTechRepository.save(userTechs);
+    return;
+  }
+
   // 기술 수정
   async update(id: number, techDto: TechDto): Promise<boolean> {
     // 존재하는 기술 ID인지 확인

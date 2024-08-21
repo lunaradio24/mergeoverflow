@@ -59,6 +59,29 @@ export class InterestService {
     return userInterests;
   }
 
+  // 유저 관심사 목록 수정
+  async updateUserInterests(userId: number, interestIds: number[]): Promise<null> {
+    // 존재하는 관심사 ID인지 확인
+    for (const interestId of interestIds) {
+      await this.findOneById(interestId);
+    }
+
+    // 기존 관심사 삭제
+    await this.userToInterestRepository.delete({ userId });
+
+    // 새로 저장할 관심사 entity 생성
+    const userInterests = interestIds.map((interestId) => {
+      const userInterest = new UserToInterest();
+      userInterest.userId = userId;
+      userInterest.interestId = interestId;
+      return userInterest;
+    });
+
+    // 관심사 추가
+    await this.userToInterestRepository.save(userInterests);
+    return;
+  }
+
   // 관심사 수정
   async update(id: number, interestDto: InterestDto): Promise<boolean> {
     // 존재하는 관심사 ID인지 확인
