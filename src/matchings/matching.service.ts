@@ -339,35 +339,9 @@ export class MatchingService {
       // 하트 차감 로직 추가
       if (interactionType === InteractionType.LIKE) {
         const userHearts = await queryRunner.manager.findOne(Heart, { where: { userId } });
-        if (userHearts.remainHearts <= 0) {
-          throw new BadRequestException('남은 하트가 없습니다.');
-        }
         await queryRunner.manager.decrement(Heart, { userId }, 'remainHearts', 1);
       }
 
-      // 순차적으로 처리되었는지 확인
-      let existingMatchings = await queryRunner.manager.find(Matching, {
-        where: {
-          userId,
-          interactionType: IsNull(), // interaction 타입이 null인 매칭을 가져옴
-        },
-        order: { createdAt: 'ASC' }, // 생성된 순서대로 정렬
-      });
-
-      if (existingMatchings.length === 0) {
-        // interaction 타입이 null인 매칭이 0이면 새로운 생성 메소드로 다시 가져옴
-        existingMatchings = await this.createNewMatchings(userId);
-      }
-
-      if (existingMatchings.length > 0) {
-        // interaction 타입이 null인 가장 첫 번째 매칭의 targetUserId 가져오기
-        const nextTargetUserId = existingMatchings[0].targetUserId;
-
-        // 상호작용해야 하는 대상 사용자 ID와 다른 경우 에러 메시지 출력
-        if (nextTargetUserId !== targetUserId) {
-          throw new BadRequestException('제공된 순서대로 사용자와 상호작용하세요.');
-        }
-      }
       // 매칭 정보 업데이트
       await queryRunner.manager.update(Matching, { userId, targetUserId }, { interactionType });
 
@@ -447,7 +421,7 @@ export class MatchingService {
     }
 
     if (heart.remainHearts < 1) {
-      throw new ForbiddenException('남은 하트가 없습니다.');
+      throw new BadRequestException('남은 하트가 없습니다.');
     }
 
     // 트랜잭션 시작
