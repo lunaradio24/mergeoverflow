@@ -16,7 +16,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   }
 
   async validate(accessToken: string, refreshToken: string, profile: Profile): Promise<SocialSignInDto> {
-    const user = { provider: 'google', providerId: profile.id, email: profile.emails?.[0]?.value || null };
+    const user = { provider: 'google', providerId: profile.id, email: profile.emails?.[0]?.value || null, accessToken };
     return user;
   }
 }

@@ -208,8 +208,11 @@ export class AuthService {
 
       let isNewUser = false;
 
+      let userId: number;
+
       if (!account) {
         isNewUser = true; // 새로운 사용자임을 표시
+
         // 트랜잭션 시작
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -226,7 +229,9 @@ export class AuthService {
           const user = new User();
           user.accountId = account.id;
           user.account = account;
-          await queryRunner.manager.save(user);
+          const savedUser = await queryRunner.manager.save(user);
+
+          userId = savedUser.id;
 
           // 트랜잭션 종료
           await queryRunner.commitTransaction();
@@ -236,9 +241,11 @@ export class AuthService {
         } finally {
           await queryRunner.release();
         }
+      } else {
+        userId = account.user.id;
       }
 
-      const payload = { userId: account.user.id, provider, providerId };
+      const payload = { userId, provider, providerId };
       const tokens = await this.issueTokens(payload);
       return { tokens, isNewUser };
     } catch (error) {
