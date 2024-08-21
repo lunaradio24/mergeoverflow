@@ -75,6 +75,8 @@ export class UserService {
    * @returns
    */
   async updatePassword(userId: number, updatePasswordDto: UpdatePasswordDto): Promise<boolean> {
+    const { password, newPassword, newPasswordConfirm } = updatePasswordDto;
+
     // 존재하는 유저인지 확인
     const existingUser = await this.userRepository.findOne({
       where: { id: userId },
@@ -86,7 +88,7 @@ export class UserService {
       throw new NotFoundException(USER_MESSAGES.FIND.ONE.FAILURE.NOT_FOUND);
     }
 
-    // 비밀번호 비교
+    // 기존 비밀번호 맞는지 확인
     const passwordInput = updatePasswordDto.password;
     const currHashedPassword = existingUser.account.password;
     const isMatched = await compare(passwordInput, currHashedPassword);
@@ -95,11 +97,15 @@ export class UserService {
       throw new BadRequestException(USER_MESSAGES.UPDATE_PASSWORD.FAILURE.WRONG_PW);
     }
 
+    // 기존 비밀번호와 일치하는지 확인
+    if (password === newPassword) {
+      throw new BadRequestException('기존 비밀번호와 다른 비밀번호를 입력해주세요.');
+    }
+
+    // 새로운 비밀번호 해싱
     const hashRounds = Number(this.configService.get('HASH_ROUNDS'));
-    // 새로운 비밀번호 해싱 //
     const hashedNewPassword = await hash(updatePasswordDto.newPassword, hashRounds);
 
-    // 비밀번호는 회원정보(auth)니까 authRepository가 되나?
     await this.accountRepository.update({ id: existingUser.accountId }, { password: hashedNewPassword });
 
     return true;
