@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Req, HttpStatus, Res } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Req, HttpStatus, Res, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { UserService } from 'src/users/user.service';
@@ -84,9 +84,11 @@ export class AuthController {
   }
 
   @Post('sign-up/social')
-  async socialSignUp(@Body() socialSignUpDto: SocialSignUpDto, @Req() req: any): Promise<ApiResponse<boolean>> {
-    const provider = req.account.provider;
-    const providerId = req.account.providerId;
+  async socialSignUp(
+    @Body() socialSignUpDto: SocialSignUpDto,
+    @Query('provider') provider: string,
+    @Query('providerId') providerId: string,
+  ): Promise<ApiResponse<boolean>> {
     const newUser = await this.authService.socialSignUp(socialSignUpDto, provider, providerId);
     return {
       statusCode: HttpStatus.CREATED,
