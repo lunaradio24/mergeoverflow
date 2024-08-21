@@ -66,7 +66,7 @@ export class AuthController {
   async googleAuthCallback(@Req() req: any, @Res() res: any): Promise<void> {
     const socialLoginDto = req.user;
     const { tokens, isNewUser } = await this.authService.socialSignIn(socialLoginDto);
-    const redirectUrl = `https://mergeoverflow.shop/version-test/google-callback?token=${tokens.accessToken}&newUser=${isNewUser}`;
+    const redirectUrl = `https://mergeoverflow.shop/google-callback?token=${tokens.accessToken}&newUser=${isNewUser}`;
     res.redirect(redirectUrl);
   }
 
@@ -79,7 +79,7 @@ export class AuthController {
   async githubAuthCallback(@Req() req: any, @Res() res: any): Promise<void> {
     const socialLoginDto = req.user;
     const { tokens, isNewUser } = await this.authService.socialSignIn(socialLoginDto);
-    const redirectUrl = `https://mergeoverflow.shop/version-test/github-callback?token=${tokens.accessToken}&newUser=${isNewUser}`;
+    const redirectUrl = `https://mergeoverflow.shop/github-callback?token=${tokens.accessToken}&newUser=${isNewUser}`;
     res.redirect(redirectUrl);
   }
 
