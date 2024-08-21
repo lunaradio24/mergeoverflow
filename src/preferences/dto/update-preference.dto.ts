@@ -1,4 +1,4 @@
-import { IsArray, isArray, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
 import { PreferredGender } from '../types/preferred-gender.type';
 import { PreferredBodyShape } from '../types/preferred-body-shape.type';
 import { PreferredFrequency } from '../types/preferred-frequency.type';
