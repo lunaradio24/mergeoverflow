@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Req, HttpStatus, Res, Provider } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Req, HttpStatus, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { UserService } from 'src/users/user.service';
@@ -15,7 +15,6 @@ import { ApiResponse } from 'src/common/interceptors/response/response.interface
 import { TokensRO } from './ro/tokens.ro';
 import { UserInfo } from 'src/utils/decorators/user-info.decorator';
 import { User } from 'src/users/entities/user.entity';
-import { Account } from './entities/account.entity';
 
 @ApiTags('Auth')
 @Controller('auth')
