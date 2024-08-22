@@ -8,23 +8,27 @@ import { LoggingInterceptor } from './common/interceptors/logging/logging.interc
 import { HttpErrorFilter } from './common/exception-filters/http-error.filter';
 import { ResponseInterceptor } from './common/interceptors/response/response.interceptor';
 import passport from 'passport';
+import { RedisIoAdapter } from './redis/adapter/socket.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis();
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>('SERVER_PORT');
 
-  app.use(passport.initialize());
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  app.useGlobalInterceptors(new LoggingInterceptor());
-  app.useGlobalInterceptors(new ResponseInterceptor());
-  app.useGlobalFilters(new HttpErrorFilter());
   app.enableCors({
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
+  app.use(passport.initialize());
+  app.useWebSocketAdapter(redisIoAdapter);
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.useGlobalInterceptors(new LoggingInterceptor());
+  app.useGlobalInterceptors(new ResponseInterceptor());
+  app.useGlobalFilters(new HttpErrorFilter());
 
   const document = SwaggerModule.createDocument(app, swaggerBuilder);
   SwaggerModule.setup('api', app, document, swaggerOptions);

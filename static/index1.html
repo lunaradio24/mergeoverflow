@@ -1,123 +1,125 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WebSocket Chat</title>
-  </head>
 
-  <body>
-    <h1>WebSocket Chat</h1>
-    <!-- Join Section -->
-    <div>
-      <label for="joinRoomId">JoinRoom ID:</label>
-      <input type="number" id="joinRoomId" />
-    </div>
-    <button id="joinRoomButton">JoinRoom</button>
-    <!-- Message Section -->
-    <div>
-      <label for="sendRoomId">Room ID:</label>
-      <input type="number" id="sendRoomId" />
-    </div>
-    <div>
-      <label for="message">Message:</label>
-      <input type="text" id="message" />
-    </div>
-    <button id="sendMessageButton">Send Message</button>
-    <div id>
-      <ul id="messages"></ul>
-    </div>
-    <!-- Notification Section -->
-    <div>
-      <h2>Notifications</h2>
-      <ul id="notifications"></ul>
-    </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebSocket Chat</title>
+</head>
 
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-    <script>
-      const token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInBob25lTnVtIjoiMDEwLTg5MTgtMTcxNCIsImlhdCI6MTcyMzYzMjMzMywiZXhwIjoxNzIzNjc1NTMzfQ.Da4GWSyYtxUmEApU24c9W59RqHj61R6TkBcYZcLCfa8';
-      const chatSocket = io('ws://localhost:3000/chat', {
-        auth: {
-          token,
-        },
-      });
+<body>
+  <h1>WebSocket Chat</h1>
+  <!-- Join Section -->
+  <div>
+    <label for="joinRoomId">JoinRoom ID:</label>
+    <input type="number" id="joinRoomId" />
+  </div>
+  <button id="joinRoomButton">JoinRoom</button>
+  <!-- Message Section -->
+  <div>
+    <label for="sendRoomId">Room ID:</label>
+    <input type="number" id="sendRoomId" />
+  </div>
+  <div>
+    <label for="message">Message:</label>
+    <input type="text" id="message" />
+  </div>
+  <button id="sendMessageButton">Send Message</button>
+  <div id>
+    <ul id="messages"></ul>
+  </div>
+  <!-- Notification Section -->
+  <div>
+    <h2>Notifications</h2>
+    <ul id="notifications"></ul>
+  </div>
 
-      const notifySocket = io('ws://localhost:3000/notification', {
-        auth: {
-          token,
-        },
-      });
+  <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+  <script>
+    const token =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInBob25lTnVtIjoiMDEwLTg5MTgtMTcxNCIsImlhdCI6MTcyMzYzMjMzMywiZXhwIjoxNzIzNjc1NTMzfQ.Da4GWSyYtxUmEApU24c9W59RqHj61R6TkBcYZcLCfa8';
+    const chatSocket = io('https://api.mergeoverflow.shop/chat', {
+      auth: {
+        token,
+      },
+    });
 
-      const joinRoomButton = document.getElementById('joinRoomButton');
-      const sendMessageButton = document.getElementById('sendMessageButton');
-      const messagesList = document.getElementById('messages');
-      const notificationsList = document.getElementById('notifications');
-      let joinCheck = false;
+    const notifySocket = io('ws://localhost:3000/notification', {
+      auth: {
+        token,
+      },
+    });
 
-      joinRoomButton.addEventListener('click', () => {
-        const roomId = document.getElementById('joinRoomId').value;
-        chatSocket.emit('join', { roomId, joinCheck });
-      });
+    const joinRoomButton = document.getElementById('joinRoomButton');
+    const sendMessageButton = document.getElementById('sendMessageButton');
+    const messagesList = document.getElementById('messages');
+    const notificationsList = document.getElementById('notifications');
+    let joinCheck = false;
 
-      sendMessageButton.addEventListener('click', () => {
-        const roomId = document.getElementById('sendRoomId').value;
-        const message = document.getElementById('message').value;
-        chatSocket.emit('message', { roomId: Number(roomId), message: message });
-      });
+    joinRoomButton.addEventListener('click', () => {
+      const roomId = document.getElementById('joinRoomId').value;
+      chatSocket.emit('join', { roomId, joinCheck });
+    });
 
-      chatSocket.on('join', (data) => {
-        const item = document.createElement('h1');
-        item.textContent = `${data.nickname}님이 입장했습니다.`;
-        messagesList.appendChild(item);
-        chatSocket.emit('requestHistory', { roomId: data.roomId });
-      });
+    sendMessageButton.addEventListener('click', () => {
+      const roomId = document.getElementById('sendRoomId').value;
+      const message = document.getElementById('message').value;
+      chatSocket.emit('message', { roomId: Number(roomId), message: message });
+    });
 
-      chatSocket.on('history', (data) => {
-        if (!joinCheck) {
-          data.messages.forEach((msg) => {
-            const item = document.createElement('li');
-            item.textContent = `${msg.nickname}:${msg.content}`;
-            messagesList.appendChild(item);
-          });
-        }
-        joinCheck = true;
-      });
+    chatSocket.on('join', (data) => {
+      const item = document.createElement('h1');
+      item.textContent = `${data.nickname}님이 입장했습니다.`;
+      messagesList.appendChild(item);
+      chatSocket.emit('requestHistory', { roomId: data.roomId });
+    });
 
-      chatSocket.on('exit', (data) => {
-        const { roomId, type } = data;
-        chatSocket.emit('exit', { roomId });
-      });
+    chatSocket.on('history', (data) => {
+      if (!joinCheck) {
+        data.messages.forEach((msg) => {
+          const item = document.createElement('li');
+          item.textContent = `${msg.nickname}:${msg.content}`;
+          messagesList.appendChild(item);
+        });
+      }
+      joinCheck = true;
+    });
 
-      chatSocket.on('message', (message) => {
-        const item = document.createElement('li');
-        item.textContent = `${message.nickname}: ${message.content}`;
-        messagesList.appendChild(item);
-      });
+    chatSocket.on('exit', (data) => {
+      const { roomId, type } = data;
+      chatSocket.emit('exit', { roomId });
+    });
 
-      notifySocket.on('likeNotify', (data) => {
-        const { type, userId, message } = data;
-        notifySocket.emit('likeNotify', { type, userId, message });
-      });
+    chatSocket.on('message', (message) => {
+      const item = document.createElement('li');
+      item.textContent = `${message.nickname}: ${message.content}`;
+      messagesList.appendChild(item);
+    });
 
-      notifySocket.on('mergeNotify', (data) => {
-        const { type, userId, message } = data;
-        notifySocket.emit('mergeNotify', { type, userId, message });
-      });
+    notifySocket.on('likeNotify', (data) => {
+      const { type, userId, message } = data;
+      notifySocket.emit('likeNotify', { type, userId, message });
+    });
 
-      notifySocket.on('exitNotify', (data) => {
-        const { userId, type, message } = data;
-        notifySocket.emit('exitNotify', { type, userId, message });
-        // item.textContent = `[알림]${type}:${message}`;
-        // notificationsList.appendChild(item);
-      });
+    notifySocket.on('mergeNotify', (data) => {
+      const { type, userId, message } = data;
+      notifySocket.emit('mergeNotify', { type, userId, message });
+    });
 
-      notifySocket.on('reception', (data) => {
-        const { type, message } = data;
-        const item = document.createElement('li');
-        item.textContent = `[알림][${type}] ${message}`;
-        notificationsList.appendChild(item);
-      });
-    </script>
-  </body>
+    notifySocket.on('exitNotify', (data) => {
+      const { userId, type, message } = data;
+      notifySocket.emit('exitNotify', { type, userId, message });
+      // item.textContent = `[알림]${type}:${message}`;
+      // notificationsList.appendChild(item);
+    });
+
+    notifySocket.on('reception', (data) => {
+      const { type, message } = data;
+      const item = document.createElement('li');
+      item.textContent = `[알림][${type}] ${message}`;
+      notificationsList.appendChild(item);
+    });
+  </script>
+</body>
+
 </html>
