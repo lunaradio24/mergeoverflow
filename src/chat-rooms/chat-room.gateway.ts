@@ -15,7 +15,7 @@ import { SocketGateway } from 'src/common/sockets/gateway';
 import { UserService } from 'src/users/user.service';
 import { MessageType } from './types/message.type';
 
-@WebSocketGateway({ namespace: 'chat', cors: { origin: '*' } })
+@WebSocketGateway({ namespace: 'chat', cors: { origin: '*' }, transports: ['websocket'] })
 export class ChatRoomGateway extends SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     @Inject(forwardRef(() => ChatRoomService))
