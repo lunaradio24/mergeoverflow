@@ -233,6 +233,22 @@ export class AuthService {
 
           userId = savedUser.id;
 
+          // Heart 데이터 생성 및 저장
+          const heart = new Heart();
+          heart.user = user;
+          heart.remainHearts = RESET_HEART_COUNT;
+          await queryRunner.manager.save(heart);
+
+          // Location 데이터 생성 및 저장
+          const location = new Location();
+          location.user = user;
+          await queryRunner.manager.save(location);
+
+          // Preferences 데이터 생성 및 저장
+          const preferences = new Preferences();
+          preferences.user = user;
+          await queryRunner.manager.save(preferences);
+
           // 트랜잭션 종료
           await queryRunner.commitTransaction();
         } catch (error) {
@@ -289,25 +305,7 @@ export class AuthService {
       Object.assign(user, userData);
       await queryRunner.manager.save(user); // 업데이트 후 저장
 
-      // User 데이터 생성
-      if (interests.length < MIN_NUM_INTERESTS) {
-        throw new BadRequestException(INTEREST_MESSAGES.CREATE.FAILURE.LOWER_LIMIT);
-      }
-
-      if (interests.length > MAX_NUM_INTERESTS) {
-        throw new BadRequestException(INTEREST_MESSAGES.CREATE.FAILURE.UPPER_LIMIT);
-      }
-
-      if (techs.length < MIN_NUM_TECHS) {
-        throw new BadRequestException(TECH_MESSAGES.CREATE.FAILURE.LOWER_LIMIT);
-      }
-
-      if (techs.length > MAX_NUM_TECHS) {
-        throw new BadRequestException(TECH_MESSAGES.CREATE.FAILURE.UPPER_LIMIT);
-      }
-
-      // UserToInterest 업데이트
-      await queryRunner.manager.delete(UserToInterest, { userId: user.id }); // 기존 데이터 삭제
+      // UserToInterest 생성
       const userToInterests = interests.map((interestId) => {
         const userToInterest = new UserToInterest();
         userToInterest.userId = user.id;
@@ -316,8 +314,7 @@ export class AuthService {
       });
       await queryRunner.manager.save(userToInterests);
 
-      // UserToTech 업데이트
-      await queryRunner.manager.delete(UserToTech, { userId: user.id }); // 기존 데이터 삭제
+      // UserToTech 생성
       const userToTechs = techs.map((techId) => {
         const userToTech = new UserToTech();
         userToTech.userId = user.id;
@@ -326,8 +323,7 @@ export class AuthService {
       });
       await queryRunner.manager.save(userToTechs);
 
-      // ProfileImage 업데이트
-      await queryRunner.manager.delete(ProfileImage, { userId: user.id }); // 기존 데이터 삭제
+      // ProfileImage 생성
       if (profileImageUrls && profileImageUrls.length > 0) {
         const userProfileImages = profileImageUrls.map((url) => {
           const userProfileImage = new ProfileImage();
@@ -337,22 +333,6 @@ export class AuthService {
         });
         await queryRunner.manager.save(userProfileImages);
       }
-
-      // Heart 데이터 생성 및 저장
-      const heart = new Heart();
-      heart.user = user;
-      heart.remainHearts = RESET_HEART_COUNT;
-      await queryRunner.manager.save(heart);
-
-      // Location 데이터 생성 및 저장
-      const location = new Location();
-      location.user = user;
-      await queryRunner.manager.save(location);
-
-      // Preferences 데이터 생성 및 저장
-      const preferences = new Preferences();
-      preferences.user = user;
-      await queryRunner.manager.save(preferences);
 
       // 트랜잭션 종료
       await queryRunner.commitTransaction();
