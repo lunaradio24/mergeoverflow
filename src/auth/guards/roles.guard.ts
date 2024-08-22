@@ -1,10 +1,10 @@
 import { Role } from '../types/role.type';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AuthGuard } from '@nestjs/passport';
+import { AccessTokenGuard } from './access-token.guard';
 
 @Injectable()
-export class RolesGuard extends AuthGuard('access-token') implements CanActivate {
+export class RolesGuard extends AccessTokenGuard implements CanActivate {
   constructor(private reflector: Reflector) {
     //super() 호출로 AuthGuard호출
     super();
