@@ -200,7 +200,9 @@ export class AuthService {
     }
   }
 
-  async socialSignIn(socialSignInDto: SocialSignInDto): Promise<{ tokens: TokensRO; isNewUser: boolean }> {
+  async socialSignIn(
+    socialSignInDto: SocialSignInDto,
+  ): Promise<{ tokens: TokensRO; isNewUser: boolean; provider: string; providerId: string }> {
     try {
       const { provider, providerId } = socialSignInDto;
 
@@ -270,7 +272,7 @@ export class AuthService {
 
       const payload = { userId, provider, providerId };
       const tokens = await this.issueTokens(payload);
-      return { tokens, isNewUser };
+      return { tokens, isNewUser, provider, providerId };
     } catch (error) {
       throw new UnauthorizedException(AUTH_MESSAGES.SIGN_IN.FAILURE);
     }
