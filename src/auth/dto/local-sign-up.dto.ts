@@ -18,7 +18,7 @@ import { BodyShape } from '../../users/types/bodyshape.type';
 import { Mbti } from '../../users/types/mbti.type';
 import { Religion } from '../../users/types/religion.type';
 import { Frequency } from '../../users/types/frequency.type';
-import { IsPasswordMatchingConstraint } from 'src/utils/decorators/password-match.decorator';
+import { IsMatchingConstraint } from 'src/utils/decorators/password-match.decorator';
 import { Type } from 'class-transformer';
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '../constants/auth.constant';
 import { MAX_NUM_IMAGES } from 'src/images/constants/image.constant';
@@ -38,7 +38,7 @@ export class LocalSignUpDto {
 
   @IsNotEmpty({ message: AUTH_MESSAGES.COMMON.PASSWORD_CONFIRM.REQUIRED })
   @IsString()
-  @Validate(IsPasswordMatchingConstraint, { message: AUTH_MESSAGES.COMMON.PASSWORD_CONFIRM.NOT_MATCHED_WITH_PASSWORD })
+  @Validate(IsMatchingConstraint, ['password'])
   readonly passwordConfirm: string;
 
   @IsNotEmpty()

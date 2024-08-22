@@ -8,6 +8,8 @@ import { UserInfo } from 'src/utils/decorators/user-info.decorator';
 import { User } from './entities/user.entity';
 import { USER_MESSAGES } from './constants/user.message.constant';
 import { ApiResponse } from 'src/common/interceptors/response/response.interface';
+import { ProviderGuard } from 'src/auth/guards/provider.guard';
+import { AllowedProviders } from 'src/utils/decorators/providers.decorator';
 
 @Controller('users')
 export class UserController {
@@ -42,7 +44,8 @@ export class UserController {
   }
 
   // 비밀번호 수정
-  @UseGuards(AccessTokenGuard)
+  @UseGuards(ProviderGuard)
+  @AllowedProviders('local')
   @Patch('me/password')
   async updatePassword(
     @UserInfo() user: User,

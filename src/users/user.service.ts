@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
@@ -81,11 +87,16 @@ export class UserService {
     const existingUser = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['account'],
-      select: { account: { password: true } },
+      select: { account: { password: true, provider: true } },
     });
 
     if (!existingUser) {
       throw new NotFoundException(USER_MESSAGES.FIND.ONE.FAILURE.NOT_FOUND);
+    }
+
+    // 소셜 로그인 유저인지 확인
+    if (existingUser.account.provider !== 'local') {
+      throw new ForbiddenException('휴대폰 번호로 로그인한 유저만 비밀번호를 변경할 수 있습니다.');
     }
 
     // 기존 비밀번호 맞는지 확인
