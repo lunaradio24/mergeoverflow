@@ -230,8 +230,9 @@
 
 ## 주요 기능
 - **1. 인증**
-- 1-1 인증문자발송 , 발송문자인증 
-https://github.com/SaintSSong/SP-last-Project/blob/9f5ebad42df2c2a1437e5183008ec823d1c764f1/src/auth/auth.service.ts#L66-L87
+- 1-1 인증문자발송 , 발송문자인증
+- 실사용 휴대폰에 문자를 발송하고 해당 문자를 인증합니다. 
+https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/sms/sms.service.ts#L42-L69
 ![사이즈축소](https://github.com/user-attachments/assets/ce76d90f-2de6-4dd1-9350-43eb8dfe4390)
 - 1-2 회원가입
 https://github.com/SaintSSong/SP-last-Project/blob/9f5ebad42df2c2a1437e5183008ec823d1c764f1/src/auth/auth.service.ts#L89-L201
@@ -243,13 +244,27 @@ https://github.com/SaintSSong/SP-last-Project/blob/9f5ebad42df2c2a1437e5183008ec
 https://github.com/SaintSSong/SP-last-Project/blob/9f5ebad42df2c2a1437e5183008ec823d1c764f1/src/auth/auth.service.ts#L203-L279
 ![회원가입로그인1](https://github.com/user-attachments/assets/12eb6461-063e-4058-8e77-a2d6ce429dea)
 - **2. 유저**
-- 1-1 인증문자발송 , 발송문자인증
-- 1-1 인증문자발송 , 발송문자인증
-- 1-1 인증문자발송 , 발송문자인증
-- 1-1 인증문자발송 , 발송문자인증 
-- **3. 매칭**
-- **4. 알림**
-- **5. 채팅룸**
+- 2-1 내 정보 조회
+https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/users/user.service.ts#L36-L57
+![유저화면1](https://github.com/user-attachments/assets/9d1b2eb1-3f83-48a3-8bcf-508523f548f0)
+- 2-2 프로필 수정
+https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/users/user.service.ts#L65-L75
+![프로필수정](https://github.com/user-attachments/assets/1050a02d-1182-40bd-8736-9817db0ba8fb)
+- 2-3 비밀번호 수정
+https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/users/user.service.ts#L83-L95
+![비밀번호수정](https://github.com/user-attachments/assets/81e2f401-0ac1-49a7-ada5-33fac0f76ae2)
+- **3. 기술 설정**
+https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/techs/tech.service.ts#L20-L108
+![기술스택설정](https://github.com/user-attachments/assets/2917db19-a0ab-45f2-96b3-1d7352c05336)
+- **4. 관심사설정 **
+https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/interests/interest.service.ts#L20-L108
+![관심사설정](https://github.com/user-attachments/assets/1ac73a89-1fe7-4cdb-be14-7fd20e9025d4)
+- **5. 매칭 **
+- **6. 거리 **
+- **7. 하트 **
+- **8. 선호도 **
+- **9. 알람 **
+- **10. 채팅 **
 ## 패키지 설치
 
 ```bash
