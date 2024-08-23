@@ -20,61 +20,6 @@
 팀원: ☀️김노을<br>
 팀원: 🎙️조영진
 
-### Auth (인증)
-
-- 휴대폰 번호로 회원가입
-- 전화번호로 로그인
-- 깃허브 로그인
-- 구글 로그인
-- 로그아웃 (redis 사용)
-- 토큰 재발급 (redis 사용)
-- sms 인증번호 발송 / 검증 (redis 사용)
-
-### User (사용자)
-
-- 프로필 조회
-- 프로필 수정
-- 비밀번호 변경
-- 닉네임 중복 확인
-
-### Image (프로필 이미지)
-
-- S3 서버에 이미지 추가
-- 프로필 이미지 추가
-- 프로필 이미지 수정
-- 프로필 이미지 삭제
-
-### Interest (유저 관심사)
-
-- 관심사 등록/ 조회 / 수정 / 삭제
-
-### tech (유저 기술스택)
-
-- 기술스택 등록/ 조회 / 수정 / 삭제
-
-### Matching (매칭)
-
-- 매칭 상대 정보 조회
-- 매칭 상대 싫어요
-- 매칭 상대 좋아요
-- 매칭 설정
-
-### Heart (사용할 수 있는 하트)
-
-- 하트 개수 초기화
-
-### Chat-room (채팅방)
-
-- 채팅방 목록 조회
-- 채팅방 입장
-- 채팅방 삭제 (나가기)
-- 채팅 보내기
-
-### Notification (알람)
-
-- 알림 전체 목록 조회
-- 알림 최신 목록 조회
-- 알림 전체 읽기
 
 ## 와이어 프레임
 
@@ -229,49 +174,127 @@
 <img src ="https://ziadoua.github.io/m3-Markdown-Badges/badges/Trello/trello1.svg" />
 
 ## 주요 기능
-- **1. 인증**
-- 1-1 인증문자발송 , 발송문자인증
+### Auth (인증)
+
+- 휴대폰 번호로 회원가입
+- 전화번호로 로그인
+- 깃허브 로그인
+- 구글 로그인
+- 로그아웃 (redis 사용)
+- 토큰 재발급 (redis 사용)
+- sms 인증번호 발송 / 검증 (redis 사용)
+
+<details>
+<summary>상세보기</summary>
+- 인증문자발송 , 발송문자인증
+  
 - 실사용 휴대폰에 문자를 발송하고 해당 문자를 인증합니다. 
 https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/sms/sms.service.ts#L42-L69
-![사이즈축소](https://github.com/user-attachments/assets/ce76d90f-2de6-4dd1-9350-43eb8dfe4390)
-- 1-2 회원가입
+![사이즈축소](https://github.com/user-attachments/assets/6501621e-1a30-43db-bb15-2ab3e0fbe06a)
+  
+- 회원가입
 https://github.com/SaintSSong/SP-last-Project/blob/9f5ebad42df2c2a1437e5183008ec823d1c764f1/src/auth/auth.service.ts#L89-L201
 ![회원가입2](https://github.com/user-attachments/assets/e9d53635-66d0-4cf8-9962-5d3ba55ce4f7)
-- 1-2-1 소셜회원가입
+- 소셜회원가입
 https://github.com/SaintSSong/SP-last-Project/blob/9f5ebad42df2c2a1437e5183008ec823d1c764f1/src/auth/auth.service.ts#L281-L352
 ![구글로그인](https://github.com/user-attachments/assets/5ad24f06-a2bf-4fbd-a385-32a2f9f1efa0)
-- 1-3 로그인
+- 로그인
 https://github.com/SaintSSong/SP-last-Project/blob/9f5ebad42df2c2a1437e5183008ec823d1c764f1/src/auth/auth.service.ts#L203-L279
 ![회원가입로그인1](https://github.com/user-attachments/assets/12eb6461-063e-4058-8e77-a2d6ce429dea)
-- **2. 유저**
-- 2-1 내 정보 조회
+</details>
+
+### User (유저)
+
+- 프로필 조회
+- 프로필 수정
+- 비밀번호 변경
+- 닉네임 중복 확인
+
+<details>
+<summary>상세보기</summary>
+- 내 정보 조회
+
 https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/users/user.service.ts#L36-L57
 ![유저화면1](https://github.com/user-attachments/assets/9d1b2eb1-3f83-48a3-8bcf-508523f548f0)
-- 2-2 프로필 수정
+- 프로필 수정
 https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/users/user.service.ts#L65-L75
 ![프로필수정](https://github.com/user-attachments/assets/1050a02d-1182-40bd-8736-9817db0ba8fb)
-- 2-3 비밀번호 수정
+- 비밀번호 수정
 https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/users/user.service.ts#L83-L95
 ![비밀번호수정](https://github.com/user-attachments/assets/81e2f401-0ac1-49a7-ada5-33fac0f76ae2)
-- **3. 기술 설정**
+</details>
+
+### tech (유저 기술스택)
+
+- 기술스택 등록/ 조회 / 수정 / 삭제
+
+<details>
+<summary>상세보기</summary>
+- 기술스택 등록/ 조회 / 수정 / 삭제
+
 https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/techs/tech.service.ts#L20-L108
 ![기술스택설정](https://github.com/user-attachments/assets/2917db19-a0ab-45f2-96b3-1d7352c05336)
-- **4. 관심사설정 **
+</details>
+
+### Interest (유저 관심사)
+
+- 관심사 등록/ 조회 / 수정 / 삭제
+
+<details>
+<summary>상세보기</summary>
+- 관심사 등록/ 조회 / 수정 / 삭제
+  
 https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/interests/interest.service.ts#L20-L108
 ![관심사설정](https://github.com/user-attachments/assets/1ac73a89-1fe7-4cdb-be14-7fd20e9025d4)
-- **5. 매칭 **
-- **6. 거리 **
-- **7. 하트 **
-- **8. 선호도 **
-- **9. 알람 **
-- **10. 채팅 **
+</details>
+
+### Image (프로필 이미지)
+- S3 서버에 이미지 추가
+- 프로필 이미지 추가
+- 프로필 이미지 수정
+- 프로필 이미지 삭제
+<details>
+<summary>상세보기</summary>
+  
+- S3 서버 이미지 업로드,저장,삭제
+https://github.com/SaintSSong/SP-last-Project/blob/759f53914a495e9491a828866098281f2f7fbbc5/src/s3/s3.service.ts#L27-L54
+https://github.com/SaintSSong/SP-last-Project/blob/759f53914a495e9491a828866098281f2f7fbbc5/src/images/image.service.ts#L18-L93
+![이미지](https://github.com/user-attachments/assets/c55070d0-e5c6-41a6-b354-e3b7e3cf0b1e)
+</details>
+
+### Matching (매칭)
+- 매칭 선호도 필터링
+- 매칭 상호작용(싫어요/좋아요)
+### Location (거리)
+-위치정보 업데이트
+### Heart (하트)
+- 하트 초기화 
+### Notification (알람)
+- 알림 전체 목록 조회
+- 알림 최신 목록 조회
+- 알림 전체 읽기
+### ChatRooms (채팅)
+- 채팅방 목록 조회
+- 채팅방 입장
+- 채팅방 삭제 (나가기)
+- 채팅 보내기
+
 ## 패키지 설치
 
+<details>
+<summary>상세보기</summary>
+
 ```bash
+$ git clone https://github.com/SaintSSong/SP-last-Project.git
 $ yarn install
 ```
+</details>
+
 
 ## 실행 방법
+
+<details>
+<summary>상세보기</summary>
 
 ```bash
 # 서버 실행(배포)
@@ -281,3 +304,4 @@ $ yarn run start
 $ yarn run start:dev
 
 ```
+</details>
