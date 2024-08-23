@@ -1,0 +1,26 @@
+config:
+  target: 'https://api.mergeoverflow.shop'
+  phases:
+    - duration: 10
+      arrivalRate: 30
+      name: 'Mergeoverflow'
+
+scenarios:
+  # - name: '기술스택 조회'
+  #   flow:
+  #     - get:
+  #         url: '/techs'
+
+  # - get:
+  #     url: '/users/me'
+  #     headers:
+  #       Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIxLCJwaG9uZU51bSI6IjAxMC02ODI0LTYzNzkiLCJpYXQiOjE3MjQ0MDAzMTcsImV4cCI6MTcyNTI2NDMxN30.bKTLlSlOEkEIR1EOEHPrl8W7pVKb7PRuz41CCcYNWt8'
+
+  - name: '매칭 선호도 수정'
+    flow:
+      - patch:
+          url: '/preferences'
+          headers:
+            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIxLCJwaG9uZU51bSI6IjAxMC02ODI0LTYzNzkiLCJpYXQiOjE3MjQ0MDAzMTcsImV4cCI6MTcyNTI2NDMxN30.bKTLlSlOEkEIR1EOEHPrl8W7pVKb7PRuz41CCcYNWt8'
+          json:
+            gender: '상관 없음'
