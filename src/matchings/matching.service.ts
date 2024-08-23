@@ -339,67 +339,68 @@ export class MatchingService {
       await this.userService.validateUserExists(userId);
       await this.userService.validateUserExists(targetUserId);
 
-      // 하트 차감
-      if (interactionType === InteractionType.LIKE) {
-        await queryRunner.manager.decrement(Heart, { userId }, 'remainHearts', 1);
-      }
-
       // 매칭 정보 업데이트
       await queryRunner.manager.update(Matching, { userId, targetUserId }, { interactionType });
 
-      // 좋아요 알림 저장
-      const userNickname = await this.userService.findNicknameByUserId(userId);
-      const messageToTargetUser = `${userNickname}님께서 당신에게 좋아요를 눌렀어요 !`;
-      await this.notificationService.saveNotification(targetUserId, messageToTargetUser, NotificationType.LIKE);
+      // 좋아요 시 실행
+      if (interactionType === InteractionType.LIKE) {
+        // 하트 차감
+        await queryRunner.manager.decrement(Heart, { userId }, 'remainHearts', 1);
 
-      // 좋아요 로그
-      this.logger.log(`${userId}번 user가 ${targetUserId}번 user에게 좋아요를 눌렀습니다.`);
+        // 좋아요 알림 저장
+        const userNickname = await this.userService.findNicknameByUserId(userId);
+        const messageToTargetUser = `${userNickname}님께서 당신에게 좋아요를 눌렀어요 !`;
+        await this.notificationService.saveNotification(targetUserId, messageToTargetUser, NotificationType.LIKE);
 
-      // 좋아요 알림 전송
-      this.notificationGateway.server
-        .to(targetUserId.toString())
-        .emit('likeNotify', { type: NotificationType.LIKE, userId: targetUserId, message: messageToTargetUser });
+        // 좋아요 로그
+        this.logger.log(`${userId}번 user가 ${targetUserId}번 user에게 좋아요를 눌렀습니다.`);
 
-      // 상대방이 이미 좋아요를 눌렀는지 확인
-      const targetUserMatching = await queryRunner.manager.findOne(Matching, {
-        where: {
-          userId: targetUserId,
-          targetUserId: userId,
-          interactionType: InteractionType.LIKE,
-        },
-      });
-
-      // 서로 좋아요를 눌렀다면
-      if (interactionType === InteractionType.LIKE && targetUserMatching) {
-        const user1Id = targetUserMatching ? targetUserId : userId;
-        const user2Id = targetUserMatching ? userId : targetUserId;
-
-        // 채팅방 생성
-        const createdChatRoomId = await this.chatRoomService.createChatRoom(user1Id, user2Id);
-        this.logger.log(`${user1Id}번 user와 ${user2Id}번 user의 채팅방 #${createdChatRoomId}이 개설되었습니다.`);
-
-        // 채팅방 생성 알림 메시지 저장
-        const user1 = await this.userService.findByUserId(user1Id);
-        const user2 = await this.userService.findByUserId(user2Id);
-
-        const messageToUser1 = `${user2.nickname}님과 merge 되었습니다. 먼저 채팅을 시작해보세요`;
-        const messageToUser2 = `${user1.nickname}님과 merge 되었습니다. 먼저 채팅을 시작해보세요`;
-
-        await this.notificationService.saveNotification(user1Id, messageToUser1, NotificationType.MERGED);
-        await this.notificationService.saveNotification(user2Id, messageToUser2, NotificationType.MERGED);
-
-        // 채팅방 생성 알림 메시지 전송 - socket
+        // 좋아요 알림 전송
         this.notificationGateway.server
-          .to(user1Id.toString())
-          .emit('mergeNotify', { type: NotificationType.MERGED, userId: user1Id, message: messageToUser1 });
+          .to(targetUserId.toString())
+          .emit('likeNotify', { type: NotificationType.LIKE, userId: targetUserId, message: messageToTargetUser });
 
-        this.notificationGateway.server
-          .to(user2Id.toString())
-          .emit('mergeNotify', { type: NotificationType.MERGED, userId: user2Id, message: messageToUser2 });
+        // 상대방이 이미 좋아요를 눌렀는지 확인
+        const hasLikeByTargetUser = await queryRunner.manager.findOne(Matching, {
+          where: {
+            userId: targetUserId,
+            targetUserId: userId,
+            interactionType: InteractionType.LIKE,
+          },
+        });
 
-        // 채팅방 생성 알림 메시지 전송 - sms
-        await this.smsService.sendOne(user1.account.phoneNum, `[MergeOverflow] ${messageToUser1}`);
-        await this.smsService.sendOne(user2.account.phoneNum, `[MergeOverflow] ${messageToUser2}`);
+        // 서로 좋아요를 눌렀다면
+        if (hasLikeByTargetUser) {
+          const user1Id = hasLikeByTargetUser ? targetUserId : userId;
+          const user2Id = hasLikeByTargetUser ? userId : targetUserId;
+
+          // 채팅방 생성
+          const createdChatRoomId = await this.chatRoomService.createChatRoom(user1Id, user2Id);
+          this.logger.log(`${user1Id}번 user와 ${user2Id}번 user의 채팅방 #${createdChatRoomId}이 개설되었습니다.`);
+
+          // 채팅방 생성 알림 메시지 저장
+          const user1 = await this.userService.findByUserId(user1Id);
+          const user2 = await this.userService.findByUserId(user2Id);
+
+          const messageToUser1 = `${user2.nickname}님과 merge 되었습니다. 먼저 채팅을 시작해보세요`;
+          const messageToUser2 = `${user1.nickname}님과 merge 되었습니다. 먼저 채팅을 시작해보세요`;
+
+          await this.notificationService.saveNotification(user1Id, messageToUser1, NotificationType.MERGED);
+          await this.notificationService.saveNotification(user2Id, messageToUser2, NotificationType.MERGED);
+
+          // 채팅방 생성 알림 메시지 전송 - socket
+          this.notificationGateway.server
+            .to(user1Id.toString())
+            .emit('mergeNotify', { type: NotificationType.MERGED, userId: user1Id, message: messageToUser1 });
+
+          this.notificationGateway.server
+            .to(user2Id.toString())
+            .emit('mergeNotify', { type: NotificationType.MERGED, userId: user2Id, message: messageToUser2 });
+
+          // 채팅방 생성 알림 메시지 전송 - sms
+          await this.smsService.sendOne(user1.account.phoneNum, `[MergeOverflow] ${messageToUser1}`);
+          await this.smsService.sendOne(user2.account.phoneNum, `[MergeOverflow] ${messageToUser2}`);
+        }
       }
       await queryRunner.commitTransaction();
     } catch (error) {
