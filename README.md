@@ -22,8 +22,8 @@
 
 
 ## 와이어 프레임
-
-[와이어프레임](https://miro.com/welcomeonboard/RWNMaVM5bUxnZzNuVnp3ZUkxMUk4QXVNekNiWlBMVWFsOERmbE9nS2tsS2VwTUtjSzV6ZFNkeUY3WGlxbW8wbnwzNDU4NzY0NTk0NDE2MzU4MjkwfDI=?share_link_id=473591469080)
+![와이어프레임](https://github.com/user-attachments/assets/1aed0bc8-47a9-44bd-9a56-a1bbe65c143d)
+[와이어프레임URL](https://miro.com/welcomeonboard/RWNMaVM5bUxnZzNuVnp3ZUkxMUk4QXVNekNiWlBMVWFsOERmbE9nS2tsS2VwTUtjSzV6ZFNkeUY3WGlxbW8wbnwzNDU4NzY0NTk0NDE2MzU4MjkwfDI=?share_link_id=473591469080)
 
 
 ## ERD
@@ -265,19 +265,96 @@ https://github.com/SaintSSong/SP-last-Project/blob/759f53914a495e9491a8288660982
 ### Matching (매칭)
 - 매칭 선호도 필터링
 - 매칭 상호작용(싫어요/좋아요)
+<details>
+<summary>상세보기</summary>
+  
+- 매칭 선호도 필터링 성별/나이/키/체형/흡연/음주/거리/기술
+https://github.com/SaintSSong/SP-last-Project/blob/aacb6a3357c6474e3f36592327061573333fc3ab/src/matchings/matching.service.ts#L54-L237
+![매칭선호도설정](https://github.com/user-attachments/assets/96cb74db-da5f-4861-aced-da2b81357de1)
+
+- 매칭 상호작용(싫어요/좋아요)
+https://github.com/SaintSSong/SP-last-Project/blob/aacb6a3357c6474e3f36592327061573333fc3ab/src/matchings/matching.service.ts#L324-L348
+![메인](https://github.com/user-attachments/assets/8016e819-5bf0-48f3-bca1-bb3bc7aaa3c2)
+</details> 
+
 ### Location (거리)
--위치정보 업데이트
+- 위치정보 업데이트
+<details>
+<summary>상세보기</summary>
+- 위치정보 업데이트 , 서버에 전송 
+  
+https://github.com/SaintSSong/SP-last-Project/blob/aacb6a3357c6474e3f36592327061573333fc3ab/src/locations/location.service.ts#L19-L60
+https://github.com/SaintSSong/SP-last-Project/blob/aacb6a3357c6474e3f36592327061573333fc3ab/static/location.html#L9-L39
+![유저서비스2](https://github.com/user-attachments/assets/75e1dbed-c140-453b-b54c-c22ba176be36)
+</details> 
+
 ### Heart (하트)
-- 하트 초기화 
+- 하트 초기화
+<details>
+<summary>상세보기</summary>
+- 하트 초기화 (시간별 초기화, 수동 초기화) 
+  
+https://github.com/SaintSSong/SP-last-Project/blob/aacb6a3357c6474e3f36592327061573333fc3ab/src/hearts/heart.service.ts#L17-L27
+![하트테이블](https://github.com/user-attachments/assets/7d31100b-2b71-4e19-b45d-8df974ab811b)
+</details> 
+
 ### Notification (알람)
+- 소켓 연결
 - 알림 전체 목록 조회
 - 알림 최신 목록 조회
 - 알림 전체 읽기
+- 이벤트 알람 전송 
+<details>
+<summary>상세보기</summary>
+- 소켓 연결 (서버측, 클라이언트측)
+https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/src/notifications/notification.gateway.ts#L17-L42
+https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/static/index1.html#L47-L51
+  
+- 알림 전체 목록 조회
+https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/src/notifications/notification.service.ts#L15-L18
+![알림1](https://github.com/user-attachments/assets/5f257dd5-5a5e-4d6d-984d-b42158518e7d)
+
+- 알림 최신 목록 조회
+https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/src/notifications/notification.service.ts#L20-L27
+
+- 알림 전체 읽기
+https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/src/notifications/notification.service.ts#L29-L32
+![전체알림읽기](https://github.com/user-attachments/assets/61db05fe-9c8b-4a20-acb3-5e4a74a60909)
+
+- 이벤트 알람 전송 (좋아요 시, merge 시, 채팅룸 퇴장 시)
+https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/src/notifications/notification.gateway.ts#L53-L62
+https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/src/notifications/notification.gateway.ts#L44-L51
+https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/src/notifications/notification.gateway.ts#L64-L72
+![머지알람](https://github.com/user-attachments/assets/93d590bb-e466-4e86-93cf-1969265e9bee)
+</details> 
+
 ### ChatRooms (채팅)
+- 소켓 연결 (서버측, 클라이언트측)
 - 채팅방 목록 조회
 - 채팅방 입장
 - 채팅방 삭제 (나가기)
 - 채팅 보내기
+<details>
+<summary>상세보기</summary>
+- 소켓 연결 (서버측, 클라이언트측)
+https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/src/chat-rooms/chat-room.gateway.ts#L18-L40
+https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/static/index1.html#L41-L45
+
+- 채팅방 목록 조회
+https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/src/chat-rooms/chat-room.service.ts#L127-L180
+![채팅방목록](https://github.com/user-attachments/assets/570fc271-ab28-49dc-a02c-caeab4a0dc49)
+
+- 채팅방 입장
+https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/src/chat-rooms/chat-room.gateway.ts#L42-L55
+
+- 채팅방 삭제 (나가기)
+https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/src/chat-rooms/chat-room.service.ts#L37-L70
+![채팅방나가기](https://github.com/user-attachments/assets/b2772dd6-2355-43e6-bc34-2f45c7ccebc6)
+
+- 채팅 보내기
+https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/src/chat-rooms/chat-room.gateway.ts#L71-L82
+![실시간 채팅 기능 대화창 ](https://github.com/user-attachments/assets/575671f7-124b-4e04-b848-7bacb4bd96cd)
+</details> 
 
 ## 패키지 설치
 
@@ -305,3 +382,6 @@ $ yarn run start:dev
 
 ```
 </details>
+
+---
+![asdasdasdasdasdasd](https://github.com/user-attachments/assets/a9793d26-a837-4c95-b70c-a3cd3275d770)
