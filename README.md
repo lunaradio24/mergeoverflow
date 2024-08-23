@@ -174,78 +174,81 @@
 <img src ="https://ziadoua.github.io/m3-Markdown-Badges/badges/Trello/trello1.svg" />
 
 ## 주요 기능
+
 ### Auth (인증)
 
-- 휴대폰 번호로 회원가입
-- 전화번호로 로그인
-- 깃허브 로그인
-- 구글 로그인
-- 로그아웃 (redis 사용)
-- 토큰 재발급 (redis 사용)
-- sms 인증번호 발송 / 검증 (redis 사용)
-
+- 인증문자발송 , 발송문자인증
+- 회원가입
+- 소셜회원가입
+- 로그인
+  
 <details>
 <summary>상세보기</summary>
-- 인증문자발송 , 발송문자인증
   
-- 실사용 휴대폰에 문자를 발송하고 해당 문자를 인증합니다. 
+- 인증문자발송 , 발송문자인증
 https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/sms/sms.service.ts#L42-L69
 ![사이즈축소](https://github.com/user-attachments/assets/6501621e-1a30-43db-bb15-2ab3e0fbe06a)
   
 - 회원가입
 https://github.com/SaintSSong/SP-last-Project/blob/9f5ebad42df2c2a1437e5183008ec823d1c764f1/src/auth/auth.service.ts#L89-L201
 ![회원가입2](https://github.com/user-attachments/assets/e9d53635-66d0-4cf8-9962-5d3ba55ce4f7)
+
 - 소셜회원가입
 https://github.com/SaintSSong/SP-last-Project/blob/9f5ebad42df2c2a1437e5183008ec823d1c764f1/src/auth/auth.service.ts#L281-L352
 ![구글로그인](https://github.com/user-attachments/assets/5ad24f06-a2bf-4fbd-a385-32a2f9f1efa0)
+
 - 로그인
 https://github.com/SaintSSong/SP-last-Project/blob/9f5ebad42df2c2a1437e5183008ec823d1c764f1/src/auth/auth.service.ts#L203-L279
 ![회원가입로그인1](https://github.com/user-attachments/assets/12eb6461-063e-4058-8e77-a2d6ce429dea)
+
 </details>
 
 ### User (유저)
 
-- 프로필 조회
+- 내 정보 조회
 - 프로필 수정
-- 비밀번호 변경
-- 닉네임 중복 확인
+- 비밀번호 수정
 
 <details>
+  
 <summary>상세보기</summary>
+  
 - 내 정보 조회
-
 https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/users/user.service.ts#L36-L57
 ![유저화면1](https://github.com/user-attachments/assets/9d1b2eb1-3f83-48a3-8bcf-508523f548f0)
+
 - 프로필 수정
 https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/users/user.service.ts#L65-L75
 ![프로필수정](https://github.com/user-attachments/assets/1050a02d-1182-40bd-8736-9817db0ba8fb)
+
 - 비밀번호 수정
 https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/users/user.service.ts#L83-L95
 ![비밀번호수정](https://github.com/user-attachments/assets/81e2f401-0ac1-49a7-ada5-33fac0f76ae2)
+
 </details>
 
 ### tech (유저 기술스택)
-
 - 기술스택 등록/ 조회 / 수정 / 삭제
 
 <details>
 <summary>상세보기</summary>
+  
 - 기술스택 등록/ 조회 / 수정 / 삭제
-
 https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/techs/tech.service.ts#L20-L108
 ![기술스택설정](https://github.com/user-attachments/assets/2917db19-a0ab-45f2-96b3-1d7352c05336)
+
 </details>
 
 ### Interest (유저 관심사)
-
 - 관심사 등록/ 조회 / 수정 / 삭제
 
 <details>
 <summary>상세보기</summary>
-- 관심사 등록/ 조회 / 수정 / 삭제
   
+- 관심사 등록/ 조회 / 수정 / 삭제
 https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f711cc1d0e604/src/interests/interest.service.ts#L20-L108
 ![관심사설정](https://github.com/user-attachments/assets/1ac73a89-1fe7-4cdb-be14-7fd20e9025d4)
+
 </details>
 
 ### Image (프로필 이미지)
@@ -260,14 +263,16 @@ https://github.com/SaintSSong/SP-last-Project/blob/fd7ca832d36800dfbf82ae083f8f7
 https://github.com/SaintSSong/SP-last-Project/blob/759f53914a495e9491a828866098281f2f7fbbc5/src/s3/s3.service.ts#L27-L54
 https://github.com/SaintSSong/SP-last-Project/blob/759f53914a495e9491a828866098281f2f7fbbc5/src/images/image.service.ts#L18-L93
 ![이미지](https://github.com/user-attachments/assets/c55070d0-e5c6-41a6-b354-e3b7e3cf0b1e)
+
 </details>
 
 ### Matching (매칭)
 - 매칭 선호도 필터링
 - 매칭 상호작용(싫어요/좋아요)
 <details>
-<summary>상세보기</summary>
   
+<summary>상세보기</summary>
+
 - 매칭 선호도 필터링 성별/나이/키/체형/흡연/음주/거리/기술
 https://github.com/SaintSSong/SP-last-Project/blob/aacb6a3357c6474e3f36592327061573333fc3ab/src/matchings/matching.service.ts#L54-L237
 ![매칭선호도설정](https://github.com/user-attachments/assets/96cb74db-da5f-4861-aced-da2b81357de1)
@@ -275,25 +280,28 @@ https://github.com/SaintSSong/SP-last-Project/blob/aacb6a3357c6474e3f36592327061
 - 매칭 상호작용(싫어요/좋아요)
 https://github.com/SaintSSong/SP-last-Project/blob/aacb6a3357c6474e3f36592327061573333fc3ab/src/matchings/matching.service.ts#L324-L348
 ![메인](https://github.com/user-attachments/assets/8016e819-5bf0-48f3-bca1-bb3bc7aaa3c2)
+
 </details> 
 
 ### Location (거리)
 - 위치정보 업데이트
 <details>
 <summary>상세보기</summary>
-- 위치정보 업데이트 , 서버에 전송 
   
+- 위치정보 업데이트 , 서버에 전송 
 https://github.com/SaintSSong/SP-last-Project/blob/aacb6a3357c6474e3f36592327061573333fc3ab/src/locations/location.service.ts#L19-L60
 https://github.com/SaintSSong/SP-last-Project/blob/aacb6a3357c6474e3f36592327061573333fc3ab/static/location.html#L9-L39
 ![유저서비스2](https://github.com/user-attachments/assets/75e1dbed-c140-453b-b54c-c22ba176be36)
+
 </details> 
 
 ### Heart (하트)
 - 하트 초기화
 <details>
-<summary>상세보기</summary>
-- 하트 초기화 (시간별 초기화, 수동 초기화) 
   
+<summary>상세보기</summary>
+
+- 하트 초기화 (시간별 초기화, 수동 초기화) 
 https://github.com/SaintSSong/SP-last-Project/blob/aacb6a3357c6474e3f36592327061573333fc3ab/src/hearts/heart.service.ts#L17-L27
 ![하트테이블](https://github.com/user-attachments/assets/7d31100b-2b71-4e19-b45d-8df974ab811b)
 </details> 
@@ -305,7 +313,9 @@ https://github.com/SaintSSong/SP-last-Project/blob/aacb6a3357c6474e3f36592327061
 - 알림 전체 읽기
 - 이벤트 알람 전송 
 <details>
+  
 <summary>상세보기</summary>
+
 - 소켓 연결 (서버측, 클라이언트측)
 https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/src/notifications/notification.gateway.ts#L17-L42
 https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/static/index1.html#L47-L51
@@ -326,16 +336,19 @@ https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe72322
 https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/src/notifications/notification.gateway.ts#L44-L51
 https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/src/notifications/notification.gateway.ts#L64-L72
 ![머지알람](https://github.com/user-attachments/assets/93d590bb-e466-4e86-93cf-1969265e9bee)
+
 </details> 
 
 ### ChatRooms (채팅)
-- 소켓 연결 (서버측, 클라이언트측)
+- 소켓 연결
 - 채팅방 목록 조회
 - 채팅방 입장
 - 채팅방 삭제 (나가기)
 - 채팅 보내기
 <details>
+  
 <summary>상세보기</summary>
+
 - 소켓 연결 (서버측, 클라이언트측)
 https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/src/chat-rooms/chat-room.gateway.ts#L18-L40
 https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/static/index1.html#L41-L45
@@ -354,6 +367,7 @@ https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe72322
 - 채팅 보내기
 https://github.com/SaintSSong/SP-last-Project/blob/042c281539ad2b0d56154bbe723229f96dde597c/src/chat-rooms/chat-room.gateway.ts#L71-L82
 ![실시간 채팅 기능 대화창 ](https://github.com/user-attachments/assets/575671f7-124b-4e04-b848-7bacb4bd96cd)
+
 </details> 
 
 ## 패키지 설치
@@ -385,3 +399,4 @@ $ yarn run start:dev
 
 ---
 ![asdasdasdasdasdasd](https://github.com/user-attachments/assets/a9793d26-a837-4c95-b70c-a3cd3275d770)
+---
