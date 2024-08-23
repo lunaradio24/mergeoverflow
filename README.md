@@ -1,26 +1,24 @@
-# [웹서버] 쌍남자 2조의 최종프로적트 <br> "MERGE OVERFLOW"
+# [웹서버] 쌍(2)남자 2조의 최종프로적트 <br> "MERGE OVERFLOW"
 
 ## 프로젝트 소개
-
-개발자를 위한 미팅 서비스 <br>
+- 서비스명 : MERGE OVERFLOW
+- 프로젝트 소개 : 개발자를 위한 미팅 서비스 <br>
 🧑‍💻서로의 코딩 취향을 듬뿍 담아 확인하는 소개팅, 협업자 찾기 서비스!! <br>
 👨‍💻당신의 코딩으로 RESTful한 만남을 시작해보세요!!!!👩‍💻
+- 서비스 기획 의도 : "사이드 프로젝트를 하고 싶은데 동료가 없어" <br>
+"개발도 좋은데 나는 사랑을 찾아 낭만을 찾아 떠나고 싶어" <br>
+"나는 백엔드만 할 줄 아는데 프론트엔드 사람은 어떻게 구하지?"
+- 서비스 배포 URL : https://mergeoverflow.shop/
+- 팀 노션 URL : https://teamsparta.notion.site/2-9e08c10b3c8843ceaec8e853230da15b
+- GitHub URL : https://github.com/SaintSSong/SP-last-Project
 
-## 팀소개
+## 팀원 구성
 
 리더: 👊송사무엘<br>
 부리더: ⚡여창준<br>
 팀원: 🤳유승엽<br>
 팀원: ☀️김노을<br>
 팀원: 🎙️조영진
-
-## 배포된 주소/API 명세서(Notion)
-
-[배포된링크](https://www.mergeoverflow.shop/) <br>
-[팀노션 API명세서](https://teamsparta.notion.site/2-9e08c10b3c8843ceaec8e853230da15b)
-
-
-## 주요 기능
 
 ### Auth (인증)
 
@@ -90,6 +88,113 @@
 
 ## 기능 도식화
 
+## 파일 구조 
+```
+📦 
+├─ .env.example
+├─ .eslintrc.js
+├─ .gitignore
+├─ .prettierrc
+├─ .vscode
+│  └─ settings.json
+├─ README.md
+├─ nest-cli.json
+├─ package.json
+├─ src
+│  ├─ app.controller.spec.ts
+│  ├─ app.controller.ts
+│  ├─ app.module.ts
+│  ├─ app.service.ts
+│  ├─ auth
+│  │  ├─ auth.controller.spec.ts
+│  │  ├─ auth.controller.ts
+│  │  ├─ auth.module.ts
+│  │  ├─ auth.service.spec.ts
+│  │  ├─ auth.service.ts
+│  │  ├─ dto
+│  │  │  ├─ create-auth.dto.ts
+│  │  │  └─ update-auth.dto.ts
+│  │  ├─ entities
+│  │  │  └─ account.entity.ts
+│  │  └─ types
+│  │     └─ role.type.ts
+│  ├─ chat-rooms
+│  │  ├─ chat-rooms.controller.spec.ts
+│  │  ├─ chat-rooms.controller.ts
+│  │  ├─ chat-rooms.module.ts
+│  │  ├─ chat-rooms.service.spec.ts
+│  │  ├─ chat-rooms.service.ts
+│  │  ├─ dto
+│  │  │  ├─ create-chat-room.dto.ts
+│  │  │  └─ update-chat-room.dto.ts
+│  │  └─ entities
+│  │     ├─ chat-message.entity.ts
+│  │     └─ chat-room.entity.ts
+│  ├─ configs
+│  │  ├─ database.config.ts
+│  │  ├─ mailer.config.ts
+│  │  └─ validation.config.ts
+│  ├─ main.ts
+│  ├─ matchings
+│  │  ├─ dto
+│  │  │  ├─ create-matching.dto.ts
+│  │  │  └─ update-matching.dto.ts
+│  │  ├─ entities
+│  │  │  ├─ heart.entity.ts
+│  │  │  └─ matching.entity.ts
+│  │  ├─ matchings.controller.spec.ts
+│  │  ├─ matchings.controller.ts
+│  │  ├─ matchings.module.ts
+│  │  ├─ matchings.service.spec.ts
+│  │  ├─ matchings.service.ts
+│  │  └─ types
+│  │     └─ interaction-type.type.ts
+│  ├─ notifications
+│  │  ├─ dto
+│  │  │  ├─ create-notification.dto.ts
+│  │  │  └─ update-notification.dto.ts
+│  │  ├─ entities
+│  │  │  └─ notification.entity.ts
+│  │  ├─ notifications.controller.spec.ts
+│  │  ├─ notifications.controller.ts
+│  │  ├─ notifications.module.ts
+│  │  ├─ notifications.service.spec.ts
+│  │  ├─ notifications.service.ts
+│  │  └─ types
+│  │     └─ notification-type.type.ts
+│  └─ users
+│     ├─ dto
+│     │  ├─ create-user.dto.ts
+│     │  └─ update-user.dto.ts
+│     ├─ entities
+│     │  ├─ interest.entity.ts
+│     │  ├─ profile-image.entity.ts
+│     │  ├─ tech.entity.ts
+│     │  ├─ user-to-interest.entity.ts
+│     │  ├─ user-to-tech.entity.ts
+│     │  └─ user.entity.ts
+│     ├─ types
+│     │  ├─ bodyshape.type.ts
+│     │  ├─ frequency.type.ts
+│     │  ├─ gender.type.ts
+│     │  ├─ mbti.type.ts
+│     │  ├─ pet.type.ts
+│     │  ├─ region.type.ts
+│     │  └─ religion.type.ts
+│     ├─ users.controller.spec.ts
+│     ├─ users.controller.ts
+│     ├─ users.module.ts
+│     ├─ users.service.spec.ts
+│     └─ users.service.ts
+├─ test
+│  ├─ app.e2e-spec.ts
+│  └─ jest-e2e.json
+├─ tsconfig.build.json
+├─ tsconfig.json
+└─ yarn.lock
+```
+©generated by [Project Tree Generator](https://woochanleee.github.io/project-tree-generator)
+
 ## 기술 스택
 
 ### Programming Languages & Frameworks
@@ -123,7 +228,28 @@
 <img src="https://img.shields.io/badge/Slack-4A154B?style=flat-square&logo=slack&logoColor=white" width="86"/>
 <img src ="https://ziadoua.github.io/m3-Markdown-Badges/badges/Trello/trello1.svg" />
 
-
+## 주요 기능
+- **1. 인증**
+- 1-1 인증문자발송 , 발송문자인증 
+https://github.com/SaintSSong/SP-last-Project/blob/9f5ebad42df2c2a1437e5183008ec823d1c764f1/src/auth/auth.service.ts#L66-L87
+![사이즈축소](https://github.com/user-attachments/assets/ce76d90f-2de6-4dd1-9350-43eb8dfe4390)
+- 1-2 회원가입
+https://github.com/SaintSSong/SP-last-Project/blob/9f5ebad42df2c2a1437e5183008ec823d1c764f1/src/auth/auth.service.ts#L89-L201
+![회원가입2](https://github.com/user-attachments/assets/e9d53635-66d0-4cf8-9962-5d3ba55ce4f7)
+- 1-2-1 소셜회원가입
+https://github.com/SaintSSong/SP-last-Project/blob/9f5ebad42df2c2a1437e5183008ec823d1c764f1/src/auth/auth.service.ts#L281-L352
+![구글로그인](https://github.com/user-attachments/assets/5ad24f06-a2bf-4fbd-a385-32a2f9f1efa0)
+- 1-3 로그인
+https://github.com/SaintSSong/SP-last-Project/blob/9f5ebad42df2c2a1437e5183008ec823d1c764f1/src/auth/auth.service.ts#L203-L279
+![회원가입로그인1](https://github.com/user-attachments/assets/12eb6461-063e-4058-8e77-a2d6ce429dea)
+- **2. 유저**
+- 1-1 인증문자발송 , 발송문자인증
+- 1-1 인증문자발송 , 발송문자인증
+- 1-1 인증문자발송 , 발송문자인증
+- 1-1 인증문자발송 , 발송문자인증 
+- **3. 매칭**
+- **4. 알림**
+- **5. 채팅룸**
 ## 패키지 설치
 
 ```bash
@@ -139,14 +265,4 @@ $ yarn run start
 # 서버 실행(개발)
 $ yarn run start:dev
 
-```
-
-## Test
-
-```bash
-# 테스트 실행
-$ yarn run test
-
-# 테스트 커버리지 확인
-$ yarn run test:cov
 ```
