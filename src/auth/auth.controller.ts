@@ -65,9 +65,15 @@ export class AuthController {
   @UseGuards(GoogleAuthGuard)
   async googleAuthCallback(@Req() req: any, @Res() res: any): Promise<void> {
     const socialLoginDto = req.user;
-    const { tokens, isNewUser, provider, providerId } = await this.authService.socialSignIn(socialLoginDto);
+    const { tokens, provider, providerId } = await this.authService.socialSignIn(socialLoginDto);
 
-    const redirectUrl = `https://mergeoverflow.shop/google-callback?token=${tokens.accessToken}&newUser=${isNewUser}&provider=${provider}&providerId=${providerId}`;
+    let redirectUrl: string;
+
+    if (tokens && tokens.accessToken) {
+      redirectUrl = `https://mergeoverflow.shop/google-callback?token=${tokens.accessToken}&provider=${provider}&providerId=${providerId}`;
+    } else {
+      redirectUrl = `https://mergeoverflow.shop/google-callback?provider=${provider}&providerId=${providerId}`;
+    }
     res.redirect(redirectUrl);
   }
 
@@ -79,9 +85,15 @@ export class AuthController {
   @UseGuards(GithubAuthGuard)
   async githubAuthCallback(@Req() req: any, @Res() res: any): Promise<void> {
     const socialLoginDto = req.user;
-    const { tokens, isNewUser, provider, providerId } = await this.authService.socialSignIn(socialLoginDto);
+    const { tokens, provider, providerId } = await this.authService.socialSignIn(socialLoginDto);
 
-    const redirectUrl = `https://mergeoverflow.shop/github-callback?token=${tokens.accessToken}&newUser=${isNewUser}&provider=${provider}&providerId=${providerId}`;
+    let redirectUrl: string;
+
+    if (tokens && tokens.accessToken) {
+      redirectUrl = `https://mergeoverflow.shop/github-callback?token=${tokens.accessToken}&provider=${provider}&providerId=${providerId}`;
+    } else {
+      redirectUrl = `https://mergeoverflow.shop/github-callback?provider=${provider}&providerId=${providerId}`;
+    }
     res.redirect(redirectUrl);
   }
 
