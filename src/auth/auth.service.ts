@@ -202,77 +202,22 @@ export class AuthService {
 
   async socialSignIn(
     socialSignInDto: SocialSignInDto,
-  ): Promise<{ tokens: TokensRO; isNewUser: boolean; provider: string; providerId: string }> {
+  ): Promise<{ tokens: TokensRO | null; provider: string; providerId: string }> {
     try {
       const { provider, providerId } = socialSignInDto;
 
-      let account = await this.accountRepository.findOne({ where: { provider, providerId }, relations: ['user'] });
-
-      let isNewUser = false;
-
-      let userId: number;
+      const account = await this.accountRepository.findOne({ where: { provider, providerId }, relations: ['user'] });
 
       if (!account) {
-        isNewUser = true; // 새로운 사용자임을 표시
-
-        // 트랜잭션 시작
-        const queryRunner = this.dataSource.createQueryRunner();
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
-
-        try {
-          // 계정 생성
-          account = new Account();
-          account.provider = provider;
-          account.providerId = providerId;
-          await queryRunner.manager.save(account);
-
-          // 사용자 생성
-          const user = new User();
-          user.accountId = account.id;
-          user.account = account;
-          const savedUser = await queryRunner.manager.save(user);
-
-          userId = savedUser.id;
-
-          // Heart 데이터 생성 및 저장
-          const heart = new Heart();
-          heart.user = user;
-          heart.remainHearts = RESET_HEART_COUNT;
-          await queryRunner.manager.save(heart);
-
-          // Location 데이터 생성 및 저장
-          const location = new Location();
-          location.user = user;
-          await queryRunner.manager.save(location);
-
-          // Preferences 데이터 생성 및 저장
-          const preferences = new Preferences();
-          preferences.user = user;
-          await queryRunner.manager.save(preferences);
-
-          // 트랜잭션 종료
-          await queryRunner.commitTransaction();
-        } catch (error) {
-          await queryRunner.rollbackTransaction();
-          throw error;
-        } finally {
-          await queryRunner.release();
-        }
-      } else {
-        userId = account.user.id;
-
-        //Redis에서 회원가입 완료 여부 확인
-        const isCompleted = await this.redisService.get(`signup_completed_${userId}`);
-
-        if (!isCompleted) {
-          isNewUser = true; // 회원가입이 완료되지 않은 경우
-        }
+        //계정이 없으면 null 반환, 회원가입이 필요.
+        return { tokens: null, provider, providerId };
       }
 
+      const userId = account.user.id;
       const payload = { userId, provider, providerId };
       const tokens = await this.issueTokens(payload);
-      return { tokens, isNewUser, provider, providerId };
+
+      return { tokens, provider, providerId };
     } catch (error) {
       throw new UnauthorizedException(AUTH_MESSAGES.SIGN_IN.FAILURE);
     }
@@ -298,14 +243,20 @@ export class AuthService {
         relations: ['user'],
       });
 
-      if (!account || !account.user) {
-        throw new NotFoundException('계정이나 유저 데이터가 없습니다.');
+      if (account) {
+        throw new ConflictException('이미 존재하는 계정입니다.');
       }
 
-      // User 데이터 업데이트
-      const user = account.user; //수정필요
-      Object.assign(user, userData);
-      await queryRunner.manager.save(user); // 업데이트 후 저장
+      // 새로운 Account 생성
+      const newAccount = new Account();
+      newAccount.provider = provider;
+      newAccount.providerId = providerId;
+      const savedAccount = await queryRunner.manager.save(newAccount);
+
+      // 새로운 User 생성
+      const user = plainToClass(User, userData);
+      user.accountId = savedAccount.id;
+      const savedUser = await queryRunner.manager.save(user);
 
       // UserToInterest 생성
       const userToInterests = interests.map((interestId) => {
@@ -336,11 +287,24 @@ export class AuthService {
         await queryRunner.manager.save(userProfileImages);
       }
 
+      // Heart 데이터 생성 및 저장
+      const heart = new Heart();
+      heart.user = user;
+      heart.remainHearts = RESET_HEART_COUNT;
+      await queryRunner.manager.save(heart);
+
+      // Location 데이터 생성 및 저장
+      const location = new Location();
+      location.user = user;
+      await queryRunner.manager.save(location);
+
+      // Preferences 데이터 생성 및 저장
+      const preferences = new Preferences();
+      preferences.user = user;
+      await queryRunner.manager.save(preferences);
+
       // 트랜잭션 종료
       await queryRunner.commitTransaction();
-
-      // 회원가입 완료 상태를 Redis에 저장
-      await this.redisService.set(`signup_completed_${user.id}`, 'true');
 
       return true;
     } catch (error) {
