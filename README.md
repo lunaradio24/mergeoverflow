@@ -1,4 +1,4 @@
-# [웹서버] 쌍(2)남자 2조의 최종프로적트 <br> "MERGE OVERFLOW"
+# "MERGE OVERFLOW"
 
 ## 프로젝트 소개
 - 서비스명 : MERGE OVERFLOW
@@ -9,11 +9,9 @@
 "개발도 좋은데 나는 사랑을 찾아 낭만을 찾아 떠나고 싶어" <br>
 "나는 백엔드만 할 줄 아는데 프론트엔드 사람은 어떻게 구하지?"
 - 서비스 배포 URL : https://mergeoverflow.shop/
-- 팀 노션 URL : https://teamsparta.notion.site/2-9e08c10b3c8843ceaec8e853230da15b
-- GitHub URL : https://github.com/SaintSSong/SP-last-Project
+- 프로젝트 브로셔 URL : https://teamsparta.notion.site/Merge-OverFlow-0ecfbaaacb7a404aafab9a572071d893
 
 ## 팀원 구성
-
 리더: 👊송사무엘<br>
 부리더: ⚡여창준<br>
 팀원: 🤳유승엽<br>
