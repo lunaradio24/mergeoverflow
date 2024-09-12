@@ -2,14 +2,15 @@
 
 ## 프로젝트 소개
 - 서비스명 : MERGE OVERFLOW
-- 프로젝트 소개 : 개발자를 위한 미팅 서비스 <br>
+- 프로젝트 소개 : 개발자를 위한 매칭 서비스 <br>
 🧑‍💻서로의 코딩 취향을 듬뿍 담아 확인하는 소개팅, 협업자 찾기 서비스!! <br>
 👨‍💻당신의 코딩으로 RESTful한 만남을 시작해보세요!!!!👩‍💻
-- 서비스 기획 의도 : "사이드 프로젝트를 하고 싶은데 동료가 없어" <br>
+- 서비스 기획 의도 : <br>
+"사이드 프로젝트를 하고 싶은데 동료가 없어" <br>
 "개발도 좋은데 나는 사랑을 찾아 낭만을 찾아 떠나고 싶어" <br>
 "나는 백엔드만 할 줄 아는데 프론트엔드 사람은 어떻게 구하지?"
 - 서비스 배포 URL : https://mergeoverflow.shop/
-- 프로젝트 브로셔 URL : https://teamsparta.notion.site/Merge-OverFlow-0ecfbaaacb7a404aafab9a572071d893
+- 프로젝트 브로셔 URL : https://teamsparta.notion.site/Merge-OverFlow-0ecfbaaacb7a404aafab9a572071d893
 
 ## 팀원 구성
 리더: 👊송사무엘<br>
